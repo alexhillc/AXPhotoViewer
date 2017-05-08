@@ -1,0 +1,16 @@
+PODS:
+  - BAPPhotosViewController (1.0)
+
+DEPENDENCIES:
+  - BAPPhotosViewController (from `../BAPPhotosViewController.podspec`)
+
+EXTERNAL SOURCES:
+  BAPPhotosViewController:
+    :path: "../BAPPhotosViewController.podspec"
+
+SPEC CHECKSUMS:
+  BAPPhotosViewController: 91d4243ab7c1d669378a369d8e18b744eb072129
+
+PODFILE CHECKSUM: 83f81c65f0585115004fc43800c2985e9bddd1b3
+
+COCOAPODS: 1.2.1

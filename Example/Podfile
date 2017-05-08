@@ -1,0 +1,10 @@
+platform :ios, '10.0'
+
+target 'BAPPhotosViewControllerExample' do
+
+  use_frameworks!
+
+  # BAPhotosViewController
+  pod 'BAPPhotosViewController', :path => '../BAPPhotosViewController.podspec'
+
+end
