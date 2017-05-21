@@ -249,10 +249,10 @@ private enum PhotoLoadingState: Int {
                                      ])
     }
     
-    func networkIntegration(_ networkIntegration: NetworkIntegration, didUpdateLoadingProgress percent: Double, for photo: Photo) {
+    func networkIntegration(_ networkIntegration: NetworkIntegration, didUpdateLoadingProgress progress: Progress, for photo: Photo) {
         self.notificationCenter.post(name: .photoLoadingProgressUpdate,
                                      object: photo,
-                                     userInfo: [PhotosViewControllerNotification.ProgressKey: percent])
+                                     userInfo: [PhotosViewControllerNotification.ProgressKey: progress])
     }
 
 }
@@ -284,25 +284,6 @@ fileprivate extension Photo {
 
 // MARK: - PhotosViewControllerDelegate
 @objc(BAPPhotosViewControllerDelegate) protocol PhotosViewControllerDelegate {
-    
-    #if !(BAP_SDWI_SUPPORT) && !(BAP_AFN_SUPPORT)
-    /// Called when the PhotosViewController deems necessary (taking `numberOfPhotosToPreload` into account)
-    /// to request the image defined in the photo object.
-    ///
-    /// - Parameters:
-    ///   - viewController: The `PhotosViewController` requesting the image.
-    ///   - photo: The related `Photo`.
-    ///   - progressUpdateHandler: Call this (optional) handler to update the PhotosViewController about the progress of the image download.
-    ///   - completionHandler: Call this handler to update the PhotosViewController that the image load has completed or failed.
-    /// - Note: Loading is NOT handled by the PhotosViewController, this gives the developer an opportunity to store image data
-    ///         independently of the PhotosViewController.
-    /// - Note: The PhotosViewController will never request any photo's image more than once (except on failed loads).
-    @objc(photosViewController:requestImageForPhoto:progressUpdateHandler:completionHandler:)
-    func photosViewController(_ photosViewController: PhotosViewController,
-                              requestImageFor photo: Photo,
-                              progressUpdateHandler: ((_ photo: Photo, _ percentComplete: Double) -> Void),
-                              _ completionHandler: (_ photo: Photo, _ error: NSError?) -> Void) -> Void
-    #endif
     
     /// Called just before a new PhotosViewController is initialized. This custom `loadingView` must conform to `LoadingViewProtocol`.
     ///

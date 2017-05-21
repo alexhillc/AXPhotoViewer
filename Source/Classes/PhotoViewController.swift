@@ -65,12 +65,12 @@ import FLAnimatedImage
             return
         }
         
-        guard photo === self.photo, let progress = notification.userInfo?[PhotosViewControllerNotification.ProgressKey] as? Double else {
+        guard photo === self.photo, let progress = notification.userInfo?[PhotosViewControllerNotification.ProgressKey] as? Progress else {
             return
         }
         
         DispatchQueue.main.async { [weak self] in
-            self?.loadingView?.updateProgress?(percent: progress)
+            self?.loadingView?.updateProgress?(percent: progress.fractionCompleted)
         }
     }
     

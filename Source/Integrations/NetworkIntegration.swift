@@ -45,7 +45,7 @@
     ///   - percent: The progress of the `Photo` load represented as a percentage.
     ///   - photo: The related `Photo`.
     @objc optional func networkIntegration(_ networkIntegration: NetworkIntegration,
-                                           didUpdateLoadingProgress percent: Double,
+                                           didUpdateLoadingProgress progress: Progress,
                                            for photo: Photo)
     
 }
