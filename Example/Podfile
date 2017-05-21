@@ -4,7 +4,7 @@ target 'BAPPhotosViewControllerExample' do
 
   use_frameworks!
 
-  # BAPhotosViewController
+  # BAPPhotosViewController
   pod 'BAPPhotosViewController', :path => '../BAPPhotosViewController.podspec'
 
 end

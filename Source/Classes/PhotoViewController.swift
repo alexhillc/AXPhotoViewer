@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import FLAnimatedImage
 
 @objc(BAPPhotoViewController) class PhotoViewController: UIViewController {
     
@@ -16,7 +17,7 @@ import UIKit
     fileprivate var photo: Photo?
     fileprivate var imageView = UIImageView()
     
-    var loadingView: LoadingViewProtocol {
+    var loadingView: LoadingViewProtocol? {
         didSet {
             self.view.setNeedsLayout()
         }
@@ -68,11 +69,9 @@ import UIKit
             return
         }
         
-        weak var weakSelf = self
-        DispatchQueue.main.async {
-            weakSelf?.loadingView.updateProgress?(percentComplete: progress)
+        DispatchQueue.main.async { [weak self] in
+            self?.loadingView?.updateProgress?(percent: progress)
         }
-        
     }
     
     @objc fileprivate func photoImageDidUpdate(_ notification: Notification) {
@@ -86,14 +85,12 @@ import UIKit
         }
         
         if let image = notification.userInfo?[PhotosViewControllerNotification.ImageKey] as? UIImage {
-            weak var weakSelf = self
-            DispatchQueue.main.async {
-                weakSelf?.imageView.image = image
-                (weakSelf?.loadingView as? UIView)?.removeFromSuperview()
+            DispatchQueue.main.async { [weak self] in
+                self?.imageView.image = image
+                (self?.loadingView as? UIView)?.removeFromSuperview()
             }
         } else if let error = notification.userInfo?[PhotosViewControllerNotification.ImageKey] as? NSError {
-            weak var weakSelf = self
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
                 // update views
             }
         }

@@ -12,13 +12,13 @@
     /// of this method should reflect the progress of the downloaded image.
     ///
     /// - Parameter percentComplete: The percent complete of the image download (0..<1)
-    @objc optional func updateProgress(percentComplete: Double)
+    @objc optional func updateProgress(percent: Double)
     
 }
 
 @objc(BAPLoadingView) class LoadingView: UIView, LoadingViewProtocol {
     
-    func updateProgress(percentComplete: Double) {
+    func updateProgress(percent: Double) {
         
     }
     

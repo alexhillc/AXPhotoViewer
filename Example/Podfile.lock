@@ -1,5 +1,10 @@
 PODS:
-  - BAPPhotosViewController (1.0)
+  - BAPPhotosViewController (1.0):
+    - BAPPhotosViewController/Lite (= 1.0)
+    - FLAnimatedImage (~> 1.0.12)
+  - BAPPhotosViewController/Lite (1.0):
+    - FLAnimatedImage (~> 1.0.12)
+  - FLAnimatedImage (1.0.12)
 
 DEPENDENCIES:
   - BAPPhotosViewController (from `../BAPPhotosViewController.podspec`)
@@ -9,8 +14,9 @@ EXTERNAL SOURCES:
     :path: "../BAPPhotosViewController.podspec"
 
 SPEC CHECKSUMS:
-  BAPPhotosViewController: 91d4243ab7c1d669378a369d8e18b744eb072129
+  BAPPhotosViewController: c1c28e5696458966086295721f3e0c25916b727e
+  FLAnimatedImage: 4a0b56255d9b05f18b6dd7ee06871be5d3b89e31
 
-PODFILE CHECKSUM: 83f81c65f0585115004fc43800c2985e9bddd1b3
+PODFILE CHECKSUM: 1f75cdd699f6a6cc38029613f40a50f0e5c6c471
 
 COCOAPODS: 1.2.1

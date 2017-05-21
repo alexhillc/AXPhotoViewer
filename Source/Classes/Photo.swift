@@ -6,21 +6,25 @@
 //
 //
 
-@objc(BAPPhoto) protocol Photo: class {
+@objc(BAPPhoto) protocol Photo: AnyObject, NSObjectProtocol {
     
     /// The attributed title of the image that will be displayed in the photo's `overlay`.
-    @objc var title: NSAttributedString? { get }
+    var title: NSAttributedString? { get }
     
     /// The attributed caption of the image that will be displayed in the photo's `overlay`.
-    @objc var caption: NSAttributedString? { get }
+    var caption: NSAttributedString? { get }
     
     /// The attributed credit of the image that will be displayed in the photo's `overlay`.
-    @objc var credit: NSAttributedString? { get }
+    var credit: NSAttributedString? { get }
     
-    /// The URL of the image to be loaded.
-    @objc var url: URL { get }
+    /// The image data. If this value is present, it will be prioritized over `image`.
+    /// Provide animated GIF data to this property.
+    var imageData: Data? { get }
     
-    /// The image to be displayed. Expected to be `nil` if the image has not been downloaded yet.
-    @objc var image: UIImage? { get }
+    /// The image to be displayed. If this value is present, it will be prioritized over `URL`.
+    var image: UIImage? { get }
+    
+    /// The URL of the image.
+    var url: URL? { get }
     
 }
