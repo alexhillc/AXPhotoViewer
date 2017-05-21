@@ -35,7 +35,7 @@
     ///   - error: The error that the load failed with.
     ///   - photo: The related `Photo`.
     func networkIntegration(_ networkIntegration: NetworkIntegration,
-                            loadDidFailWith error: NSError,
+                            loadDidFailWith error: Error,
                             for photo: Photo)
     
     /// Called when a `Photo`'s loading progress is updated.

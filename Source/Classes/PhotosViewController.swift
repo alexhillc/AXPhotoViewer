@@ -239,7 +239,7 @@ private enum PhotoLoadingState: Int {
         }
     }
     
-    func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFailWith error: NSError, for photo: Photo) {
+    func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFailWith error: Error, for photo: Photo) {
         photo.loadingState = .loadingFailed
         self.notificationCenter.post(name: .photoImageUpdate,
                                      object: photo,
