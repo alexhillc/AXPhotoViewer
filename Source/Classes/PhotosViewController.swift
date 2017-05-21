@@ -38,11 +38,11 @@ private enum PhotoLoadingState: Int {
     let pageViewController = UIPageViewController()
     
     #if BAP_SDWI_SUPPORT
-    fileprivate var networkIntegration: NetworkIntegration = SDWebImageIntegration()
+    fileprivate(set) var networkIntegration: NetworkIntegration = SDWebImageIntegration()
     #elseif BAP_AFN_SUPPORT
-    fileprivate var networkIntegration: NetworkIntegration = AFNetworkingIntegration()
+    fileprivate(set) var networkIntegration: NetworkIntegration = AFNetworkingIntegration()
     #else
-    fileprivate var networkIntegration: NetworkIntegration
+    fileprivate(set) var networkIntegration: NetworkIntegration
     #endif
     
     fileprivate var recycledViewControllers = [PhotoViewController]()
@@ -62,7 +62,7 @@ private enum PhotoLoadingState: Int {
         self.setupPageViewController(initialIndex: initialIndex)
     }
     #else
-    init(photos: [Photo], initialIndex: Int = 0, networkIntegration: NetworkIntegration, delegate: PhotosViewControllerDelegate?) {
+    init(photos: [Photo], networkIntegration: NetworkIntegration, initialIndex: Int = 0, delegate: PhotosViewControllerDelegate?) {
         self.delegate = delegate
         self.networkIntegration = networkIntegration
         self.photos = photos
