@@ -19,9 +19,13 @@ import FLAnimatedImage
             self.view.setNeedsLayout()
         }
     }
+
+    fileprivate var zoomingScrollView: ZoomingScrollView {
+        return self.view as! ZoomingScrollView
+    }
     
     fileprivate var imageView: FLAnimatedImageView {
-        return self.view as! FLAnimatedImageView
+        return self.zoomingScrollView.zoomView as! FLAnimatedImageView
     }
     
     fileprivate var photo: Photo?
@@ -53,20 +57,12 @@ import FLAnimatedImage
     }
     
     public override func loadView() {
-        self.view = FLAnimatedImageView()
+        self.view = ZoomingScrollView(zoomView: FLAnimatedImageView())
     }
     
     public override func viewDidLoad() {
         super.viewDidLoad()
         self.imageView.contentMode = .scaleAspectFit
-    }
-    
-    public override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-    }
-    
-    public override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
     }
     
     public override func viewWillLayoutSubviews() {

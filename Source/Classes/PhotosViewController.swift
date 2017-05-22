@@ -115,23 +115,6 @@ private enum PhotoLoadingState: Int {
         self.pageViewController.view.frame = self.view.bounds
     }
     
-    public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        if context == &PhotoViewControllerLifecycleContext {
-            guard let photoViewController = object as? PhotoViewController else {
-                return
-            }
-            
-            if change?[.newKey] is NSNull {
-                self.delegate?.photosViewController?(self, prepareViewControllerForEndDisplay: photoViewController)
-                self.recyclePhotoViewController(photoViewController)
-            } else {
-                self.delegate?.photosViewController?(self, prepareViewControllerForDisplay: photoViewController)
-            }
-        } else {
-            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
-        }
-    }
-    
     fileprivate func loadPhotos(at index: Int) {
         let startIndex = (((index - (self.numberOfPhotosToPreload / 2)) >= 0) ? (index - (self.numberOfPhotosToPreload / 2)) : 0)
         let indexes = startIndex..<(startIndex + self.numberOfPhotosToPreload + 1)
@@ -146,6 +129,24 @@ private enum PhotoLoadingState: Int {
                 photo.loadingState = .loading
                 self.networkIntegration.loadPhoto(photo)
             }
+        }
+    }
+    
+    // MARK: - Lifecycle KVO
+    public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if context == &PhotoViewControllerLifecycleContext {
+            guard let photoViewController = object as? PhotoViewController else {
+                return
+            }
+            
+            if change?[.newKey] is NSNull {
+                self.delegate?.photosViewController?(self, prepareViewControllerForEndDisplay: photoViewController)
+                self.recyclePhotoViewController(photoViewController)
+            } else {
+                self.delegate?.photosViewController?(self, prepareViewControllerForDisplay: photoViewController)
+            }
+        } else {
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
     }
     
