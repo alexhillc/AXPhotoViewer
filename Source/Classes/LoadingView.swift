@@ -6,19 +6,19 @@
 //
 //
 
-@objc(BAPLoadingViewProtocol) protocol LoadingViewProtocol: NSObjectProtocol {
+@objc(BAPLoadingViewProtocol) public protocol LoadingViewProtocol: NSObjectProtocol {
     
     /// Called by the PhotoViewController when the progress of an image download is updated. The optional implementation 
     /// of this method should reflect the progress of the downloaded image.
     ///
-    /// - Parameter percentComplete: The percent complete of the image download (0..<1)
-    @objc optional func updateProgress(percent: Double)
+    /// - Parameter progress: The progress complete of the image download.
+    @objc optional func updateProgress(_ progress: Progress)
     
 }
 
-@objc(BAPLoadingView) class LoadingView: UIView, LoadingViewProtocol {
+@objc(BAPLoadingView) public class LoadingView: UIView, LoadingViewProtocol {
     
-    func updateProgress(percent: Double) {
+    public func updateProgress(_ progress: Progress) {
         
     }
     

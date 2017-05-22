@@ -6,7 +6,7 @@
 //
 //
 
-@objc(BAPPhoto) protocol Photo: AnyObject, NSObjectProtocol {
+@objc(BAPPhoto) public protocol Photo: AnyObject, NSObjectProtocol {
     
     /// The attributed title of the image that will be displayed in the photo's `overlay`.
     var title: NSAttributedString? { get }
@@ -19,10 +19,10 @@
     
     /// The image data. If this value is present, it will be prioritized over `image`.
     /// Provide animated GIF data to this property.
-    var imageData: Data? { get }
+    var imageData: Data? { get set }
     
     /// The image to be displayed. If this value is present, it will be prioritized over `URL`.
-    var image: UIImage? { get }
+    var image: UIImage? { get set }
     
     /// The URL of the image.
     var url: URL? { get }

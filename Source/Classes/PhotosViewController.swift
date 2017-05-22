@@ -13,16 +13,16 @@ private enum PhotoLoadingState: Int {
     case notLoaded, loading, loaded, loadingFailed
 }
 
-@objc(BAPPhotosViewController) class PhotosViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource,
-                                                           NetworkIntegrationDelegate {
+@objc(BAPPhotosViewController) public class PhotosViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource,
+                                                                  NetworkIntegrationDelegate {
     
-    // MARK: - Public
-    
-    weak var delegate: PhotosViewControllerDelegate?
+    public weak var delegate: PhotosViewControllerDelegate?
     
     /// The photos to display in the PhotosViewController.
-    var photos: [Photo] {
+    public var photos: [Photo] {
         didSet {
+            self.recycledViewControllers.removeLifeycleObserver(self)
+            self.pageViewController.viewControllers?.removeLifeycleObserver(self)
             self.recycledLoadingViews.removeAll()
             self.recycledViewControllers.removeAll()
             self.setupPageViewController(initialIndex: 0)
@@ -30,12 +30,12 @@ private enum PhotoLoadingState: Int {
     }
     
     /// The number of photos to load surrounding the currently displayed photo.
-    var numberOfPhotosToPreload: Int = 2
+    public var numberOfPhotosToPreload: Int = 2
     
     /// The underlying UIPageViewController that is used for swiping horizontally.
     /// - Important: `BAPPhotosViewController` is this page view controller's `UIPageViewControllerDelegate`, `UIPageViewControllerDataSource`.
     ///              Changing these values will result in breakage for the time being. (TODO)
-    let pageViewController = UIPageViewController()
+    public let pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
     
     #if BAP_SDWI_SUPPORT
     fileprivate(set) var networkIntegration: NetworkIntegration = SDWebImageIntegration()
@@ -51,7 +51,7 @@ private enum PhotoLoadingState: Int {
     fileprivate let notificationCenter = NotificationCenter()
     
     #if BAP_SDWI_SUPPORT || BAP_AFN_SUPPORT
-    init(photos: [Photo], initialIndex: Int = 0, delegate: PhotosViewControllerDelegate?) {
+    public init(photos: [Photo], initialIndex: Int = 0, delegate: PhotosViewControllerDelegate?) {
         self.delegate = delegate
         self.photos = photos
         assert(photos.count > initialIndex, "Invalid initial page index provided.")
@@ -62,7 +62,7 @@ private enum PhotoLoadingState: Int {
         self.setupPageViewController(initialIndex: initialIndex)
     }
     #else
-    init(photos: [Photo], networkIntegration: NetworkIntegration, initialIndex: Int = 0, delegate: PhotosViewControllerDelegate?) {
+    public init(photos: [Photo], networkIntegration: NetworkIntegration, initialIndex: Int = 0, delegate: PhotosViewControllerDelegate?) {
         self.delegate = delegate
         self.networkIntegration = networkIntegration
         self.photos = photos
@@ -75,8 +75,20 @@ private enum PhotoLoadingState: Int {
     }
     #endif
     
-    required init?(coder aDecoder: NSCoder) {
+    required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    deinit {
+        self.recycledViewControllers.removeLifeycleObserver(self)
+        self.pageViewController.viewControllers?.removeLifeycleObserver(self)
+    }
+    
+    public override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        self.recycledViewControllers.removeLifeycleObserver(self)
+        self.recycledLoadingViews.removeAll()
+        self.recycledViewControllers.removeAll()
     }
     
     fileprivate func setupPageViewController(initialIndex: Int) {
@@ -84,9 +96,10 @@ private enum PhotoLoadingState: Int {
         photoViewController.applyPhoto(photos[initialIndex])
         photoViewController.pageIndex = initialIndex
         self.pageViewController.setViewControllers([photoViewController], direction: .forward, animated: false, completion: nil)
+        self.loadPhotos(at: initialIndex)
     }
 
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
         
         self.pageViewController.delegate = self
@@ -97,9 +110,26 @@ private enum PhotoLoadingState: Int {
         self.pageViewController.didMove(toParentViewController: self)
     }
     
-    override func viewWillLayoutSubviews() {
+    public override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         self.pageViewController.view.frame = self.view.bounds
+    }
+    
+    public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if context == &PhotoViewControllerLifecycleContext {
+            guard let photoViewController = object as? PhotoViewController else {
+                return
+            }
+            
+            if change?[.newKey] is NSNull {
+                self.delegate?.photosViewController?(self, prepareViewControllerForEndDisplay: photoViewController)
+                self.recyclePhotoViewController(photoViewController)
+            } else {
+                self.delegate?.photosViewController?(self, prepareViewControllerForDisplay: photoViewController)
+            }
+        } else {
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
+        }
     }
     
     fileprivate func loadPhotos(at index: Int) {
@@ -119,7 +149,7 @@ private enum PhotoLoadingState: Int {
         }
     }
     
-    // MARK: - Factory methods
+    // MARK: - Reuse / Factory
     fileprivate func makePhotoViewController(for pageIndex: Int) -> PhotoViewController {
         let photo = self.photos[pageIndex]
         var photoViewController: PhotoViewController
@@ -129,6 +159,7 @@ private enum PhotoLoadingState: Int {
             photoViewController.loadingView = self.makeLoadingView(for: pageIndex)
         } else {
             photoViewController = PhotoViewController(loadingView: self.makeLoadingView(for: pageIndex), notificationCenter: self.notificationCenter)
+            photoViewController.addLifecycleObserver(self)
         }
         
         photoViewController.pageIndex = pageIndex
@@ -137,7 +168,7 @@ private enum PhotoLoadingState: Int {
         return photoViewController
     }
     
-    func makeLoadingView(for pageIndex: Int) -> LoadingViewProtocol {
+    fileprivate func makeLoadingView(for pageIndex: Int) -> LoadingViewProtocol {
         let photo = self.photos[pageIndex]
         var loadingView: LoadingViewProtocol
         var loadingViewClass: LoadingViewProtocol.Type
@@ -164,62 +195,70 @@ private enum PhotoLoadingState: Int {
         return loadingView
     }
     
-    // MARK: - UIPageViewControllerDelegate
-    func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
-        
-        guard finished, let photoViewControllers = previousViewControllers as? [PhotoViewController] else {
+    // MARK: - Recycling
+    fileprivate func recyclePhotoViewController(_ photoViewController: PhotoViewController) {
+        guard !self.recycledViewControllers.contains(photoViewController) else {
             return
         }
         
-        self.recycledViewControllers.append(contentsOf: photoViewControllers)
-        for photoViewController in photoViewControllers {
-            if let loadingView = photoViewController.loadingView as? UIView {
-                loadingView.removeFromSuperview()
-                photoViewController.loadingView = nil
-                self.recycledLoadingViews[String(describing: type(of: loadingView))]?.append(loadingView as! LoadingViewProtocol)
-            }
+        if let loadingView = photoViewController.loadingView as? UIView {
+            photoViewController.loadingView = nil
             
-            self.recycledViewControllers.append(photoViewController)
+            let key = String(describing: type(of: loadingView))
+            if self.recycledLoadingViews[key] == nil {
+                self.recycledLoadingViews[key] = [LoadingViewProtocol]()
+            }
+            self.recycledLoadingViews[key]?.append(loadingView as! LoadingViewProtocol)
         }
+        
+        self.recycledViewControllers.append(photoViewController)
     }
     
     // MARK: - UIPageViewControllerDataSource
-    func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
-        
-        guard let photoViewController = viewController as? PhotoViewController else {
+    public func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
+        guard let uViewController = viewController as? PhotoViewController else {
             assertionFailure("Paging VC must be a subclass of `PhotoViewController`.")
             return nil
         }
         
-        let pageIndex = photoViewController.pageIndex - 1
-        guard pageIndex >= 0 && self.photos.count > pageIndex else {
-            return nil
-        }
-        
-        self.loadPhotos(at: pageIndex)
-        
-        return self.makePhotoViewController(for: pageIndex)
+        return self.pageViewController(pageViewController, viewControllerAt: uViewController.pageIndex - 1)
     }
     
-    func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
-        
-        guard let photoViewController = viewController as? PhotoViewController else {
+    public func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
+        guard let uViewController = viewController as? PhotoViewController else {
             assertionFailure("Paging VC must be a subclass of `PhotoViewController`.")
             return nil
         }
         
-        let pageIndex = photoViewController.pageIndex + 1
-        guard self.photos.count > pageIndex else {
+        return self.pageViewController(pageViewController, viewControllerAt: uViewController.pageIndex + 1)
+    }
+    
+    public func pageViewController(_ pageViewController: UIPageViewController, viewControllerAt index: Int) -> UIViewController? {
+        guard index >= 0 && self.photos.count > index else {
             return nil
         }
         
-        self.loadPhotos(at: pageIndex)
+        self.loadPhotos(at: index)
         
-        return self.makePhotoViewController(for: pageIndex)
+        return self.makePhotoViewController(for: index)
+    }
+    
+    // MARK: - PhotoViewControllerDelegate
+    public func photoViewController(_ photoViewController: PhotoViewController, willMoveToParentViewController parent: UIViewController?) {
+        guard photoViewController.parent != parent else {
+            return
+        }
+        
+        if parent == nil {
+            self.delegate?.photosViewController?(self, prepareViewControllerForEndDisplay: photoViewController)
+            self.recyclePhotoViewController(photoViewController)
+        } else {
+            self.delegate?.photosViewController?(self, prepareViewControllerForDisplay: photoViewController)
+        }
     }
     
     // MARK: - NetworkIntegrationDelegate
-    func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFinishWith photo: Photo) {
+    public func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFinishWith photo: Photo) {
         if let imageData = photo.imageData {
             photo.loadingState = .loaded
             self.notificationCenter.post(name: .photoImageUpdate,
@@ -239,7 +278,7 @@ private enum PhotoLoadingState: Int {
         }
     }
     
-    func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFailWith error: Error, for photo: Photo) {
+    public func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFailWith error: Error, for photo: Photo) {
         photo.loadingState = .loadingFailed
         self.notificationCenter.post(name: .photoImageUpdate,
                                      object: photo,
@@ -249,7 +288,7 @@ private enum PhotoLoadingState: Int {
                                      ])
     }
     
-    func networkIntegration(_ networkIntegration: NetworkIntegration, didUpdateLoadingProgress progress: Progress, for photo: Photo) {
+    public func networkIntegration(_ networkIntegration: NetworkIntegration, didUpdateLoadingProgress progress: Progress, for photo: Photo) {
         self.notificationCenter.post(name: .photoLoadingProgressUpdate,
                                      object: photo,
                                      userInfo: [PhotosViewControllerNotification.ProgressKey: progress])
@@ -282,10 +321,49 @@ fileprivate extension Photo {
     
 }
 
-// MARK: - PhotosViewControllerDelegate
-@objc(BAPPhotosViewControllerDelegate) protocol PhotosViewControllerDelegate {
+// MARK: - UIViewController observer extensions
+fileprivate var PhotoViewControllerLifecycleContext: UInt8 = 0
+fileprivate extension Array where Element: UIViewController {
     
-    /// Called just before a new PhotosViewController is initialized. This custom `loadingView` must conform to `LoadingViewProtocol`.
+    func removeLifeycleObserver(_ observer: NSObject) -> Void {
+        self.forEach({ ($0 as UIViewController).removeLifecycleObserver(observer) })
+    }
+    
+}
+
+fileprivate extension UIViewController {
+    
+    func addLifecycleObserver(_ observer: NSObject) -> Void {
+        self.addObserver(observer, forKeyPath: #keyPath(parent), options: .new, context: &PhotoViewControllerLifecycleContext)
+    }
+    
+    func removeLifecycleObserver(_ observer: NSObject) -> Void {
+        self.removeObserver(observer, forKeyPath: #keyPath(parent), context: &PhotoViewControllerLifecycleContext)
+    }
+    
+}
+
+// MARK: - PhotosViewControllerDelegate
+@objc(BAPPhotosViewControllerDelegate) public protocol PhotosViewControllerDelegate {
+    
+    /// Called just after the `PhotoViewController` is initialized/reused as an opportunity to configure the view controller
+    /// before it comes onscreen.
+    ///
+    /// - Parameters:
+    ///   - photosViewController: The `PhotosViewController` that will display the view controller.
+    ///   - photoViewController: The related `PhotoViewController`.
+    @objc optional func photosViewController(_ photosViewController: PhotosViewController,
+                                             prepareViewControllerForDisplay photoViewController: PhotoViewController)
+    
+    /// Called just before the `PhotoViewController` is recycled as an opportunity to prepare the view controller for offscreen.
+    ///
+    /// - Parameters:
+    ///   - photosViewController: The `PhotosViewController` ending display of the view controller.
+    ///   - photoViewController: The related `PhotoViewController`.
+    @objc optional func photosViewController(_ photosViewController: PhotosViewController,
+                                             prepareViewControllerForEndDisplay photoViewController: PhotoViewController)
+    
+    /// Called just before a new `PhotoViewController` is initialized. This custom `loadingView` must conform to `LoadingViewProtocol`.
     ///
     /// - Parameters:
     ///   - photosViewController: The `PhotosViewController` requesting the loading view.
@@ -299,7 +377,7 @@ fileprivate extension Photo {
 
 // MARK: - Notification definitions
 // Keep Obj-C land happy
-@objc(BAPPhotosViewControllerNotification) class PhotosViewControllerNotification: NSObject {
+@objc(BAPPhotosViewControllerNotification) public class PhotosViewControllerNotification: NSObject {
     static let ProgressUpdate = Notification.Name.photoLoadingProgressUpdate.rawValue
     static let ImageUpdate = Notification.Name.photoImageUpdate.rawValue
     static let ImageKey = "BAPhotosViewControllerImage"
@@ -309,7 +387,7 @@ fileprivate extension Photo {
     static let ErrorKey = "BAPhotosViewControllerError"
 }
 
-extension Notification.Name {
+public extension Notification.Name {
     static let photoLoadingProgressUpdate = Notification.Name("BAPhotoLoadingProgressUpdateNotification")
     static let photoImageUpdate = Notification.Name("BAPhotoImageUpdateNotification")
 }

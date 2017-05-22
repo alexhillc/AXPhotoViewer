@@ -23,13 +23,13 @@ Pod::Spec.new do |s|
   end
 
   s.subspec 'SDWebImage' do |sdwi|
-    sdwi.xcconfig      = { 'OTHER_CFLAGS' => '$(inherited) -BAP_SDWI_SUPPORT' }
+    sdwi.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D BAP_SDWI_SUPPORT' }
     sdwi.source_files  = 'Source/Classes/*.{swift}', 'Source/Integrations/SDWebImageIntegration.swift', 'Source/Integrations/NetworkIntegration.swift'
     sdwi.dependency      'SDWebImage', '~> 4.0.0'
   end
 
   s.subspec 'AFNetworking' do |afn|
-    afn.xcconfig      = { 'OTHER_CFLAGS' => '$(inherited) -BAP_AFN_SUPPORT' }
+    afn.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D BAP_AFN_SUPPORT' }
     afn.source_files  = 'Source/Classes/*.{swift}', 'Source/Integrations/AFNetworkingIntegration.swift', 'Source/Integrations/NetworkIntegration.swift'
     afn.dependency      'AFNetworking', '~> 3.1.0'
   end

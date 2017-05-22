@@ -8,11 +8,11 @@
 
 import AFNetworking
 
-class AFNetworkingIntegration: NSObject, NetworkIntegration {
+public class AFNetworkingIntegration: NSObject, NetworkIntegration {
     
-    weak var delegate: NetworkIntegrationDelegate?
+    weak public var delegate: NetworkIntegrationDelegate?
     
-    func loadPhoto(_ photo: Photo) {
+    public func loadPhoto(_ photo: Photo) {
         if photo.imageData != nil || photo.image != nil {
             self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
         }
@@ -21,11 +21,12 @@ class AFNetworkingIntegration: NSObject, NetworkIntegration {
             return
         }
 
-        let success: (_ request: URLRequest, _ response: HTTPURLResponse?, _ image: UIImage) -> Void = { [weak self] (response, responseObject, error) in
+        let success: (_ request: URLRequest, _ response: HTTPURLResponse?, _ image: UIImage) -> Void = { [weak self] (response, responseObject, image) in
             guard let uSelf = self else {
                 return
             }
             
+            photo.image = image
             uSelf.delegate?.networkIntegration(uSelf, loadDidFinishWith: photo)
         }
         

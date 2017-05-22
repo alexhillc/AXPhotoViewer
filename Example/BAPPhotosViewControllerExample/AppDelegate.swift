@@ -7,15 +7,39 @@
 //
 
 import UIKit
+import BAPPhotosViewController
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, PhotosViewControllerDelegate {
 
     var window: UIWindow?
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        self.window = UIWindow(frame: UIScreen.main.bounds)
+        
+        let photos = [
+            ExamplePhoto(title: NSAttributedString(string: "The Flash Poster"),
+                         caption: NSAttributedString(string: "Season 3"),
+                         credit: NSAttributedString(string: "Vignette"),
+                         url: URL(string: "https://goo.gl/T4oZdY")!),
+            ExamplePhoto(title: NSAttributedString(string: "The Flash and Savitar"),
+                         caption: NSAttributedString(string: "Season 3"),
+                         credit: NSAttributedString(string: "Screen Rant"),
+                         url: URL(string: "https://goo.gl/pYeJ4H")!),
+            ExamplePhoto(title: NSAttributedString(string: "The Flash: Rebirth"),
+                         caption: NSAttributedString(string: "Comic Book"),
+                         credit: NSAttributedString(string: "DC Comics"),
+                         url: URL(string: "https://goo.gl/9wgyAo")!),
+            ExamplePhoto(title: NSAttributedString(string: "The Flash has a cute smile"),
+                         caption: nil,
+                         credit: NSAttributedString(string: "Giphy"),
+                         url: URL(string: "https://media.giphy.com/media/IOEcl8A8iLIUo/giphy.gif")!)
+        ]
+        let photosViewController = PhotosViewController(photos: photos, delegate: self)
+        self.window?.rootViewController = photosViewController
+        self.window?.makeKeyAndVisible()
+        
         return true
     }
 

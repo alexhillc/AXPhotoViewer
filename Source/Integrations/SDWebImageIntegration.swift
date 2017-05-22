@@ -36,6 +36,17 @@ class SDWebImageIntegration: NSObject, NetworkIntegration {
                 return
             }
             
+            guard let uImage = image, let uData = data, finished else {
+                return
+            }
+            
+            if uImage.isGIF() {
+                photo.imageData = uData
+                photo.image = uImage
+            } else {
+                photo.image = uImage
+            }
+            
             if let error = error {
                 uSelf.delegate?.networkIntegration(uSelf, loadDidFailWith: error, for: photo)
             } else if let _ = image, let _ = data, finished {

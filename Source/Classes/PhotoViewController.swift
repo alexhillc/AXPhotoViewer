@@ -9,21 +9,25 @@
 import UIKit
 import FLAnimatedImage
 
-@objc(BAPPhotoViewController) class PhotoViewController: UIViewController {
-    
-    fileprivate weak var notificationCenter: NotificationCenter?
+@objc(BAPPhotoViewController) public class PhotoViewController: UIViewController {
 
-    var pageIndex: Int = 0
-    fileprivate var photo: Photo?
-    fileprivate var imageView = UIImageView()
+    public var pageIndex: Int = 0
     
-    var loadingView: LoadingViewProtocol? {
+    public var loadingView: LoadingViewProtocol? {
         didSet {
+            (oldValue as? UIView)?.removeFromSuperview()
             self.view.setNeedsLayout()
         }
     }
     
-    init(loadingView: LoadingViewProtocol, notificationCenter: NotificationCenter) {
+    fileprivate var imageView: FLAnimatedImageView {
+        return self.view as! FLAnimatedImageView
+    }
+    
+    fileprivate var photo: Photo?
+    fileprivate weak var notificationCenter: NotificationCenter?
+    
+    public init(loadingView: LoadingViewProtocol, notificationCenter: NotificationCenter) {
         self.loadingView = loadingView
         self.notificationCenter = notificationCenter
         
@@ -40,7 +44,7 @@ import FLAnimatedImage
                                        object: nil)
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
@@ -48,14 +52,54 @@ import FLAnimatedImage
         self.notificationCenter?.removeObserver(self)
     }
     
-    override func viewWillLayoutSubviews() {
+    public override func loadView() {
+        self.view = FLAnimatedImageView()
+    }
+    
+    public override func viewDidLoad() {
+        super.viewDidLoad()
+        self.imageView.contentMode = .scaleAspectFit
+    }
+    
+    public override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+    }
+    
+    public override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+    }
+    
+    public override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
+        
+        if let loadingView = self.loadingView as? UIView {
+            if loadingView.superview == nil {
+                self.view.addSubview(loadingView)
+            }
+        }
+        
         (self.loadingView as? UIView)?.frame = self.view.bounds
     }
     
-    func applyPhoto(_ photo: Photo) {
+    public func applyPhoto(_ photo: Photo) {
         self.photo = photo
-        self.imageView.image = photo.image
+        
+        guard let image = photo.image else {
+            self.imageView.image = nil
+            self.imageView.animatedImage = nil
+            return
+        }
+        
+        if let imageData = photo.imageData {
+            if image.isGIF() {
+                self.imageView.animatedImage = FLAnimatedImage(animatedGIFData: imageData)
+            } else {
+                self.imageView.image = UIImage(data: imageData)
+            }
+        } else {
+            self.imageView.image = image
+        }
+        
     }
     
     // MARK: - Notifications
@@ -70,7 +114,7 @@ import FLAnimatedImage
         }
         
         DispatchQueue.main.async { [weak self] in
-            self?.loadingView?.updateProgress?(percent: progress.fractionCompleted)
+            self?.loadingView?.updateProgress?(progress)
         }
     }
     
@@ -84,12 +128,13 @@ import FLAnimatedImage
             return
         }
         
-        if let image = notification.userInfo?[PhotosViewControllerNotification.ImageKey] as? UIImage {
+        if notification.userInfo?[PhotosViewControllerNotification.ImageDataKey] != nil ||
+            notification.userInfo?[PhotosViewControllerNotification.ImageKey] != nil {
+            
             DispatchQueue.main.async { [weak self] in
-                self?.imageView.image = image
-                (self?.loadingView as? UIView)?.removeFromSuperview()
+                self?.applyPhoto(photo)
             }
-        } else if let error = notification.userInfo?[PhotosViewControllerNotification.ImageKey] as? NSError {
+        } else if let error = notification.userInfo?[PhotosViewControllerNotification.ErrorKey] as? Error {
             DispatchQueue.main.async { [weak self] in
                 // update views
             }
