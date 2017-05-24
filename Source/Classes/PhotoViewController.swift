@@ -9,8 +9,9 @@
 import UIKit
 import FLAnimatedImage
 
-@objc(BAPPhotoViewController) public class PhotoViewController: UIViewController {
-
+@objc(BAPPhotoViewController) public class PhotoViewController: UIViewController, Recyclable {
+    
+    public weak var delegate: PhotoViewControllerDelegate?
     public var pageIndex: Int = 0
     
     public var loadingView: LoadingViewProtocol? {
@@ -20,12 +21,16 @@ import FLAnimatedImage
         }
     }
 
-    fileprivate var zoomingScrollView: ZoomingScrollView {
-        return self.view as! ZoomingScrollView
+    var zoomingScrollView: ZoomingScrollView {
+        get {
+            return self.view as! ZoomingScrollView
+        }
     }
     
-    fileprivate var imageView: FLAnimatedImageView {
-        return self.zoomingScrollView.zoomView as! FLAnimatedImageView
+    var imageView: FLAnimatedImageView {
+        get {
+            return self.zoomingScrollView.zoomView as! FLAnimatedImageView
+        }
     }
     
     fileprivate var photo: Photo?
@@ -95,13 +100,28 @@ import FLAnimatedImage
         } else {
             self.imageView.image = image
         }
+    }
+    
+    // MARK: - Recyclable
+    func prepareForReuse() {
+        self.zoomingScrollView.maximumZoomScale = 1
+        self.zoomingScrollView.minimumZoomScale = 1
+        self.zoomingScrollView.zoomScale = 1
+    }
+    
+    func prepareForRecycle() {
+        guard let photo = self.photo else {
+            return
+            
+        }
         
+        self.delegate?.photoViewController(self, cancelDownloadFor: photo)
     }
     
     // MARK: - Notifications
     @objc fileprivate func photoLoadingProgressDidUpdate(_ notification: Notification) {
         guard let photo = notification.object as? Photo else {
-            assertionFailure("Photos must conform to the BAPhoto protocol.")
+            assertionFailure("Photos must conform to the BAPPhoto protocol.")
             return
         }
         
@@ -116,7 +136,7 @@ import FLAnimatedImage
     
     @objc fileprivate func photoImageDidUpdate(_ notification: Notification) {
         guard let photo = notification.object as? Photo else {
-            assertionFailure("Photos must conform to the BAPhoto protocol.")
+            assertionFailure("Photos must conform to the BAPPhoto protocol.")
             return
         }
         
@@ -132,9 +152,25 @@ import FLAnimatedImage
             }
         } else if let error = notification.userInfo?[PhotosViewControllerNotification.ErrorKey] as? Error {
             DispatchQueue.main.async { [weak self] in
-                // update views
+                self?.loadingView?.showError(error, retryHandler: {
+                    guard let uSelf = self, let photo = uSelf.photo else {
+                        return
+                    }
+                    
+                    self?.delegate?.photoViewController(uSelf, retryDownloadFor: photo)
+                })
             }
         }
     }
 
+}
+
+@objc(BAPPhotoViewControllerDelegate) public protocol PhotoViewControllerDelegate: AnyObject, NSObjectProtocol {
+    
+    @objc(photoViewController:retryDownloadForPhoto:)
+    func photoViewController(_ photoViewController: PhotoViewController, retryDownloadFor photo: Photo)
+    
+    @objc(photoViewController:cancelDownloadForPhoto:)
+    func photoViewController(_ photoViewController: PhotoViewController, cancelDownloadFor photo: Photo)
+    
 }

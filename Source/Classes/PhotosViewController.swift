@@ -14,7 +14,7 @@ private enum PhotoLoadingState: Int {
 }
 
 @objc(BAPPhotosViewController) public class PhotosViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource,
-                                                                  NetworkIntegrationDelegate {
+                                                                  PhotoViewControllerDelegate, NetworkIntegrationDelegate {
     
     public weak var delegate: PhotosViewControllerDelegate?
     
@@ -158,9 +158,11 @@ private enum PhotoLoadingState: Int {
         if self.recycledViewControllers.count > 0 {
             photoViewController = self.recycledViewControllers.removeLast()
             photoViewController.loadingView = self.makeLoadingView(for: pageIndex)
+            photoViewController.prepareForReuse()
         } else {
             photoViewController = PhotoViewController(loadingView: self.makeLoadingView(for: pageIndex), notificationCenter: self.notificationCenter)
             photoViewController.addLifecycleObserver(self)
+            photoViewController.delegate = self
         }
         
         photoViewController.pageIndex = pageIndex
@@ -202,6 +204,8 @@ private enum PhotoLoadingState: Int {
             return
         }
         
+        photoViewController.prepareForRecycle()
+        
         if let loadingView = photoViewController.loadingView as? UIView {
             photoViewController.loadingView = nil
             
@@ -216,6 +220,14 @@ private enum PhotoLoadingState: Int {
     }
     
     // MARK: - UIPageViewControllerDataSource
+    public func pageViewController(_ pageViewController: UIPageViewController, willTransitionTo pendingViewControllers: [UIViewController]) {
+        guard let viewController = pendingViewControllers.first as? PhotoViewController else {
+            return
+        }
+        
+        self.loadPhotos(at: viewController.pageIndex)
+    }
+    
     public func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
         guard let uViewController = viewController as? PhotoViewController else {
             assertionFailure("Paging VC must be a subclass of `PhotoViewController`.")
@@ -239,23 +251,26 @@ private enum PhotoLoadingState: Int {
             return nil
         }
         
-        self.loadPhotos(at: index)
-        
         return self.makePhotoViewController(for: index)
     }
     
     // MARK: - PhotoViewControllerDelegate
-    public func photoViewController(_ photoViewController: PhotoViewController, willMoveToParentViewController parent: UIViewController?) {
-        guard photoViewController.parent != parent else {
+    public func photoViewController(_ photoViewController: PhotoViewController, retryDownloadFor photo: Photo) {
+        guard photo.loadingState != .loading && photo.loadingState != .loaded else {
             return
         }
         
-        if parent == nil {
-            self.delegate?.photosViewController?(self, prepareViewControllerForEndDisplay: photoViewController)
-            self.recyclePhotoViewController(photoViewController)
-        } else {
-            self.delegate?.photosViewController?(self, prepareViewControllerForDisplay: photoViewController)
+        photo.loadingState = .loading
+        self.networkIntegration.loadPhoto(photo)
+    }
+    
+    public func photoViewController(_ photoViewController: PhotoViewController, cancelDownloadFor photo: Photo) {
+        guard photo.loadingState == .loading else {
+            return
         }
+        
+        self.networkIntegration.cancelLoad(for: photo)
+        photo.loadingState = .notLoaded
     }
     
     // MARK: - NetworkIntegrationDelegate

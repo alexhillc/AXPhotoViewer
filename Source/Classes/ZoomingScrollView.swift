@@ -17,11 +17,6 @@ import UIKit
         
         super.init(frame: .zero)
         
-        let doubleTapGestuerRecognizer = UITapGestureRecognizer(target: self, action: #selector(doubleTapAction(_:)))
-        doubleTapGestuerRecognizer.numberOfTapsRequired = 2
-        doubleTapGestuerRecognizer.delegate = self
-        self.addGestureRecognizer(doubleTapGestuerRecognizer)
-        
         self.zoomView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         self.zoomView.backgroundColor = UIColor.clear
         self.zoomView.isUserInteractionEnabled = true
@@ -29,9 +24,7 @@ import UIKit
         
         self.showsVerticalScrollIndicator = false
         self.showsHorizontalScrollIndicator = false
-        self.isScrollEnabled = true
-        self.clipsToBounds = true
-        self.maximumZoomScale = 3
+        self.decelerationRate = UIScrollViewDecelerationRateFast;
         self.delegate = self
     }
     

@@ -14,11 +14,23 @@
     /// - Parameter progress: The progress complete of the image download.
     @objc optional func updateProgress(_ progress: Progress)
     
+    /// Called by the PhotoViewController when an image download fails. The implementation of this method should display
+    /// an error to the user, and optionally, offer to retry the image download.
+    ///
+    /// - Parameters:
+    ///   - error: The error that the image download failed with.
+    ///   - retryHandler: Call this handler to retry the image download.
+    func showError(_ error: Error, retryHandler: ()-> Void)
+    
 }
 
 @objc(BAPLoadingView) public class LoadingView: UIView, LoadingViewProtocol {
     
     public func updateProgress(_ progress: Progress) {
+        
+    }
+    
+    public func showError(_ error: Error, retryHandler: () -> Void) {
         
     }
     

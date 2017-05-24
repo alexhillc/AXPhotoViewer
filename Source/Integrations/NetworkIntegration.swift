@@ -15,6 +15,12 @@
     /// - Parameter photo: The photo to load.
     func loadPhoto(_ photo: Photo)
     
+    
+    /// This function should cancel the load (if possible) for the provided photo.
+    ///
+    /// - Parameter photo: The photo load to cancel.
+    func cancelLoad(for photo: Photo)
+    
 }
 
 @objc(BAPNetworkIntegrationDelegate) public protocol NetworkIntegrationDelegate: class {
