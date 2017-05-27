@@ -9,6 +9,5 @@
 protocol Recyclable: AnyObject, NSObjectProtocol {
     
     func prepareForReuse() -> Void
-    func prepareForRecycle() -> Void
     
 }

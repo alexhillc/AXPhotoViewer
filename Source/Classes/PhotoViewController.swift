@@ -21,15 +21,9 @@ import FLAnimatedImage
         }
     }
 
-    var zoomingScrollView: ZoomingScrollView {
+    var zoomingImageView: ZoomingImageView {
         get {
-            return self.view as! ZoomingScrollView
-        }
-    }
-    
-    var imageView: FLAnimatedImageView {
-        get {
-            return self.zoomingScrollView.zoomView as! FLAnimatedImageView
+            return self.view as! ZoomingImageView
         }
     }
     
@@ -62,12 +56,7 @@ import FLAnimatedImage
     }
     
     public override func loadView() {
-        self.view = ZoomingScrollView(zoomView: FLAnimatedImageView())
-    }
-    
-    public override func viewDidLoad() {
-        super.viewDidLoad()
-        self.imageView.contentMode = .scaleAspectFit
+        self.view = ZoomingImageView()
     }
     
     public override func viewWillLayoutSubviews() {
@@ -86,36 +75,27 @@ import FLAnimatedImage
         self.photo = photo
         
         guard let image = photo.image else {
-            self.imageView.image = nil
-            self.imageView.animatedImage = nil
+            self.zoomingImageView.image = nil
+            self.zoomingImageView.animatedImage = nil
             return
         }
         
         if let imageData = photo.imageData {
             if image.isGIF() {
-                self.imageView.animatedImage = FLAnimatedImage(animatedGIFData: imageData)
+                self.zoomingImageView.animatedImage = FLAnimatedImage(animatedGIFData: imageData)
             } else {
-                self.imageView.image = UIImage(data: imageData)
+                self.zoomingImageView.image = UIImage(data: imageData)
             }
         } else {
-            self.imageView.image = image
+            self.zoomingImageView.image = image
         }
     }
     
     // MARK: - Recyclable
-    func prepareForReuse() {
-        self.zoomingScrollView.maximumZoomScale = 1
-        self.zoomingScrollView.minimumZoomScale = 1
-        self.zoomingScrollView.zoomScale = 1
-    }
-    
-    func prepareForRecycle() {
-        guard let photo = self.photo else {
-            return
-            
-        }
-        
-        self.delegate?.photoViewController(self, cancelDownloadFor: photo)
+    public func prepareForReuse() {
+        self.zoomingImageView.maximumZoomScale = 1
+        self.zoomingImageView.minimumZoomScale = 1
+        self.zoomingImageView.zoomScale = 1
     }
     
     // MARK: - Notifications
@@ -169,8 +149,5 @@ import FLAnimatedImage
     
     @objc(photoViewController:retryDownloadForPhoto:)
     func photoViewController(_ photoViewController: PhotoViewController, retryDownloadFor photo: Photo)
-    
-    @objc(photoViewController:cancelDownloadForPhoto:)
-    func photoViewController(_ photoViewController: PhotoViewController, cancelDownloadFor photo: Photo)
     
 }

@@ -115,6 +115,7 @@ private enum PhotoLoadingState: Int {
         self.pageViewController.view.frame = self.view.bounds
     }
     
+    // MARK: - Loading helpers
     fileprivate func loadPhotos(at index: Int) {
         let startIndex = (((index - (self.numberOfPhotosToPreload / 2)) >= 0) ? (index - (self.numberOfPhotosToPreload / 2)) : 0)
         let indexes = startIndex..<(startIndex + self.numberOfPhotosToPreload + 1)
@@ -125,10 +126,33 @@ private enum PhotoLoadingState: Int {
             }
             
             let photo = self.photos[index]
-            if photo.loadingState != .loading && photo.loadingState != .loaded {
+            if photo.loadingState == .notLoaded {
                 photo.loadingState = .loading
                 self.networkIntegration.loadPhoto(photo)
             }
+        }
+    }
+    
+    fileprivate func cancelLoadForPhotos(at index: Int) {
+        let lowerIndex = (index - (self.numberOfPhotosToPreload / 2) - 1 >= 0) ? index - (self.numberOfPhotosToPreload / 2) - 1: NSNotFound
+        let upperIndex = (index + (self.numberOfPhotosToPreload / 2) + 1 < self.photos.count) ? index + (self.numberOfPhotosToPreload / 2) + 1 : NSNotFound
+        
+        weak var weakSelf = self
+        func cancelLoadIfNecessary(for photo: Photo) {
+            guard let uSelf = weakSelf, photo.loadingState == .loading else {
+                return
+            }
+            
+            uSelf.networkIntegration.cancelLoad(for: photo)
+            photo.loadingState = .notLoaded
+        }
+        
+        if lowerIndex != NSNotFound {
+            cancelLoadIfNecessary(for: self.photos[lowerIndex])
+        }
+        
+        if upperIndex != NSNotFound {
+            cancelLoadIfNecessary(for: self.photos[upperIndex])
         }
     }
     
@@ -203,9 +227,7 @@ private enum PhotoLoadingState: Int {
         guard !self.recycledViewControllers.contains(photoViewController) else {
             return
         }
-        
-        photoViewController.prepareForRecycle()
-        
+                
         if let loadingView = photoViewController.loadingView as? UIView {
             photoViewController.loadingView = nil
             
@@ -225,7 +247,13 @@ private enum PhotoLoadingState: Int {
             return
         }
         
+        let photo = self.photos[viewController.pageIndex]
+        self.notificationCenter.post(name: .photoLoadingProgressUpdate,
+                                     object: photo,
+                                     userInfo: [PhotosViewControllerNotification.ProgressKey: photo.loadingProgress])
+        
         self.loadPhotos(at: viewController.pageIndex)
+        self.cancelLoadForPhotos(at: viewController.pageIndex)
     }
     
     public func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
@@ -264,15 +292,6 @@ private enum PhotoLoadingState: Int {
         self.networkIntegration.loadPhoto(photo)
     }
     
-    public func photoViewController(_ photoViewController: PhotoViewController, cancelDownloadFor photo: Photo) {
-        guard photo.loadingState == .loading else {
-            return
-        }
-        
-        self.networkIntegration.cancelLoad(for: photo)
-        photo.loadingState = .notLoaded
-    }
-    
     // MARK: - NetworkIntegrationDelegate
     public func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFinishWith photo: Photo) {
         if let imageData = photo.imageData {
@@ -305,6 +324,7 @@ private enum PhotoLoadingState: Int {
     }
     
     public func networkIntegration(_ networkIntegration: NetworkIntegration, didUpdateLoadingProgress progress: Progress, for photo: Photo) {
+        photo.loadingProgress = progress
         self.notificationCenter.post(name: .photoLoadingProgressUpdate,
                                      object: photo,
                                      userInfo: [PhotosViewControllerNotification.ProgressKey: progress])
@@ -313,9 +333,19 @@ private enum PhotoLoadingState: Int {
 }
 
 // MARK: - Photo extension
+fileprivate var PhotoLoadingProgressKey: UInt8 = 0
 fileprivate var PhotoLoadingStateAssociationKey: UInt8 = 0
 fileprivate var PhotoLoadingViewClassAssociationKey: UInt8 = 0
 fileprivate extension Photo {
+    
+    var loadingProgress: Progress {
+        get {
+            return objc_getAssociatedObject(self, &PhotoLoadingProgressKey) as? Progress ?? Progress()
+        }
+        set(value) {
+            objc_setAssociatedObject(self, &PhotoLoadingProgressKey, value, .OBJC_ASSOCIATION_RETAIN)
+        }
+    }
     
     var loadingState: PhotoLoadingState {
         get {
