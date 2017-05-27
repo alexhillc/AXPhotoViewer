@@ -91,7 +91,6 @@ import FLAnimatedImage
         self.panGestureRecognizer.isEnabled = true
     }
     
-    
     public func scrollViewDidZoom(_ scrollView: UIScrollView) {
         let offsetX = (scrollView.bounds.size.width > scrollView.contentSize.width) ?
             (scrollView.bounds.size.width - scrollView.contentSize.width) / 2 : 0

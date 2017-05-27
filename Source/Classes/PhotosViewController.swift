@@ -9,10 +9,6 @@
 import UIKit
 import ObjectiveC
 
-private enum PhotoLoadingState: Int {
-    case notLoaded, loading, loaded, loadingFailed
-}
-
 @objc(BAPPhotosViewController) public class PhotosViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource,
                                                                   PhotoViewControllerDelegate, NetworkIntegrationDelegate {
     
@@ -35,7 +31,9 @@ private enum PhotoLoadingState: Int {
     /// The underlying UIPageViewController that is used for swiping horizontally.
     /// - Important: `BAPPhotosViewController` is this page view controller's `UIPageViewControllerDelegate`, `UIPageViewControllerDataSource`.
     ///              Changing these values will result in breakage for the time being. (TODO)
-    public let pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
+    public let pageViewController = UIPageViewController(transitionStyle: .scroll,
+                                                         navigationOrientation: .horizontal,
+                                                         options: [UIPageViewControllerOptionInterPageSpacingKey: 20])
     
     #if BAP_SDWI_SUPPORT
     fileprivate(set) var networkIntegration: NetworkIntegration = SDWebImageIntegration()
@@ -247,11 +245,6 @@ private enum PhotoLoadingState: Int {
             return
         }
         
-        let photo = self.photos[viewController.pageIndex]
-        self.notificationCenter.post(name: .photoLoadingProgressUpdate,
-                                     object: photo,
-                                     userInfo: [PhotosViewControllerNotification.ProgressKey: photo.loadingProgress])
-        
         self.loadPhotos(at: viewController.pageIndex)
         self.cancelLoadForPhotos(at: viewController.pageIndex)
     }
@@ -288,6 +281,7 @@ private enum PhotoLoadingState: Int {
             return
         }
         
+        photo.error = nil
         photo.loadingState = .loading
         self.networkIntegration.loadPhoto(photo)
     }
@@ -315,6 +309,7 @@ private enum PhotoLoadingState: Int {
     
     public func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFailWith error: Error, for photo: Photo) {
         photo.loadingState = .loadingFailed
+        photo.error = error
         self.notificationCenter.post(name: .photoImageUpdate,
                                      object: photo,
                                      userInfo: [
@@ -324,47 +319,12 @@ private enum PhotoLoadingState: Int {
     }
     
     public func networkIntegration(_ networkIntegration: NetworkIntegration, didUpdateLoadingProgress progress: Progress, for photo: Photo) {
-        photo.loadingProgress = progress
+        photo.progress = progress
         self.notificationCenter.post(name: .photoLoadingProgressUpdate,
                                      object: photo,
                                      userInfo: [PhotosViewControllerNotification.ProgressKey: progress])
     }
 
-}
-
-// MARK: - Photo extension
-fileprivate var PhotoLoadingProgressKey: UInt8 = 0
-fileprivate var PhotoLoadingStateAssociationKey: UInt8 = 0
-fileprivate var PhotoLoadingViewClassAssociationKey: UInt8 = 0
-fileprivate extension Photo {
-    
-    var loadingProgress: Progress {
-        get {
-            return objc_getAssociatedObject(self, &PhotoLoadingProgressKey) as? Progress ?? Progress()
-        }
-        set(value) {
-            objc_setAssociatedObject(self, &PhotoLoadingProgressKey, value, .OBJC_ASSOCIATION_RETAIN)
-        }
-    }
-    
-    var loadingState: PhotoLoadingState {
-        get {
-            return objc_getAssociatedObject(self, &PhotoLoadingStateAssociationKey) as? PhotoLoadingState ?? .notLoaded
-        }
-        set(value) {
-            objc_setAssociatedObject(self, &PhotoLoadingStateAssociationKey, value, .OBJC_ASSOCIATION_RETAIN)
-        }
-    }
-    
-    var loadingViewClass: LoadingViewProtocol.Type? {
-        get {
-            return objc_getAssociatedObject(self, &PhotoLoadingViewClassAssociationKey) as? LoadingViewProtocol.Type
-        }
-        set(value) {
-            objc_setAssociatedObject(self, &PhotoLoadingViewClassAssociationKey, value, .OBJC_ASSOCIATION_RETAIN)
-        }
-    }
-    
 }
 
 // MARK: - UIViewController observer extensions

@@ -74,20 +74,47 @@ import FLAnimatedImage
     public func applyPhoto(_ photo: Photo) {
         self.photo = photo
         
-        guard let image = photo.image else {
-            self.zoomingImageView.image = nil
-            self.zoomingImageView.animatedImage = nil
-            return
+        weak var weakSelf = self
+        func resetImageView() {
+            weakSelf?.zoomingImageView.image = nil
+            weakSelf?.zoomingImageView.animatedImage = nil
         }
         
-        if let imageData = photo.imageData {
-            if image.isGIF() {
-                self.zoomingImageView.animatedImage = FLAnimatedImage(animatedGIFData: imageData)
-            } else {
-                self.zoomingImageView.image = UIImage(data: imageData)
+        switch photo.loadingState {
+        case .loading, .notLoaded:
+            resetImageView()
+            self.loadingView?.removeError()
+            self.loadingView?.startLoading(initialProgress: photo.progress)
+        case .loadingFailed:
+            resetImageView()
+            let error = photo.error ?? NSError()
+            self.loadingView?.showError(error, retryHandler: { [weak self] in
+                guard let uSelf = self else {
+                    return
+                }
+                
+                self?.delegate?.photoViewController(uSelf, retryDownloadFor: photo)
+                self?.loadingView?.removeError()
+                self?.loadingView?.startLoading(initialProgress: photo.progress)
+            })
+        case .loaded:
+            guard let image = photo.image else {
+                assertionFailure("Must provide valid `UIImage` in \(#function)")
+                return
             }
-        } else {
-            self.zoomingImageView.image = image
+            
+            self.loadingView?.removeError()
+            self.loadingView?.stopLoading()
+            
+            if let imageData = photo.imageData {
+                if image.isGIF() {
+                    self.zoomingImageView.animatedImage = FLAnimatedImage(animatedGIFData: imageData)
+                } else {
+                    self.zoomingImageView.image = UIImage(data: imageData)
+                }
+            } else {
+                self.zoomingImageView.image = image
+            }
         }
     }
     
@@ -138,6 +165,8 @@ import FLAnimatedImage
                     }
                     
                     self?.delegate?.photoViewController(uSelf, retryDownloadFor: photo)
+                    self?.loadingView?.removeError()
+                    self?.loadingView?.startLoading(initialProgress: photo.progress)
                 })
             }
         }

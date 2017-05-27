@@ -38,22 +38,18 @@ class SDWebImageIntegration: NSObject, NetworkIntegration {
                 return
             }
             
-            guard let uImage = image, let uData = data, finished else {
-                return
-            }
-            
             self?.downloadTokens.removeObject(forKey: photo)
-            
-            if uImage.isGIF() {
-                photo.imageData = uData
-                photo.image = uImage
-            } else {
-                photo.image = uImage
-            }
             
             if let error = error {
                 uSelf.delegate?.networkIntegration(uSelf, loadDidFailWith: error, for: photo)
-            } else if let _ = image, let _ = data, finished {
+            } else if let image = image, let data = data, finished {
+                if image.isGIF() {
+                    photo.imageData = data
+                    photo.image = image
+                } else {
+                    photo.image = image
+                }
+                
                 uSelf.delegate?.networkIntegration(uSelf, loadDidFinishWith: photo)
             }
         }
