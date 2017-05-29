@@ -13,13 +13,16 @@
     /// This function should load a provided photo, calling all necessary `NetworkIntegrationDelegate` delegate methods.
     ///
     /// - Parameter photo: The photo to load.
-    func loadPhoto(_ photo: Photo)
+    func loadPhoto(_ photo: PhotoProtocol)
     
     
     /// This function should cancel the load (if possible) for the provided photo.
     ///
     /// - Parameter photo: The photo load to cancel.
-    func cancelLoad(for photo: Photo)
+    func cancelLoad(for photo: PhotoProtocol)
+    
+    /// This function should cancel all current photo loads.
+    func cancelAllLoads()
     
 }
 
@@ -31,7 +34,7 @@
     ///   - networkIntegration: The `NetworkIntegration` that was performing the load.
     ///   - photo: The related `Photo`.
     func networkIntegration(_ networkIntegration: NetworkIntegration,
-                            loadDidFinishWith photo: Photo)
+                            loadDidFinishWith photo: PhotoProtocol)
     
     
     /// Called when a `Photo` fails to load.
@@ -42,7 +45,7 @@
     ///   - photo: The related `Photo`.
     func networkIntegration(_ networkIntegration: NetworkIntegration,
                             loadDidFailWith error: Error,
-                            for photo: Photo)
+                            for photo: PhotoProtocol)
     
     /// Called when a `Photo`'s loading progress is updated.
     ///
@@ -52,6 +55,6 @@
     ///   - photo: The related `Photo`.
     @objc optional func networkIntegration(_ networkIntegration: NetworkIntegration,
                                            didUpdateLoadingProgress progress: Progress,
-                                           for photo: Photo)
+                                           for photo: PhotoProtocol)
     
 }

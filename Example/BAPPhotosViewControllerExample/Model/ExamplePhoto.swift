@@ -8,24 +8,24 @@
 
 import BAPPhotosViewController
 
-class ExamplePhoto: NSObject, Photo {
+class ExamplePhoto: NSObject, PhotoProtocol {
     
-    init(title: NSAttributedString?, caption: NSAttributedString?, credit: NSAttributedString?, url: URL) {
-        self.title = title
-        self.caption = caption
-        self.credit = credit
+    init(attributedTitle: NSAttributedString?, attributedDescription: NSAttributedString?, attributedCredit: NSAttributedString?, url: URL) {
+        self.attributedTitle = attributedTitle
+        self.attributedDescription = attributedDescription
+        self.attributedCredit = attributedCredit
         self.url = url
         super.init()
     }
     
     /// The attributed title of the image that will be displayed in the photo's `overlay`.
-    var title: NSAttributedString?
+    var attributedTitle: NSAttributedString?
     
-    /// The attributed caption of the image that will be displayed in the photo's `overlay`.
-    var caption: NSAttributedString?
+    /// The attributed description of the image that will be displayed in the photo's `overlay`.
+    var attributedDescription: NSAttributedString?
     
     /// The attributed credit of the image that will be displayed in the photo's `overlay`.
-    var credit: NSAttributedString?
+    var attributedCredit: NSAttributedString?
     
     /// The image data. If this value is present, it will be prioritized over `image`.
     /// Provide animated GIF data to this property.

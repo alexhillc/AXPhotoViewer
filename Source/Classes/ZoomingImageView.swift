@@ -9,7 +9,7 @@
 import UIKit
 import FLAnimatedImage
 
-@objc(BAPZoomingImageView) public class ZoomingImageView: UIScrollView, UIScrollViewDelegate {
+@objc(BAPZoomingImageView) class ZoomingImageView: UIScrollView, UIScrollViewDelegate {
     
     var image: UIImage? {
         set(value) {
@@ -30,7 +30,7 @@ import FLAnimatedImage
     }
     
     public override var frame: CGRect {
-        didSet(value) {
+        didSet {
             self.updateZoomScale()
         }
     }
@@ -116,7 +116,7 @@ import FLAnimatedImage
         let scaleWidth = self.bounds.size.width / imageSize.width
         let scaleHeight = self.bounds.size.height / imageSize.height
         self.minimumZoomScale = min(scaleWidth, scaleHeight)
-        self.maximumZoomScale = max(self.minimumZoomScale, self.maximumZoomScale)
+        self.maximumZoomScale = self.minimumZoomScale * 3.5
         
         self.zoomScale = self.minimumZoomScale
         

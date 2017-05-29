@@ -27,7 +27,7 @@ import FLAnimatedImage
         }
     }
     
-    fileprivate var photo: Photo?
+    fileprivate var photo: PhotoProtocol?
     fileprivate weak var notificationCenter: NotificationCenter?
     
     public init(loadingView: LoadingViewProtocol, notificationCenter: NotificationCenter) {
@@ -68,10 +68,13 @@ import FLAnimatedImage
             }
         }
         
-        (self.loadingView as? UIView)?.frame = self.view.bounds
+        let loadingViewSize = self.loadingView?.sizeThatFits(self.view.bounds.size) ?? .zero
+        (self.loadingView as? UIView)?.frame = CGRect(origin: CGPoint(x: (self.view.bounds.size.width - loadingViewSize.width) / 2,
+                                                                      y: (self.view.bounds.size.height - loadingViewSize.height) / 2),
+                                                      size: loadingViewSize)
     }
     
-    public func applyPhoto(_ photo: Photo) {
+    public func applyPhoto(_ photo: PhotoProtocol) {
         self.photo = photo
         
         weak var weakSelf = self
@@ -107,7 +110,7 @@ import FLAnimatedImage
             self.loadingView?.stopLoading()
             
             if let imageData = photo.imageData {
-                if image.isGIF() {
+                if image.isAnimatedGIF() {
                     self.zoomingImageView.animatedImage = FLAnimatedImage(animatedGIFData: imageData)
                 } else {
                     self.zoomingImageView.image = UIImage(data: imageData)
@@ -120,14 +123,13 @@ import FLAnimatedImage
     
     // MARK: - Recyclable
     public func prepareForReuse() {
-        self.zoomingImageView.maximumZoomScale = 1
-        self.zoomingImageView.minimumZoomScale = 1
-        self.zoomingImageView.zoomScale = 1
+        self.zoomingImageView.image = nil
+        self.zoomingImageView.animatedImage = nil
     }
     
     // MARK: - Notifications
     @objc fileprivate func photoLoadingProgressDidUpdate(_ notification: Notification) {
-        guard let photo = notification.object as? Photo else {
+        guard let photo = notification.object as? PhotoProtocol else {
             assertionFailure("Photos must conform to the BAPPhoto protocol.")
             return
         }
@@ -142,7 +144,7 @@ import FLAnimatedImage
     }
     
     @objc fileprivate func photoImageDidUpdate(_ notification: Notification) {
-        guard let photo = notification.object as? Photo else {
+        guard let photo = notification.object as? PhotoProtocol else {
             assertionFailure("Photos must conform to the BAPPhoto protocol.")
             return
         }
@@ -177,6 +179,6 @@ import FLAnimatedImage
 @objc(BAPPhotoViewControllerDelegate) public protocol PhotoViewControllerDelegate: AnyObject, NSObjectProtocol {
     
     @objc(photoViewController:retryDownloadForPhoto:)
-    func photoViewController(_ photoViewController: PhotoViewController, retryDownloadFor photo: Photo)
+    func photoViewController(_ photoViewController: PhotoViewController, retryDownloadFor photo: PhotoProtocol)
     
 }

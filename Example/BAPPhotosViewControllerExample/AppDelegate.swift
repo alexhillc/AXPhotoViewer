@@ -19,21 +19,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, PhotosViewControllerDeleg
         self.window = UIWindow(frame: UIScreen.main.bounds)
         
         let photos = [
-            ExamplePhoto(title: NSAttributedString(string: "The Flash Poster"),
-                         caption: NSAttributedString(string: "Season 3"),
-                         credit: NSAttributedString(string: "Vignette"),
+            ExamplePhoto(attributedTitle: NSAttributedString(string: "The Flash Poster"),
+                         attributedDescription: NSAttributedString(string: "Season 3"),
+                         attributedCredit: NSAttributedString(string: "Vignette"),
                          url: URL(string: "https://goo.gl/T4oZdY")!),
-            ExamplePhoto(title: NSAttributedString(string: "The Flash and Savitar"),
-                         caption: NSAttributedString(string: "Season 3"),
-                         credit: NSAttributedString(string: "Screen Rant"),
+            ExamplePhoto(attributedTitle: NSAttributedString(string: "The Flash and Savitar"),
+                         attributedDescription: NSAttributedString(string: "Season 3"),
+                         attributedCredit: NSAttributedString(string: "Screen Rant"),
                          url: URL(string: "https://goo.gl/pYeJ4H")!),
-            ExamplePhoto(title: NSAttributedString(string: "The Flash: Rebirth"),
-                         caption: NSAttributedString(string: "Comic Book"),
-                         credit: NSAttributedString(string: "DC Comics"),
+            ExamplePhoto(attributedTitle: NSAttributedString(string: "The Flash: Rebirth"),
+                         attributedDescription: NSAttributedString(string: "Comic Book"),
+                         attributedCredit: NSAttributedString(string: "DC Comics"),
                          url: URL(string: "https://goo.gl/9wgyAo")!),
-            ExamplePhoto(title: NSAttributedString(string: "The Flash has a cute smile"),
-                         caption: nil,
-                         credit: NSAttributedString(string: "Giphy"),
+            ExamplePhoto(attributedTitle: NSAttributedString(string: "The Flash has a cute smile"),
+                         attributedDescription: nil,
+                         attributedCredit: NSAttributedString(string: "Giphy"),
                          url: URL(string: "https://media.giphy.com/media/IOEcl8A8iLIUo/giphy.gif")!)
         ]
         let photosViewController = PhotosViewController(photos: photos, delegate: self)

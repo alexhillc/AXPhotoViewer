@@ -6,39 +6,6 @@
 //
 //
 
-@objc(BAPLoadingViewProtocol) public protocol LoadingViewProtocol: NSObjectProtocol {
-    
-    /// Called by the PhotoViewController when progress of the image download should be shown to the user.
-    ///
-    /// - Parameter initialProgress: The current progress of the image download.
-    func startLoading(initialProgress: Progress) -> Void
-    
-    /// Called by the PhotoViewController when progress of the image download should be hidden. This usually happens when
-    /// the containing view controller is moved offscreen.
-    ///
-    func stopLoading() -> Void
-    
-    /// Called by the PhotoViewController when the progress of an image download is updated. The optional implementation 
-    /// of this method should reflect the progress of the downloaded image.
-    ///
-    /// - Parameter progress: The progress complete of the image download.
-    @objc optional func updateProgress(_ progress: Progress) -> Void
-    
-    /// Called by the PhotoViewController when an image download fails. The implementation of this method should display
-    /// an error to the user, and optionally, offer to retry the image download.
-    ///
-    /// - Parameters:
-    ///   - error: The error that the image download failed with.
-    ///   - retryHandler: Call this handler to retry the image download.
-    func showError(_ error: Error, retryHandler: @escaping ()-> Void) -> Void
-    
-    /// Called by the PhotoViewController when an image download is being retried, or the container decides to stop
-    /// displaying an error to the user.
-    ///
-    func removeError() -> Void
-    
-}
-
 @objc(BAPLoadingView) public class LoadingView: UIView, LoadingViewProtocol {
     
     private(set) var indicatorView = UIActivityIndicatorView(activityIndicatorStyle: .white)
@@ -96,17 +63,25 @@
     
     public override func layoutSubviews() {
         super.layoutSubviews()
-        self.indicatorView.sizeToFit()
-        self.indicatorView.frame = CGRect(origin: CGPoint(x: (self.frame.size.width - self.indicatorView.frame.size.width) / 2,
-                                                          y: (self.frame.size.height - self.indicatorView.frame.size.height) / 2),
-                                          size: self.indicatorView.frame.size)
+        
+        let indicatorViewSize = self.indicatorView.sizeThatFits(self.frame.size)
+        self.indicatorView.frame = CGRect(origin: CGPoint(x: (self.frame.size.width - indicatorViewSize.width) / 2,
+                                                          y: (self.frame.size.height - indicatorViewSize.height) / 2),
+                                          size: indicatorViewSize)
         
         if let errorLabel = self.errorLabel {
-            errorLabel.sizeToFit()
-            errorLabel.frame = CGRect(origin: CGPoint(x: (self.frame.size.width - errorLabel.frame.size.width) / 2,
-                                                      y: (self.frame.size.height - errorLabel.frame.size.height) / 2),
-                                      size: errorLabel.frame.size)
+            let errorLabelSize = errorLabel.sizeThatFits(self.frame.size)
+            errorLabel.frame = CGRect(origin: CGPoint(x: (self.frame.size.width - errorLabelSize.width) / 2,
+                                                      y: (self.frame.size.height - errorLabelSize.height) / 2),
+                                      size: errorLabelSize)
         }
+    }
+    
+    public override func sizeThatFits(_ size: CGSize) -> CGSize {
+        let indicatorViewSize = self.indicatorView.sizeThatFits(self.frame.size)
+        let errorLabelSize = self.errorLabel?.sizeThatFits(self.frame.size) ?? .zero
+        return CGSize(width: max(indicatorViewSize.width, errorLabelSize.width),
+                      height: max(indicatorViewSize.height, errorLabelSize.height))
     }
     
     // MARK: - UITapGestureRecognizer

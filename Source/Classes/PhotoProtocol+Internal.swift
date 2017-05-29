@@ -1,5 +1,5 @@
 //
-//  PhotoInternal.swift
+//  Photo+Internal.swift
 //  Pods
 //
 //  Created by Alex Hill on 5/27/17.
@@ -15,7 +15,8 @@ internal var PhotoProgressAssociationKey: UInt8 = 0
 internal var PhotoLoadingStateAssociationKey: UInt8 = 0
 internal var PhotoLoadingViewClassAssociationKey: UInt8 = 0
 
-internal extension Photo {
+// MARK: - Internal PhotoProtocol extension to be used by the framework.
+extension PhotoProtocol {
     
     var progress: Progress {
         get {

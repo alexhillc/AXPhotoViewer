@@ -12,9 +12,9 @@ class SDWebImageIntegration: NSObject, NetworkIntegration {
     
     weak var delegate: NetworkIntegrationDelegate?
     
-    fileprivate var downloadTokens = NSMapTable<Photo, SDWebImageDownloadToken>(keyOptions: .strongMemory, valueOptions: .strongMemory)
+    fileprivate var downloadTokens = NSMapTable<PhotoProtocol, SDWebImageDownloadToken>(keyOptions: .strongMemory, valueOptions: .strongMemory)
     
-    func loadPhoto(_ photo: Photo) {
+    func loadPhoto(_ photo: PhotoProtocol) {
         if photo.imageData != nil || photo.image != nil {
             self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
         }
@@ -43,7 +43,7 @@ class SDWebImageIntegration: NSObject, NetworkIntegration {
             if let error = error {
                 uSelf.delegate?.networkIntegration(uSelf, loadDidFailWith: error, for: photo)
             } else if let image = image, let data = data, finished {
-                if image.isGIF() {
+                if image.isAnimatedGIF() {
                     photo.imageData = data
                     photo.image = image
                 } else {
@@ -61,12 +61,20 @@ class SDWebImageIntegration: NSObject, NetworkIntegration {
         self.downloadTokens.setObject(token, forKey: photo)
     }
     
-    func cancelLoad(for photo: Photo) {
+    func cancelLoad(for photo: PhotoProtocol) {
         guard let token = self.downloadTokens.object(forKey: photo) else {
             return
         }
         
         SDWebImageDownloader.shared().cancel(token)
+    }
+    
+    func cancelAllLoads() {
+        let enumerator = self.downloadTokens.objectEnumerator()
+        
+        while let downloadToken = enumerator?.nextObject() as? SDWebImageDownloadToken {
+            SDWebImageDownloader.shared().cancel(downloadToken)
+        }
     }
     
 }

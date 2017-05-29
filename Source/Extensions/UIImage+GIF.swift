@@ -8,7 +8,7 @@
 
 public extension UIImage {
     
-    func isGIF() -> Bool {
+    func isAnimatedGIF() -> Bool {
         return (self.images != nil)
     }
 

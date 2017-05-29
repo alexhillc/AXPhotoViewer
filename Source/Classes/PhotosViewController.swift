@@ -15,18 +15,22 @@ import ObjectiveC
     public weak var delegate: PhotosViewControllerDelegate?
     
     /// The photos to display in the PhotosViewController.
-    public var photos: [Photo] {
+    public var photos: [PhotoProtocol] {
         didSet {
             self.recycledViewControllers.removeLifeycleObserver(self)
             self.pageViewController.viewControllers?.removeLifeycleObserver(self)
             self.recycledLoadingViews.removeAll()
             self.recycledViewControllers.removeAll()
-            self.setupPageViewController(initialIndex: 0)
+            self.networkIntegration.cancelAllLoads()
+            self.configurePageViewController(initialPhotoIndex: 0)
         }
     }
     
     /// The number of photos to load surrounding the currently displayed photo.
     public var numberOfPhotosToPreload: Int = 2
+    
+    /// The underlying `OverlayView` that is used for displaying photo captions, titles, and actions.
+    public let overlayView = OverlayView()
     
     /// The underlying UIPageViewController that is used for swiping horizontally.
     /// - Important: `BAPPhotosViewController` is this page view controller's `UIPageViewControllerDelegate`, `UIPageViewControllerDataSource`.
@@ -36,12 +40,14 @@ import ObjectiveC
                                                          options: [UIPageViewControllerOptionInterPageSpacingKey: 20])
     
     #if BAP_SDWI_SUPPORT
-    fileprivate(set) var networkIntegration: NetworkIntegration = SDWebImageIntegration()
+    public let networkIntegration: NetworkIntegration = SDWebImageIntegration()
     #elseif BAP_AFN_SUPPORT
-    fileprivate(set) var networkIntegration: NetworkIntegration = AFNetworkingIntegration()
+    public let networkIntegration: NetworkIntegration = AFNetworkingIntegration()
     #else
-    fileprivate(set) var networkIntegration: NetworkIntegration
+    public let networkIntegration: NetworkIntegration
     #endif
+    
+    fileprivate var initialPhotoIndex: Int?
     
     fileprivate var recycledViewControllers = [PhotoViewController]()
     fileprivate var recycledLoadingViews = [String: [LoadingViewProtocol]]()
@@ -49,27 +55,31 @@ import ObjectiveC
     fileprivate let notificationCenter = NotificationCenter()
     
     #if BAP_SDWI_SUPPORT || BAP_AFN_SUPPORT
-    public init(photos: [Photo], initialIndex: Int = 0, delegate: PhotosViewControllerDelegate?) {
+    public init(photos: [PhotoProtocol], initialPhotoIndex: Int? = nil, delegate: PhotosViewControllerDelegate?) {
         self.delegate = delegate
         self.photos = photos
-        assert(photos.count > initialIndex, "Invalid initial page index provided.")
+
+        if let initialPhotoIndex = initialPhotoIndex {
+            assert(photos.count > initialPhotoIndex, "Invalid initial photo index provided.")
+            self.initialPhotoIndex = initialPhotoIndex
+        }
     
         super.init(nibName: nil, bundle: nil)
         self.networkIntegration.delegate = self
-    
-        self.setupPageViewController(initialIndex: initialIndex)
     }
     #else
-    public init(photos: [Photo], networkIntegration: NetworkIntegration, initialIndex: Int = 0, delegate: PhotosViewControllerDelegate?) {
+    public init(photos: [Photo], initialPhotoIndex: Int? = nil, networkIntegration: NetworkIntegration, delegate: PhotosViewControllerDelegate?) {
         self.delegate = delegate
         self.networkIntegration = networkIntegration
         self.photos = photos
-        assert(photos.count > initialIndex, "Invalid initial page index provided.")
-        
+
+        if let initialPhotoIndex = initialPhotoIndex {
+            assert(photos.count > initialPhotoIndex, "Invalid initial photo index provided.")
+            self.initialPhotoIndex = initialPhotoIndex
+        }
+    
         super.init(nibName: nil, bundle: nil)
         self.networkIntegration.delegate = self
-        
-        self.setupPageViewController(initialIndex: initialIndex)
     }
     #endif
     
@@ -88,14 +98,6 @@ import ObjectiveC
         self.recycledLoadingViews.removeAll()
         self.recycledViewControllers.removeAll()
     }
-    
-    fileprivate func setupPageViewController(initialIndex: Int) {
-        let photoViewController = self.makePhotoViewController(for: initialIndex)
-        photoViewController.applyPhoto(photos[initialIndex])
-        photoViewController.pageIndex = initialIndex
-        self.pageViewController.setViewControllers([photoViewController], direction: .forward, animated: false, completion: nil)
-        self.loadPhotos(at: initialIndex)
-    }
 
     public override func viewDidLoad() {
         super.viewDidLoad()
@@ -106,11 +108,39 @@ import ObjectiveC
         self.addChildViewController(self.pageViewController)
         self.view.addSubview(self.pageViewController.view)
         self.pageViewController.didMove(toParentViewController: self)
+        
+        self.configurePageViewController(initialPhotoIndex: self.initialPhotoIndex ?? 0)
+        self.initialPhotoIndex = nil
+        
+        self.overlayView.isUserInteractionEnabled = false
+        self.view.addSubview(self.overlayView)
     }
     
     public override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         self.pageViewController.view.frame = self.view.bounds
+        self.overlayView.frame = self.view.bounds
+    }
+    
+    // MARK: - Page VC Configuration
+    fileprivate func configurePageViewController(initialPhotoIndex: Int) {
+        let photoViewController = self.makePhotoViewController(for: initialPhotoIndex)
+        photoViewController.applyPhoto(photos[initialPhotoIndex])
+        photoViewController.pageIndex = initialPhotoIndex
+        self.pageViewController.setViewControllers([photoViewController], direction: .forward, animated: false, completion: nil)
+        self.updateOverlay(for: initialPhotoIndex)
+        self.loadPhotos(at: initialPhotoIndex)
+    }
+    
+    // MARK: - Overlay
+    fileprivate func updateOverlay(for photoIndex: Int) {
+        let photo = self.photos[photoIndex]
+        self.overlayView.title = NSLocalizedString("\(photoIndex + 1) of \(self.photos.count)", comment: "")
+        self.overlayView.captionView.applyCaptionInfo(attributedTitle: photo.attributedTitle,
+                                                      attributedDescription: photo.attributedDescription,
+                                                      attributedCredit: photo.attributedCredit)
+        self.overlayView.setNeedsLayout()
+        self.overlayView.layoutIfNeeded()
     }
     
     // MARK: - Loading helpers
@@ -136,7 +166,7 @@ import ObjectiveC
         let upperIndex = (index + (self.numberOfPhotosToPreload / 2) + 1 < self.photos.count) ? index + (self.numberOfPhotosToPreload / 2) + 1 : NSNotFound
         
         weak var weakSelf = self
-        func cancelLoadIfNecessary(for photo: Photo) {
+        func cancelLoadIfNecessary(for photo: PhotoProtocol) {
             guard let uSelf = weakSelf, photo.loadingState == .loading else {
                 return
             }
@@ -246,7 +276,15 @@ import ObjectiveC
         }
         
         self.loadPhotos(at: viewController.pageIndex)
+    }
+    
+    public func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
+        guard let viewController = pageViewController.viewControllers?.first as? PhotoViewController else {
+            return
+        }
+        
         self.cancelLoadForPhotos(at: viewController.pageIndex)
+        self.updateOverlay(for: viewController.pageIndex)
     }
     
     public func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
@@ -276,7 +314,7 @@ import ObjectiveC
     }
     
     // MARK: - PhotoViewControllerDelegate
-    public func photoViewController(_ photoViewController: PhotoViewController, retryDownloadFor photo: Photo) {
+    public func photoViewController(_ photoViewController: PhotoViewController, retryDownloadFor photo: PhotoProtocol) {
         guard photo.loadingState != .loading && photo.loadingState != .loaded else {
             return
         }
@@ -287,7 +325,7 @@ import ObjectiveC
     }
     
     // MARK: - NetworkIntegrationDelegate
-    public func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFinishWith photo: Photo) {
+    public func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFinishWith photo: PhotoProtocol) {
         if let imageData = photo.imageData {
             photo.loadingState = .loaded
             self.notificationCenter.post(name: .photoImageUpdate,
@@ -307,7 +345,7 @@ import ObjectiveC
         }
     }
     
-    public func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFailWith error: Error, for photo: Photo) {
+    public func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFailWith error: Error, for photo: PhotoProtocol) {
         photo.loadingState = .loadingFailed
         photo.error = error
         self.notificationCenter.post(name: .photoImageUpdate,
@@ -318,7 +356,7 @@ import ObjectiveC
                                      ])
     }
     
-    public func networkIntegration(_ networkIntegration: NetworkIntegration, didUpdateLoadingProgress progress: Progress, for photo: Photo) {
+    public func networkIntegration(_ networkIntegration: NetworkIntegration, didUpdateLoadingProgress progress: Progress, for photo: PhotoProtocol) {
         photo.progress = progress
         self.notificationCenter.post(name: .photoLoadingProgressUpdate,
                                      object: photo,
@@ -352,7 +390,7 @@ fileprivate extension UIViewController {
 // MARK: - PhotosViewControllerDelegate
 @objc(BAPPhotosViewControllerDelegate) public protocol PhotosViewControllerDelegate {
     
-    /// Called just after the `PhotoViewController` is initialized/reused as an opportunity to configure the view controller
+    /// Called just after the `PhotoViewController` is added to the view hierarchy as an opportunity to configure the view controller
     /// before it comes onscreen.
     ///
     /// - Parameters:
@@ -361,7 +399,8 @@ fileprivate extension UIViewController {
     @objc optional func photosViewController(_ photosViewController: PhotosViewController,
                                              prepareViewControllerForDisplay photoViewController: PhotoViewController)
     
-    /// Called just before the `PhotoViewController` is recycled as an opportunity to prepare the view controller for offscreen.
+    /// Called just before the `PhotoViewController` is removed from the view hierarchy as an opportunity to prepare the 
+    /// view controller for offscreen.
     ///
     /// - Parameters:
     ///   - photosViewController: The `PhotosViewController` ending display of the view controller.
@@ -377,7 +416,7 @@ fileprivate extension UIViewController {
     /// - Returns: A `UIView` that conforms to `LoadingViewProtocol`.
     @objc(photosViewController:loadingViewClassForPhoto:)
     optional func photosViewController(_ photosViewController: PhotosViewController,
-                                       loadingViewClassFor photo: Photo) -> LoadingViewProtocol.Type
+                                       loadingViewClassFor photo: PhotoProtocol) -> LoadingViewProtocol.Type
     
 }
 
