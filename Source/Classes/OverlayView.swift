@@ -125,8 +125,14 @@ import UIKit
             }
             
             let captionViewSize = captionView.sizeThatFits(self.frame.size)
-            captionView.frame = CGRect(origin: CGPoint(x: 0, y: self.frame.size.height - captionViewSize.height),
-                                       size: captionViewSize)
+            UIView.animate(withDuration: 0.2, animations: { [weak self] in
+                guard let uSelf = self else {
+                    return
+                }
+                
+                captionView.frame = CGRect(origin: CGPoint(x: 0, y: uSelf.frame.size.height - captionViewSize.height),
+                                           size: captionViewSize)
+            })
             captionView.setNeedsLayout()
         }
     }

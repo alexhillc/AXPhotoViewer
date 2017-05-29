@@ -16,7 +16,7 @@ import UIKit
     
     init() {
         super.init(frame: .zero)
-        self.backgroundColor = UIColor.black.withAlphaComponent(0.2)
+        self.backgroundColor = UIColor.black.withAlphaComponent(0.35)
         
         self.titleLabel.textColor = .white
         self.addSubview(self.titleLabel)
