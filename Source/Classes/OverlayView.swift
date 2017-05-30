@@ -8,6 +8,8 @@
 
 import UIKit
 
+let OverlayTransitionAnimationDuration: TimeInterval = 0.25
+
 @objc(BAPOverlayView) public class OverlayView: UIView {
     
     /// The caption view to be used in the overlay.
@@ -125,7 +127,7 @@ import UIKit
             }
             
             let captionViewSize = captionView.sizeThatFits(self.frame.size)
-            UIView.animate(withDuration: 0.2, animations: { [weak self] in
+            UIView.animate(withDuration: OverlayTransitionAnimationDuration, animations: { [weak self] in
                 guard let uSelf = self else {
                     return
                 }
