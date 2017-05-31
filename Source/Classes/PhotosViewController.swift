@@ -33,7 +33,7 @@ import ObjectiveC
     public var numberOfPhotosToPreload: Int = 2
     
     /// Space between photos, measured in points.
-    public let interPhotoSpacing: NSNumber = 20
+    public let interPhotoSpacing: CGFloat = 20
     
     /// The underlying UIPageViewController that is used for swiping horizontally.
     /// - Important: `BAPPhotosViewController` is this page view controller's `UIPageViewControllerDelegate`, `UIPageViewControllerDataSource`.
@@ -48,22 +48,27 @@ import ObjectiveC
     public let networkIntegration: NetworkIntegration
     #endif
     
-    fileprivate var initialPhotoIndex: Int?
+    // MARK: - Private variables
+    fileprivate enum HorizontalSwipeDirection {
+        case none, left, right
+    }
     
+    fileprivate var initialPhotoIndex: Int?
     fileprivate var currentPhotoIndex: Int = 0 {
         didSet {
             self.updateOverlay(for: currentPhotoIndex)
         }
     }
     
-    fileprivate var draggingPhotoViewController: PhotoViewController?
     fileprivate var isSizeTransitioning = false
     
+    fileprivate var orderedViewControllers = [PhotoViewController]()
     fileprivate var recycledViewControllers = [PhotoViewController]()
     fileprivate var recycledLoadingViews = [String: [LoadingViewProtocol]]()
     
     fileprivate let notificationCenter = NotificationCenter()
     
+    // MARK: - Initialization
     #if BAP_SDWI_SUPPORT || BAP_AFN_SUPPORT
     public init(photos: [PhotoProtocol], initialPhotoIndex: Int? = nil, delegate: PhotosViewControllerDelegate?) {
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
@@ -246,6 +251,11 @@ import ObjectiveC
         photoViewController.pageIndex = pageIndex
         photoViewController.applyPhoto(photo)
         
+        let insertionIndex = self.orderedViewControllers.insertionIndex(of: photoViewController, isOrderedBefore: { $0.pageIndex < $1.pageIndex })
+        if !insertionIndex.alreadyExists {
+            self.orderedViewControllers.insert(photoViewController, at: insertionIndex.index)
+        }
+        
         return photoViewController
     }
     
@@ -282,8 +292,9 @@ import ObjectiveC
             return
         }
         
-        if self.draggingPhotoViewController === photoViewController {
-            self.draggingPhotoViewController = nil
+        let insertionIndex = self.orderedViewControllers.insertionIndex(of: photoViewController, isOrderedBefore: { $0.pageIndex < $1.pageIndex })
+        if insertionIndex.alreadyExists {
+            self.orderedViewControllers.remove(at: insertionIndex.index)
         }
         
         if let loadingView = photoViewController.loadingView as? UIView {
@@ -360,66 +371,75 @@ import ObjectiveC
             return
         }
         
-        var passedIntersectionThreshold = false
-        
-        if let draggingPhotoViewController = self.draggingPhotoViewController {
-            let origin = CGPoint(x: draggingPhotoViewController.view.frame.origin.x - CGFloat(self.interPhotoSpacing.floatValue / 2),
-                                 y: draggingPhotoViewController.view.frame.origin.y)
-            let size = CGSize(width: draggingPhotoViewController.view.frame.size.width + CGFloat(self.interPhotoSpacing.floatValue), 
-                              height: draggingPhotoViewController.view.frame.size.height)
-            let conversionRect = CGRect(origin: origin, size: size)
-            
-            if !scrollView.convert(conversionRect, from: draggingPhotoViewController.view).intersects(scrollView.bounds) {
-                passedIntersectionThreshold = true
-            }
-        } else {
-            self.draggingPhotoViewController = self.pageViewController.viewControllers?.first as? PhotoViewController
-        }
-        
-        guard let draggingPhotoViewController = self.draggingPhotoViewController else {
-            return
-        }
-        
         let percent = (scrollView.contentOffset.x - scrollView.frame.size.width) / scrollView.frame.size.width
-        let absolutePercent = abs(percent)
-        let isLeftSwipe = (percent < 0)
+        
+        var horizontalSwipeDirection: HorizontalSwipeDirection = .none
+        if percent > CGFloat.ulpOfOne {
+            horizontalSwipeDirection = .right
+        } else if percent < -CGFloat.ulpOfOne {
+            horizontalSwipeDirection = .left
+        }
 
+        let swipePercent = (horizontalSwipeDirection == .left) ? (1 - abs(percent)) : abs(percent)
         var lowIndex: Int = NSNotFound
         var highIndex: Int = NSNotFound
         
-        if isLeftSwipe && (draggingPhotoViewController.pageIndex - 1) >= 0 {
-            lowIndex = draggingPhotoViewController.pageIndex - 1
-            highIndex = draggingPhotoViewController.pageIndex
-        } else if !isLeftSwipe && (draggingPhotoViewController.pageIndex + 1) < self.photos.count {
-            lowIndex = draggingPhotoViewController.pageIndex
-            highIndex = draggingPhotoViewController.pageIndex + 1
+        let viewControllers = self.computeVisibleViewControllers(in: scrollView)
+        if horizontalSwipeDirection == .left {
+            guard let viewController = viewControllers.first else {
+                return
+            }
+            
+            if viewControllers.count > 1 {
+                lowIndex = viewController.pageIndex
+                if lowIndex < self.photos.count {
+                    highIndex = lowIndex + 1
+                }
+            } else {
+                highIndex = viewController.pageIndex
+            }
+        } else if horizontalSwipeDirection == .right {
+            guard let viewController = viewControllers.last else {
+                return
+            }
+            
+            if viewControllers.count > 1 {
+                highIndex = viewController.pageIndex
+                if highIndex > 0 {
+                    lowIndex = highIndex - 1
+                }
+            } else {
+                lowIndex = viewController.pageIndex
+            }
         }
         
         guard lowIndex != NSNotFound && highIndex != NSNotFound else {
             return
         }
         
-        if (isLeftSwipe && absolutePercent > 0.5 || !isLeftSwipe && absolutePercent < 0.5) && self.currentPhotoIndex != lowIndex  {
+        if swipePercent < 0.5 && self.currentPhotoIndex != lowIndex  {
             self.currentPhotoIndex = lowIndex
-        } else if (isLeftSwipe && absolutePercent < 0.5 || !isLeftSwipe && absolutePercent > 0.5) && self.currentPhotoIndex != highIndex {
+        } else if swipePercent > 0.5 && self.currentPhotoIndex != highIndex {
             self.currentPhotoIndex = highIndex
         }
-        
-        if passedIntersectionThreshold {
-            self.draggingPhotoViewController = nil
-        }
     }
     
-    public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        guard !decelerate else {
-            return
+    fileprivate func computeVisibleViewControllers(in referenceView: UIScrollView) -> [PhotoViewController] {
+        var visibleViewControllers = [PhotoViewController]()
+        
+        for viewController in self.orderedViewControllers {
+            let origin = CGPoint(x: viewController.view.frame.origin.x - (self.interPhotoSpacing / 2),
+                                 y: viewController.view.frame.origin.y)
+            let size = CGSize(width: viewController.view.frame.size.width + self.interPhotoSpacing,
+                              height: viewController.view.frame.size.height)
+            let conversionRect = CGRect(origin: origin, size: size)
+            
+            if referenceView.convert(conversionRect, from: viewController.view).intersects(referenceView.bounds) {
+                visibleViewControllers.append(viewController)
+            }
         }
         
-        self.draggingPhotoViewController = nil
-    }
-    
-    public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        self.draggingPhotoViewController = nil
+        return visibleViewControllers
     }
     
     // MARK: - NetworkIntegrationDelegate
