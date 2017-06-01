@@ -556,14 +556,14 @@ fileprivate extension UIPageViewController {
 @objc(AXPhotosViewControllerNotification) public class PhotosViewControllerNotification: NSObject {
     static let ProgressUpdate = Notification.Name.photoLoadingProgressUpdate.rawValue
     static let ImageUpdate = Notification.Name.photoImageUpdate.rawValue
-    static let ImageKey = "AXhotosViewControllerImage"
-    static let ImageDataKey = "AXhotosViewControllerImageData"
-    static let LoadingStateKey = "AXhotosViewControllerLoadingState"
-    static let ProgressKey = "AXhotosViewControllerProgress"
-    static let ErrorKey = "AXhotosViewControllerError"
+    static let ImageKey = "AXPhotosViewControllerImage"
+    static let ImageDataKey = "AXPhotosViewControllerImageData"
+    static let LoadingStateKey = "AXPhotosViewControllerLoadingState"
+    static let ProgressKey = "AXPhotosViewControllerProgress"
+    static let ErrorKey = "AXPhotosViewControllerError"
 }
 
 public extension Notification.Name {
-    static let photoLoadingProgressUpdate = Notification.Name("AXhotoLoadingProgressUpdateNotification")
-    static let photoImageUpdate = Notification.Name("AXhotoImageUpdateNotification")
+    static let photoLoadingProgressUpdate = Notification.Name("AXPhotoLoadingProgressUpdateNotification")
+    static let photoImageUpdate = Notification.Name("AXPhotoImageUpdateNotification")
 }
