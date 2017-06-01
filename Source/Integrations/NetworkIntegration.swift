@@ -6,7 +6,7 @@
 //
 //
 
-@objc(BAPNetworkIntegration) public protocol NetworkIntegration: AnyObject, NSObjectProtocol {
+@objc(AXNetworkIntegration) public protocol NetworkIntegration: AnyObject, NSObjectProtocol {
     
     weak var delegate: NetworkIntegrationDelegate? { get set }
     
@@ -26,7 +26,7 @@
     
 }
 
-@objc(BAPNetworkIntegrationDelegate) public protocol NetworkIntegrationDelegate: class {
+@objc(AXNetworkIntegrationDelegate) public protocol NetworkIntegrationDelegate: class {
     
     /// Called when a `Photo` successfully finishes loading.
     ///

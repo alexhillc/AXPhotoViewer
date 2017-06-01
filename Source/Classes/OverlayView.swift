@@ -10,7 +10,7 @@ import UIKit
 
 let OverlayTransitionAnimationDuration: TimeInterval = 0.25
 
-@objc(BAPOverlayView) public class OverlayView: UIView {
+@objc(AXOverlayView) public class OverlayView: UIView {
     
     /// The caption view to be used in the overlay.
     public var captionView: CaptionViewProtocol = CaptionView() {

@@ -1,12 +1,12 @@
 //
 //  ExamplePhoto.swift
-//  BAPPhotosViewControllerExample
+//  AXPhotoViewerExample
 //
 //  Created by Alex Hill on 5/21/17.
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
-import BAPPhotosViewController
+import AXPhotoViewer
 
 class ExamplePhoto: NSObject, PhotoProtocol {
     

@@ -8,7 +8,7 @@
 
 import UIKit
 
-@objc(BAPCaptionView) public class CaptionView: UIView, CaptionViewProtocol {
+@objc(AXCaptionView) public class CaptionView: UIView, CaptionViewProtocol {
     
     var titleLabel = UILabel()
     var descriptionLabel = UILabel()

@@ -1,13 +1,13 @@
 //
 //  AppDelegate.swift
-//  BAPPhotosViewControllerExample
+//  AXPhotoViewerExample
 //
 //  Created by Alex Hill on 5/7/17.
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 import UIKit
-import BAPPhotosViewController
+import AXPhotoViewer
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, PhotosViewControllerDelegate {

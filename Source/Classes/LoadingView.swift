@@ -6,7 +6,7 @@
 //
 //
 
-@objc(BAPLoadingView) public class LoadingView: UIView, LoadingViewProtocol {
+@objc(AXLoadingView) public class LoadingView: UIView, LoadingViewProtocol {
     
     private(set) var indicatorView = UIActivityIndicatorView(activityIndicatorStyle: .white)
     private var errorLabel: UILabel?

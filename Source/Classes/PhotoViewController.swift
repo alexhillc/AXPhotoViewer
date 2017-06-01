@@ -9,7 +9,7 @@
 import UIKit
 import FLAnimatedImage
 
-@objc(BAPPhotoViewController) public class PhotoViewController: UIViewController, Recyclable {
+@objc(AXPhotoViewController) public class PhotoViewController: UIViewController, Recyclable {
     
     public weak var delegate: PhotoViewControllerDelegate?
     public var pageIndex: Int = 0
@@ -130,7 +130,7 @@ import FLAnimatedImage
     // MARK: - Notifications
     @objc fileprivate func photoLoadingProgressDidUpdate(_ notification: Notification) {
         guard let photo = notification.object as? PhotoProtocol else {
-            assertionFailure("Photos must conform to the BAPPhoto protocol.")
+            assertionFailure("Photos must conform to the AXPhoto protocol.")
             return
         }
         
@@ -145,7 +145,7 @@ import FLAnimatedImage
     
     @objc fileprivate func photoImageDidUpdate(_ notification: Notification) {
         guard let photo = notification.object as? PhotoProtocol else {
-            assertionFailure("Photos must conform to the BAPPhoto protocol.")
+            assertionFailure("Photos must conform to the AXPhoto protocol.")
             return
         }
         
@@ -176,7 +176,7 @@ import FLAnimatedImage
 
 }
 
-@objc(BAPPhotoViewControllerDelegate) public protocol PhotoViewControllerDelegate: AnyObject, NSObjectProtocol {
+@objc(AXPhotoViewControllerDelegate) public protocol PhotoViewControllerDelegate: AnyObject, NSObjectProtocol {
     
     @objc(photoViewController:retryDownloadForPhoto:)
     func photoViewController(_ photoViewController: PhotoViewController, retryDownloadFor photo: PhotoProtocol)

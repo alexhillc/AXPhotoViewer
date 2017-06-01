@@ -6,7 +6,7 @@
 //
 //
 
-@objc(BAPPhotoProtocol) public protocol PhotoProtocol: AnyObject, NSObjectProtocol {
+@objc(AXPhotoProtocol) public protocol PhotoProtocol: AnyObject, NSObjectProtocol {
     
     /// The attributed title of the image that will be displayed in the photo's `captionView`.
     var attributedTitle: NSAttributedString? { get }

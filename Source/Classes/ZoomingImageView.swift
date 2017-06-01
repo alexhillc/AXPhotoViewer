@@ -9,7 +9,7 @@
 import UIKit
 import FLAnimatedImage
 
-@objc(BAPZoomingImageView) class ZoomingImageView: UIScrollView, UIScrollViewDelegate {
+@objc(AXZoomingImageView) class ZoomingImageView: UIScrollView, UIScrollViewDelegate {
     
     var image: UIImage? {
         set(value) {

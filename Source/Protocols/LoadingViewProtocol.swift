@@ -6,7 +6,7 @@
 //
 //
 
-@objc(BAPLoadingViewProtocol) public protocol LoadingViewProtocol: NSObjectProtocol {
+@objc(AXLoadingViewProtocol) public protocol LoadingViewProtocol: NSObjectProtocol {
     
     /// Called by the PhotoViewController when progress of the image download should be shown to the user.
     ///

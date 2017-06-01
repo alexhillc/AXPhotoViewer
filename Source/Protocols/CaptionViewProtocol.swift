@@ -6,7 +6,7 @@
 //
 //
 
-@objc(BAPCaptionViewProtocol) public protocol CaptionViewProtocol: NSObjectProtocol {
+@objc(AXCaptionViewProtocol) public protocol CaptionViewProtocol: NSObjectProtocol {
     
     /// The `PhotosViewController` will call this method when a new photo is ready to have its information displayed.
     /// The implementation should update the `captionView` with the attributed parameters. 

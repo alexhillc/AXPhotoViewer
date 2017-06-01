@@ -9,7 +9,7 @@
 import UIKit
 import ObjectiveC
 
-@objc(BAPPhotosViewController) public class PhotosViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource,
+@objc(AXPhotosViewController) public class PhotosViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource,
                                                                   PhotoViewControllerDelegate, UIScrollViewDelegate, NetworkIntegrationDelegate {
     
     public weak var delegate: PhotosViewControllerDelegate?
@@ -36,13 +36,13 @@ import ObjectiveC
     public let interPhotoSpacing: CGFloat = 20
     
     /// The underlying UIPageViewController that is used for swiping horizontally.
-    /// - Important: `BAPPhotosViewController` is this page view controller's `UIPageViewControllerDelegate`, `UIPageViewControllerDataSource`.
+    /// - Important: `AXPhotosViewController` is this page view controller's `UIPageViewControllerDelegate`, `UIPageViewControllerDataSource`.
     ///              Changing these values will result in breakage.
     public let pageViewController: UIPageViewController
     
-    #if BAP_SDWI_SUPPORT
+    #if AX_SDWI_SUPPORT
     public let networkIntegration: NetworkIntegration = SDWebImageIntegration()
-    #elseif BAP_AFN_SUPPORT
+    #elseif AX_AFN_SUPPORT
     public let networkIntegration: NetworkIntegration = AFNetworkingIntegration()
     #else
     public let networkIntegration: NetworkIntegration
@@ -69,7 +69,7 @@ import ObjectiveC
     fileprivate let notificationCenter = NotificationCenter()
     
     // MARK: - Initialization
-    #if BAP_SDWI_SUPPORT || BAP_AFN_SUPPORT
+    #if AX_SDWI_SUPPORT || AX_AFN_SUPPORT
     public init(photos: [PhotoProtocol], initialPhotoIndex: Int? = nil, delegate: PhotosViewControllerDelegate?) {
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
                                                        navigationOrientation: .horizontal,
@@ -86,7 +86,7 @@ import ObjectiveC
         self.networkIntegration.delegate = self
     }
     #else
-    public init(photos: [Photo], initialPhotoIndex: Int? = nil, networkIntegration: NetworkIntegration, delegate: PhotosViewControllerDelegate?) {
+    public init(photos: [PhotoProtocol], initialPhotoIndex: Int? = nil, networkIntegration: NetworkIntegration, delegate: PhotosViewControllerDelegate?) {
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
                                                        navigationOrientation: .horizontal,
                                                        options: [UIPageViewControllerOptionInterPageSpacingKey: self.interPhotoSpacing])
@@ -519,7 +519,7 @@ fileprivate extension UIPageViewController {
 }
 
 // MARK: - PhotosViewControllerDelegate
-@objc(BAPPhotosViewControllerDelegate) public protocol PhotosViewControllerDelegate {
+@objc(AXPhotosViewControllerDelegate) public protocol PhotosViewControllerDelegate {
     
     /// Called just after the `PhotoViewController` is added to the view hierarchy as an opportunity to configure the view controller
     /// before it comes onscreen.
@@ -553,17 +553,17 @@ fileprivate extension UIPageViewController {
 
 // MARK: - Notification definitions
 // Keep Obj-C land happy
-@objc(BAPPhotosViewControllerNotification) public class PhotosViewControllerNotification: NSObject {
+@objc(AXPhotosViewControllerNotification) public class PhotosViewControllerNotification: NSObject {
     static let ProgressUpdate = Notification.Name.photoLoadingProgressUpdate.rawValue
     static let ImageUpdate = Notification.Name.photoImageUpdate.rawValue
-    static let ImageKey = "BAPhotosViewControllerImage"
-    static let ImageDataKey = "BAPhotosViewControllerImageData"
-    static let LoadingStateKey = "BAPhotosViewControllerLoadingState"
-    static let ProgressKey = "BAPhotosViewControllerProgress"
-    static let ErrorKey = "BAPhotosViewControllerError"
+    static let ImageKey = "AXhotosViewControllerImage"
+    static let ImageDataKey = "AXhotosViewControllerImageData"
+    static let LoadingStateKey = "AXhotosViewControllerLoadingState"
+    static let ProgressKey = "AXhotosViewControllerProgress"
+    static let ErrorKey = "AXhotosViewControllerError"
 }
 
 public extension Notification.Name {
-    static let photoLoadingProgressUpdate = Notification.Name("BAPhotoLoadingProgressUpdateNotification")
-    static let photoImageUpdate = Notification.Name("BAPhotoImageUpdateNotification")
+    static let photoLoadingProgressUpdate = Notification.Name("AXhotoLoadingProgressUpdateNotification")
+    static let photoImageUpdate = Notification.Name("AXhotoImageUpdateNotification")
 }
