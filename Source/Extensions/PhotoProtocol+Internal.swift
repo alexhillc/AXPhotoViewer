@@ -6,21 +6,21 @@
 //
 //
 
-internal enum PhotoLoadingState: Int {
+enum PhotoLoadingState: Int {
     case notLoaded, loading, loaded, loadingFailed
 }
 
-internal var PhotoErrorAssociationKey: UInt8 = 0
-internal var PhotoProgressAssociationKey: UInt8 = 0
-internal var PhotoLoadingStateAssociationKey: UInt8 = 0
-internal var PhotoLoadingViewClassAssociationKey: UInt8 = 0
+var PhotoErrorAssociationKey: UInt8 = 0
+var PhotoProgressAssociationKey: UInt8 = 0
+var PhotoLoadingStateAssociationKey: UInt8 = 0
+var PhotoLoadingViewClassAssociationKey: UInt8 = 0
 
 // MARK: - Internal PhotoProtocol extension to be used by the framework.
 extension PhotoProtocol {
     
-    var progress: Progress {
+    var progress: CGFloat {
         get {
-            return objc_getAssociatedObject(self, &PhotoProgressAssociationKey) as? Progress ?? Progress()
+            return objc_getAssociatedObject(self, &PhotoProgressAssociationKey) as? CGFloat ?? 0
         }
         set(value) {
             objc_setAssociatedObject(self, &PhotoProgressAssociationKey, value, .OBJC_ASSOCIATION_RETAIN)

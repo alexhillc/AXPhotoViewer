@@ -51,10 +51,10 @@
     ///
     /// - Parameters:
     ///   - networkIntegration: The `NetworkIntegration` that is performing the load.
-    ///   - percent: The progress of the `Photo` load represented as a percentage.
+    ///   - progress: The progress of the `Photo` load represented as a percentage. Exists on a scale from 0..1. 
     ///   - photo: The related `Photo`.
     @objc optional func networkIntegration(_ networkIntegration: NetworkIntegration,
-                                           didUpdateLoadingProgress progress: Progress,
+                                           didUpdateLoadingProgress progress: CGFloat,
                                            for photo: PhotoProtocol)
     
 }

@@ -10,7 +10,7 @@ import UIKit
 
 let OverlayTransitionAnimationDuration: TimeInterval = 0.25
 
-@objc(AXOverlayView) public class OverlayView: UIView {
+@objc(AXOverlayView) open class OverlayView: UIView {
     
     /// The caption view to be used in the overlay.
     public var captionView: CaptionViewProtocol = CaptionView() {
@@ -25,12 +25,12 @@ let OverlayTransitionAnimationDuration: TimeInterval = 0.25
     
     /// The title view displayed in the navigation bar. This view is sized and centered between the `leftBarButtonItems` and `rightBarButtonItems`.
     /// This is prioritized over `title`.
-    var titleView: UIView? {
+    var titleView: OverlayTitleViewProtocol? {
         set(value) {
-            self.navigationItem.titleView = value
+            self.navigationItem.titleView = value as? UIView
         }
         get {
-            return self.navigationItem.titleView
+            return self.navigationItem.titleView as? OverlayTitleViewProtocol
         }
     }
     
@@ -115,7 +115,7 @@ let OverlayTransitionAnimationDuration: TimeInterval = 0.25
         fatalError("init(coder:) has not been implemented")
     }
     
-    public override func layoutSubviews() {
+    open override func layoutSubviews() {
         super.layoutSubviews()
         
         let navigationBarSize: CGSize = self.navigationBar.sizeThatFits(self.frame.size)

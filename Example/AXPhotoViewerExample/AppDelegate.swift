@@ -36,7 +36,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, PhotosViewControllerDeleg
                          attributedCredit: NSAttributedString(string: "Giphy"),
                          url: URL(string: "https://media.giphy.com/media/IOEcl8A8iLIUo/giphy.gif")!)
         ]
-        let photosViewController = PhotosViewController(photos: photos, delegate: self)
+        let dataSource = PhotosDataSource(photos: photos, photosFetchingBehavior: .conservative)
+        let pagingConfig = PagingConfig(navigationOrientation: .horizontal)
+        let photosViewController = PhotosViewController(dataSource: dataSource, pagingConfig: pagingConfig)
         self.window?.rootViewController = photosViewController
         self.window?.makeKeyAndVisible()
         

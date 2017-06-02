@@ -8,7 +8,7 @@
 
 import UIKit
 
-@objc(AXCaptionView) public class CaptionView: UIView, CaptionViewProtocol {
+@objc(AXCaptionView) open class CaptionView: UIView, CaptionViewProtocol {
     
     var titleLabel = UILabel()
     var descriptionLabel = UILabel()
@@ -155,12 +155,12 @@ import UIKit
         }
     }
     
-    public override func layoutSubviews() {
+    open override func layoutSubviews() {
         super.layoutSubviews()
         self.computeSize(for: self.frame.size, applyLayout: true)
     }
 
-    public override func sizeThatFits(_ size: CGSize) -> CGSize {
+    open override func sizeThatFits(_ size: CGSize) -> CGSize {
         return self.computeSize(for: size, applyLayout: false)
     }
     

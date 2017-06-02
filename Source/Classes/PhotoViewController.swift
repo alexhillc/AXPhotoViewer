@@ -9,7 +9,7 @@
 import UIKit
 import FLAnimatedImage
 
-@objc(AXPhotoViewController) public class PhotoViewController: UIViewController, Recyclable {
+@objc(AXPhotoViewController) open class PhotoViewController: UIViewController, Recyclable {
     
     public weak var delegate: PhotoViewControllerDelegate?
     public var pageIndex: Int = 0
@@ -55,11 +55,11 @@ import FLAnimatedImage
         self.notificationCenter?.removeObserver(self)
     }
     
-    public override func loadView() {
+    open override func loadView() {
         self.view = ZoomingImageView()
     }
     
-    public override func viewWillLayoutSubviews() {
+    open override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         
         if let loadingView = self.loadingView as? UIView {
@@ -134,7 +134,7 @@ import FLAnimatedImage
             return
         }
         
-        guard photo === self.photo, let progress = notification.userInfo?[PhotosViewControllerNotification.ProgressKey] as? Progress else {
+        guard photo === self.photo, let progress = notification.userInfo?[PhotosViewControllerNotification.ProgressKey] as? CGFloat else {
             return
         }
         

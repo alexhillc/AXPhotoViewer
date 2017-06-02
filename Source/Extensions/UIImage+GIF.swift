@@ -6,7 +6,7 @@
 //
 //
 
-public extension UIImage {
+extension UIImage {
     
     func isAnimatedGIF() -> Bool {
         return (self.images != nil)

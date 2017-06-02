@@ -9,8 +9,8 @@
 import UIKit
 import ObjectiveC
 
-@objc(AXPhotosViewController) public class PhotosViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource,
-                                                                  PhotoViewControllerDelegate, UIScrollViewDelegate, NetworkIntegrationDelegate {
+@objc(AXPhotosViewController) open class PhotosViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource,
+                                                               PhotoViewControllerDelegate, UIScrollViewDelegate, NetworkIntegrationDelegate {
     
     public weak var delegate: PhotosViewControllerDelegate?
     
@@ -18,24 +18,21 @@ import ObjectiveC
     public let overlayView = OverlayView()
     
     /// The photos to display in the PhotosViewController.
-    public var photos: [PhotoProtocol] {
+    public var dataSource: PhotosDataSource {
         didSet {
-            self.recycledViewControllers.removeLifeycleObserver(self)
-            self.pageViewController.viewControllers?.removeLifeycleObserver(self)
-            self.recycledLoadingViews.removeAll()
-            self.recycledViewControllers.removeAll()
             self.networkIntegration.cancelAllLoads()
-            self.configurePageViewController(initialPhotoIndex: 0)
+            self.configurePageViewController()
         }
     }
     
-    /// The number of photos to load surrounding the currently displayed photo.
-    public var numberOfPhotosToPreload: Int = 2
+    /// The transition object used when animating presentation/dismissal transitions.
+    /// If this object is not present, the presentation will revert to the iOS default.
+    fileprivate(set) var transitionInfo: TransitionInfo?
     
-    /// Space between photos, measured in points.
-    public let interPhotoSpacing: CGFloat = 20
+    /// The configuration object applied to the internal pager at initialization.
+    fileprivate(set) var pagingConfig: PagingConfig
     
-    /// The underlying UIPageViewController that is used for swiping horizontally.
+    /// The underlying UIPageViewController that is used for swiping horizontally and vertically.
     /// - Important: `AXPhotosViewController` is this page view controller's `UIPageViewControllerDelegate`, `UIPageViewControllerDataSource`.
     ///              Changing these values will result in breakage.
     public let pageViewController: UIPageViewController
@@ -49,11 +46,10 @@ import ObjectiveC
     #endif
     
     // MARK: - Private variables
-    fileprivate enum HorizontalSwipeDirection {
+    fileprivate enum SwipeDirection {
         case none, left, right
     }
     
-    fileprivate var initialPhotoIndex: Int?
     fileprivate var currentPhotoIndex: Int = 0 {
         didSet {
             self.updateOverlay(for: currentPhotoIndex)
@@ -70,35 +66,25 @@ import ObjectiveC
     
     // MARK: - Initialization
     #if AX_SDWI_SUPPORT || AX_AFN_SUPPORT
-    public init(photos: [PhotoProtocol], initialPhotoIndex: Int? = nil, delegate: PhotosViewControllerDelegate?) {
+    public init(dataSource: PhotosDataSource, transitionInfo: TransitionInfo? = nil, pagingConfig: PagingConfig = PagingConfig()) {
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
-                                                       navigationOrientation: .horizontal,
-                                                       options: [UIPageViewControllerOptionInterPageSpacingKey: self.interPhotoSpacing])
-        self.delegate = delegate
-        self.photos = photos
-
-        if let initialPhotoIndex = initialPhotoIndex {
-            assert(photos.count > initialPhotoIndex, "Invalid initial photo index provided.")
-            self.initialPhotoIndex = initialPhotoIndex
-        }
-    
+                                                       navigationOrientation: pagingConfig.navigationOrientation,
+                                                       options: [UIPageViewControllerOptionInterPageSpacingKey: pagingConfig.interPhotoSpacing])
+        self.dataSource = dataSource
+        self.transitionInfo = transitionInfo
+        self.pagingConfig = pagingConfig
         super.init(nibName: nil, bundle: nil)
         self.networkIntegration.delegate = self
     }
     #else
-    public init(photos: [PhotoProtocol], initialPhotoIndex: Int? = nil, networkIntegration: NetworkIntegration, delegate: PhotosViewControllerDelegate?) {
+    public init(dataSource: PhotosDataSource, transitionInfo: TransitionInfo? = nil, pagingConfig: PagingConfig = PagingConfig(), networkIntegration: NetworkIntegration) {
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
-                                                       navigationOrientation: .horizontal,
-                                                       options: [UIPageViewControllerOptionInterPageSpacingKey: self.interPhotoSpacing])
-        self.delegate = delegate
+                                                       navigationOrientation: pagingConfig.navigationOrientation,
+                                                       options: [UIPageViewControllerOptionInterPageSpacingKey: pagingConfig.interPhotoSpacing])
+        self.dataSource = dataSource
+        self.transitionInfo = transitionInfo
+        self.pagingConfig = pagingConfig
         self.networkIntegration = networkIntegration
-        self.photos = photos
-
-        if let initialPhotoIndex = initialPhotoIndex {
-            assert(photos.count > initialPhotoIndex, "Invalid initial photo index provided.")
-            self.initialPhotoIndex = initialPhotoIndex
-        }
-    
         super.init(nibName: nil, bundle: nil)
         self.networkIntegration.delegate = self
     }
@@ -111,34 +97,34 @@ import ObjectiveC
     deinit {
         self.recycledViewControllers.removeLifeycleObserver(self)
         self.pageViewController.viewControllers?.removeLifeycleObserver(self)
+        self.pageViewController.scrollView.removeContentOffsetObserver(self)
     }
     
-    public override func didReceiveMemoryWarning() {
+    open override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         self.recycledViewControllers.removeLifeycleObserver(self)
         self.recycledLoadingViews.removeAll()
         self.recycledViewControllers.removeAll()
     }
 
-    public override func viewDidLoad() {
+    open override func viewDidLoad() {
         super.viewDidLoad()
         
         self.pageViewController.delegate = self
         self.pageViewController.dataSource = self
-        self.pageViewController.addScrollDelegate(self)
+        self.pageViewController.scrollView.addContentOffsetObserver(self)
         
         self.addChildViewController(self.pageViewController)
         self.view.addSubview(self.pageViewController.view)
         self.pageViewController.didMove(toParentViewController: self)
         
-        self.configurePageViewController(initialPhotoIndex: self.initialPhotoIndex ?? 0)
-        self.initialPhotoIndex = nil
+        self.configurePageViewController()
         
         self.overlayView.isUserInteractionEnabled = false
         self.view.addSubview(self.overlayView)
     }
     
-    public override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+    open override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
         
         self.isSizeTransitioning = true
@@ -147,26 +133,35 @@ import ObjectiveC
         }
     }
     
-    public override func viewWillLayoutSubviews() {
+    open override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         self.pageViewController.view.frame = self.view.bounds
         self.overlayView.frame = self.view.bounds
     }
     
     // MARK: - Page VC Configuration
-    fileprivate func configurePageViewController(initialPhotoIndex: Int) {
-        let photoViewController = self.makePhotoViewController(for: initialPhotoIndex)
-        photoViewController.applyPhoto(photos[initialPhotoIndex])
-        photoViewController.pageIndex = initialPhotoIndex
+    fileprivate func configurePageViewController() {
+        guard let photo = self.dataSource.photo(at: self.dataSource.initialPhotoIndex),
+              let photoViewController = self.makePhotoViewController(for: self.dataSource.initialPhotoIndex) else {
+            self.pageViewController.setViewControllers([UIViewController()], direction: .forward, animated: false, completion: nil)
+            return
+        }
+        
+        photoViewController.applyPhoto(photo)
+        photoViewController.pageIndex = self.dataSource.initialPhotoIndex
         self.pageViewController.setViewControllers([photoViewController], direction: .forward, animated: false, completion: nil)
-        self.currentPhotoIndex = initialPhotoIndex
-        self.loadPhotos(at: initialPhotoIndex)
+        self.currentPhotoIndex = self.dataSource.initialPhotoIndex
+        self.overlayView.titleView?.tweenBetweenLowIndex?(self.dataSource.initialPhotoIndex, highIndex: self.dataSource.initialPhotoIndex + 1, percent: 0)
+        self.loadPhotos(at: self.dataSource.initialPhotoIndex)
     }
     
     // MARK: - Overlay
     fileprivate func updateOverlay(for photoIndex: Int) {
-        let photo = self.photos[photoIndex]
-        self.overlayView.title = NSLocalizedString("\(photoIndex + 1) of \(self.photos.count)", comment: "")
+        guard let photo = self.dataSource.photo(at: photoIndex) else {
+            return
+        }
+        
+        self.overlayView.title = NSLocalizedString("\(photoIndex + 1) of \(self.dataSource.numberOfPhotos)", comment: "")
         self.overlayView.captionView.applyCaptionInfo(attributedTitle: photo.attributedTitle,
                                                       attributedDescription: photo.attributedDescription,
                                                       attributedCredit: photo.attributedCredit)
@@ -176,15 +171,15 @@ import ObjectiveC
     
     // MARK: - Loading helpers
     fileprivate func loadPhotos(at index: Int) {
-        let startIndex = (((index - (self.numberOfPhotosToPreload / 2)) >= 0) ? (index - (self.numberOfPhotosToPreload / 2)) : 0)
-        let indexes = startIndex..<(startIndex + self.numberOfPhotosToPreload + 1)
+        let numberOfPhotosToLoad = self.dataSource.photosFetchingBehavior.rawValue
+        let startIndex = (((index - (numberOfPhotosToLoad / 2)) >= 0) ? (index - (numberOfPhotosToLoad / 2)) : 0)
+        let indexes = startIndex..<(startIndex + numberOfPhotosToLoad + 1)
         
         for index in indexes {
-            guard self.photos.count > index else {
+            guard let photo = self.dataSource.photo(at: index) else {
                 return
             }
             
-            let photo = self.photos[index]
             if photo.loadingState == .notLoaded {
                 photo.loadingState = .loading
                 self.networkIntegration.loadPhoto(photo)
@@ -193,8 +188,9 @@ import ObjectiveC
     }
     
     fileprivate func cancelLoadForPhotos(at index: Int) {
-        let lowerIndex = (index - (self.numberOfPhotosToPreload / 2) - 1 >= 0) ? index - (self.numberOfPhotosToPreload / 2) - 1: NSNotFound
-        let upperIndex = (index + (self.numberOfPhotosToPreload / 2) + 1 < self.photos.count) ? index + (self.numberOfPhotosToPreload / 2) + 1 : NSNotFound
+        let numberOfPhotosToLoad = self.dataSource.photosFetchingBehavior.rawValue
+        let lowerIndex = (index - (numberOfPhotosToLoad / 2) - 1 >= 0) ? index - (numberOfPhotosToLoad / 2) - 1: NSNotFound
+        let upperIndex = (index + (numberOfPhotosToLoad / 2) + 1 < self.dataSource.numberOfPhotos) ? index + (numberOfPhotosToLoad / 2) + 1 : NSNotFound
         
         weak var weakSelf = self
         func cancelLoadIfNecessary(for photo: PhotoProtocol) {
@@ -206,36 +202,21 @@ import ObjectiveC
             photo.loadingState = .notLoaded
         }
         
-        if lowerIndex != NSNotFound {
-            cancelLoadIfNecessary(for: self.photos[lowerIndex])
+        if lowerIndex != NSNotFound, let photo = self.dataSource.photo(at: lowerIndex) {
+            cancelLoadIfNecessary(for: photo)
         }
         
-        if upperIndex != NSNotFound {
-            cancelLoadIfNecessary(for: self.photos[upperIndex])
-        }
-    }
-    
-    // MARK: - Lifecycle KVO
-    public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        if context == &PhotoViewControllerLifecycleContext {
-            guard let photoViewController = object as? PhotoViewController else {
-                return
-            }
-            
-            if change?[.newKey] is NSNull {
-                self.delegate?.photosViewController?(self, prepareViewControllerForEndDisplay: photoViewController)
-                self.recyclePhotoViewController(photoViewController)
-            } else {
-                self.delegate?.photosViewController?(self, prepareViewControllerForDisplay: photoViewController)
-            }
-        } else {
-            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
+        if upperIndex != NSNotFound, let photo = self.dataSource.photo(at: upperIndex) {
+            cancelLoadIfNecessary(for: photo)
         }
     }
     
     // MARK: - Reuse / Factory
-    fileprivate func makePhotoViewController(for pageIndex: Int) -> PhotoViewController {
-        let photo = self.photos[pageIndex]
+    fileprivate func makePhotoViewController(for pageIndex: Int) -> PhotoViewController? {
+        guard let photo = self.dataSource.photo(at: pageIndex) else {
+            return nil
+        }
+        
         var photoViewController: PhotoViewController
         
         if self.recycledViewControllers.count > 0 {
@@ -243,7 +224,11 @@ import ObjectiveC
             photoViewController.loadingView = self.makeLoadingView(for: pageIndex)
             photoViewController.prepareForReuse()
         } else {
-            photoViewController = PhotoViewController(loadingView: self.makeLoadingView(for: pageIndex), notificationCenter: self.notificationCenter)
+            guard let loadingView = self.makeLoadingView(for: pageIndex) else {
+                return nil
+            }
+            
+            photoViewController = PhotoViewController(loadingView: loadingView, notificationCenter: self.notificationCenter)
             photoViewController.addLifecycleObserver(self)
             photoViewController.delegate = self
         }
@@ -259,8 +244,11 @@ import ObjectiveC
         return photoViewController
     }
     
-    fileprivate func makeLoadingView(for pageIndex: Int) -> LoadingViewProtocol {
-        let photo = self.photos[pageIndex]
+    fileprivate func makeLoadingView(for pageIndex: Int) -> LoadingViewProtocol? {
+        guard let photo = self.dataSource.photo(at: pageIndex) else {
+            return nil
+        }
+        
         var loadingView: LoadingViewProtocol
         var loadingViewClass: LoadingViewProtocol.Type
 
@@ -310,6 +298,123 @@ import ObjectiveC
         self.recycledViewControllers.append(photoViewController)
     }
     
+    // MARK: - KVO
+    open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if context == &PhotoViewControllerLifecycleContext {
+            self.lifecycleContextDidUpdate(object: object, change: change)
+        } else if context == &PhotoViewControllerContentOffsetContext {
+            self.contentOffsetContextDidUpdate(object: object, change: change)
+        } else {
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
+        }
+    }
+    
+    fileprivate func lifecycleContextDidUpdate(object: Any?, change: [NSKeyValueChangeKey : Any]?) {
+        guard let photoViewController = object as? PhotoViewController else {
+            return
+        }
+        
+        if change?[.newKey] is NSNull {
+            self.delegate?.photosViewController?(self, prepareViewControllerForEndDisplay: photoViewController)
+            self.recyclePhotoViewController(photoViewController)
+        } else {
+            self.delegate?.photosViewController?(self, prepareViewControllerForDisplay: photoViewController)
+        }
+    }
+    
+    fileprivate func contentOffsetContextDidUpdate(object: Any?, change: [NSKeyValueChangeKey : Any]?) {
+        guard let scrollView = object as? UIScrollView, !self.isSizeTransitioning else {
+            return
+        }
+        
+        var percent: CGFloat
+        if self.pagingConfig.navigationOrientation == .horizontal {
+            percent = (scrollView.contentOffset.x - scrollView.frame.size.width) / scrollView.frame.size.width
+        } else {
+            percent = (scrollView.contentOffset.y - scrollView.frame.size.height) / scrollView.frame.size.height
+        }
+        
+        var horizontalSwipeDirection: SwipeDirection = .none
+        if percent > CGFloat.ulpOfOne {
+            horizontalSwipeDirection = .right
+        } else if percent < -CGFloat.ulpOfOne {
+            horizontalSwipeDirection = .left
+        }
+        
+        let swipePercent = (horizontalSwipeDirection == .left) ? (1 - abs(percent)) : abs(percent)
+        var lowIndex: Int = NSNotFound
+        var highIndex: Int = NSNotFound
+        
+        let viewControllers = self.computeVisibleViewControllers(in: scrollView)
+        if horizontalSwipeDirection == .left {
+            guard let viewController = viewControllers.first else {
+                return
+            }
+            
+            if viewControllers.count > 1 {
+                lowIndex = viewController.pageIndex
+                if lowIndex < self.dataSource.numberOfPhotos {
+                    highIndex = lowIndex + 1
+                }
+            } else {
+                highIndex = viewController.pageIndex
+            }
+        } else if horizontalSwipeDirection == .right {
+            guard let viewController = viewControllers.last else {
+                return
+            }
+            
+            if viewControllers.count > 1 {
+                highIndex = viewController.pageIndex
+                if highIndex > 0 {
+                    lowIndex = highIndex - 1
+                }
+            } else {
+                lowIndex = viewController.pageIndex
+            }
+        }
+        
+        guard lowIndex != NSNotFound && highIndex != NSNotFound else {
+            return
+        }
+        
+        if swipePercent < 0.5 && self.currentPhotoIndex != lowIndex  {
+            self.currentPhotoIndex = lowIndex
+        } else if swipePercent > 0.5 && self.currentPhotoIndex != highIndex {
+            self.currentPhotoIndex = highIndex
+        }
+        
+        self.overlayView.titleView?.tweenBetweenLowIndex?(lowIndex, highIndex: highIndex, percent: percent)
+        
+        print("percentSwiped: \(swipePercent), lowIndex: \(lowIndex), highIndex: \(highIndex)")
+    }
+    
+    fileprivate func computeVisibleViewControllers(in referenceView: UIScrollView) -> [PhotoViewController] {
+        var visibleViewControllers = [PhotoViewController]()
+        
+        for viewController in self.orderedViewControllers {
+            guard !viewController.view.frame.equalTo(.zero) else {
+                continue
+            }
+            
+            let origin = CGPoint(x: viewController.view.frame.origin.x - (self.pagingConfig.navigationOrientation == .horizontal ?
+                                                                          (self.pagingConfig.interPhotoSpacing / 2) : 0),
+                                 y: viewController.view.frame.origin.y - (self.pagingConfig.navigationOrientation == .vertical ?
+                                                                          (self.pagingConfig.interPhotoSpacing / 2) : 0))
+            let size = CGSize(width: viewController.view.frame.size.width + ((self.pagingConfig.navigationOrientation == .horizontal) ?
+                                                                             self.pagingConfig.interPhotoSpacing : 0),
+                              height: viewController.view.frame.size.height + ((self.pagingConfig.navigationOrientation == .vertical) ?
+                                                                               self.pagingConfig.interPhotoSpacing : 0))
+            let conversionRect = CGRect(origin: origin, size: size)
+            
+            if referenceView.convert(conversionRect, from: viewController.view.superview).intersects(referenceView.bounds) {
+                visibleViewControllers.append(viewController)
+            }
+        }
+        
+        return visibleViewControllers
+    }
+    
     // MARK: - UIPageViewControllerDataSource
     public func pageViewController(_ pageViewController: UIPageViewController, willTransitionTo pendingViewControllers: [UIViewController]) {
         guard let viewController = pendingViewControllers.first as? PhotoViewController else {
@@ -346,7 +451,7 @@ import ObjectiveC
     }
     
     public func pageViewController(_ pageViewController: UIPageViewController, viewControllerAt index: Int) -> UIViewController? {
-        guard index >= 0 && self.photos.count > index else {
+        guard index >= 0 && self.dataSource.numberOfPhotos > index else {
             return nil
         }
         
@@ -362,84 +467,6 @@ import ObjectiveC
         photo.error = nil
         photo.loadingState = .loading
         self.networkIntegration.loadPhoto(photo)
-    }
-    
-    
-    // MARK: - UIScrollViewDelegate
-    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        guard !self.isSizeTransitioning else {
-            return
-        }
-        
-        let percent = (scrollView.contentOffset.x - scrollView.frame.size.width) / scrollView.frame.size.width
-        
-        var horizontalSwipeDirection: HorizontalSwipeDirection = .none
-        if percent > CGFloat.ulpOfOne {
-            horizontalSwipeDirection = .right
-        } else if percent < -CGFloat.ulpOfOne {
-            horizontalSwipeDirection = .left
-        }
-
-        let swipePercent = (horizontalSwipeDirection == .left) ? (1 - abs(percent)) : abs(percent)
-        var lowIndex: Int = NSNotFound
-        var highIndex: Int = NSNotFound
-        
-        let viewControllers = self.computeVisibleViewControllers(in: scrollView)
-        if horizontalSwipeDirection == .left {
-            guard let viewController = viewControllers.first else {
-                return
-            }
-            
-            if viewControllers.count > 1 {
-                lowIndex = viewController.pageIndex
-                if lowIndex < self.photos.count {
-                    highIndex = lowIndex + 1
-                }
-            } else {
-                highIndex = viewController.pageIndex
-            }
-        } else if horizontalSwipeDirection == .right {
-            guard let viewController = viewControllers.last else {
-                return
-            }
-            
-            if viewControllers.count > 1 {
-                highIndex = viewController.pageIndex
-                if highIndex > 0 {
-                    lowIndex = highIndex - 1
-                }
-            } else {
-                lowIndex = viewController.pageIndex
-            }
-        }
-        
-        guard lowIndex != NSNotFound && highIndex != NSNotFound else {
-            return
-        }
-        
-        if swipePercent < 0.5 && self.currentPhotoIndex != lowIndex  {
-            self.currentPhotoIndex = lowIndex
-        } else if swipePercent > 0.5 && self.currentPhotoIndex != highIndex {
-            self.currentPhotoIndex = highIndex
-        }
-    }
-    
-    fileprivate func computeVisibleViewControllers(in referenceView: UIScrollView) -> [PhotoViewController] {
-        var visibleViewControllers = [PhotoViewController]()
-        
-        for viewController in self.orderedViewControllers {
-            let origin = CGPoint(x: viewController.view.frame.origin.x - (self.interPhotoSpacing / 2),
-                                 y: viewController.view.frame.origin.y)
-            let size = CGSize(width: viewController.view.frame.size.width + self.interPhotoSpacing,
-                              height: viewController.view.frame.size.height)
-            let conversionRect = CGRect(origin: origin, size: size)
-            
-            if referenceView.convert(conversionRect, from: viewController.view).intersects(referenceView.bounds) {
-                visibleViewControllers.append(viewController)
-            }
-        }
-        
-        return visibleViewControllers
     }
     
     // MARK: - NetworkIntegrationDelegate
@@ -474,7 +501,7 @@ import ObjectiveC
                                      ])
     }
     
-    public func networkIntegration(_ networkIntegration: NetworkIntegration, didUpdateLoadingProgress progress: Progress, for photo: PhotoProtocol) {
+    public func networkIntegration(_ networkIntegration: NetworkIntegration, didUpdateLoadingProgress progress: CGFloat, for photo: PhotoProtocol) {
         photo.progress = progress
         self.notificationCenter.post(name: .photoLoadingProgressUpdate,
                                      object: photo,
@@ -483,7 +510,7 @@ import ObjectiveC
 
 }
 
-// MARK: - Observer extensions
+// MARK: - Convenience extensions
 fileprivate var PhotoViewControllerLifecycleContext: UInt8 = 0
 fileprivate extension Array where Element: UIViewController {
     
@@ -507,13 +534,27 @@ fileprivate extension UIViewController {
 
 fileprivate extension UIPageViewController {
     
-    func addScrollDelegate(_ delegate: UIScrollViewDelegate) {
-        guard let scrollView = self.view.subviews.filter({ $0 is UIScrollView }).first as? UIScrollView else {
-            assertionFailure("Unable to locate the underlying `UIScrollView`. This will most definitely cause unexpected behavior.")
-            return
+    var scrollView: UIScrollView {
+        get {
+            guard let scrollView = self.view.subviews.filter({ $0 is UIScrollView }).first as? UIScrollView else {
+                fatalError("Unable to locate the underlying `UIScrollView`")
+            }
+            
+            return scrollView
         }
-        
-        scrollView.delegate = delegate
+    }
+    
+}
+
+fileprivate var PhotoViewControllerContentOffsetContext: UInt8 = 0
+fileprivate extension UIScrollView {
+    
+    func addContentOffsetObserver(_ observer: NSObject) -> Void {
+        self.addObserver(observer, forKeyPath: #keyPath(contentOffset), options: .new, context: &PhotoViewControllerContentOffsetContext)
+    }
+    
+    func removeContentOffsetObserver(_ observer: NSObject) -> Void {
+        self.removeObserver(observer, forKeyPath: #keyPath(contentOffset), context: &PhotoViewControllerContentOffsetContext)
     }
     
 }
@@ -553,7 +594,7 @@ fileprivate extension UIPageViewController {
 
 // MARK: - Notification definitions
 // Keep Obj-C land happy
-@objc(AXPhotosViewControllerNotification) public class PhotosViewControllerNotification: NSObject {
+@objc(AXPhotosViewControllerNotification) open class PhotosViewControllerNotification: NSObject {
     static let ProgressUpdate = Notification.Name.photoLoadingProgressUpdate.rawValue
     static let ImageUpdate = Notification.Name.photoImageUpdate.rawValue
     static let ImageKey = "AXPhotosViewControllerImage"

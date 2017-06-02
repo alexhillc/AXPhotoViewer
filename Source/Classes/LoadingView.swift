@@ -6,14 +6,14 @@
 //
 //
 
-@objc(AXLoadingView) public class LoadingView: UIView, LoadingViewProtocol {
+@objc(AXLoadingView) open class LoadingView: UIView, LoadingViewProtocol {
     
-    private(set) var indicatorView = UIActivityIndicatorView(activityIndicatorStyle: .white)
-    private var errorLabel: UILabel?
-    private var tapGestureRecognizer: UITapGestureRecognizer?
-    private var retryHandler: (() -> Void)?
+    fileprivate(set) var indicatorView = UIActivityIndicatorView(activityIndicatorStyle: .white)
+    fileprivate var errorLabel: UILabel?
+    fileprivate var tapGestureRecognizer: UITapGestureRecognizer?
+    fileprivate var retryHandler: (() -> Void)?
     
-    public func startLoading(initialProgress: Progress) {
+    public func startLoading(initialProgress: CGFloat) {
         if self.indicatorView.superview == nil {
             self.addSubview(self.indicatorView)
             self.setNeedsLayout()
@@ -26,7 +26,7 @@
         self.indicatorView.stopAnimating()
     }
     
-    public func updateProgress(_ progress: Progress) {
+    public func updateProgress(_ progress: CGFloat) {
         // empty for now, need to create a progressive loading indicator
     }
     
@@ -61,7 +61,7 @@
         self.retryHandler = nil
     }
     
-    public override func layoutSubviews() {
+    open override func layoutSubviews() {
         super.layoutSubviews()
         
         let indicatorViewSize = self.indicatorView.sizeThatFits(self.frame.size)
@@ -77,7 +77,7 @@
         }
     }
     
-    public override func sizeThatFits(_ size: CGSize) -> CGSize {
+    open override func sizeThatFits(_ size: CGSize) -> CGSize {
         let indicatorViewSize = self.indicatorView.sizeThatFits(self.frame.size)
         let errorLabelSize = self.errorLabel?.sizeThatFits(self.frame.size) ?? .zero
         return CGSize(width: max(indicatorViewSize.width, errorLabelSize.width),
@@ -85,7 +85,7 @@
     }
     
     // MARK: - UITapGestureRecognizer
-    @objc private func tapAction(_ sender: UITapGestureRecognizer) {
+    @objc fileprivate func tapAction(_ sender: UITapGestureRecognizer) {
         self.retryHandler?()
         self.retryHandler = nil
     }

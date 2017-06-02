@@ -10,8 +10,8 @@
     
     /// Called by the PhotoViewController when progress of the image download should be shown to the user.
     ///
-    /// - Parameter initialProgress: The current progress of the image download.
-    func startLoading(initialProgress: Progress) -> Void
+    /// - Parameter initialProgress: The current progress of the image download. Exists on a scale from 0..1.
+    func startLoading(initialProgress: CGFloat) -> Void
     
     /// Called by the PhotoViewController when progress of the image download should be hidden. This usually happens when
     /// the containing view controller is moved offscreen.
@@ -21,8 +21,8 @@
     /// Called by the PhotoViewController when the progress of an image download is updated. The optional implementation
     /// of this method should reflect the progress of the downloaded image.
     ///
-    /// - Parameter progress: The progress complete of the image download.
-    @objc optional func updateProgress(_ progress: Progress) -> Void
+    /// - Parameter progress: The progress complete of the image download. Exists on a scale from 0..1.
+    @objc optional func updateProgress(_ progress: CGFloat) -> Void
     
     /// Called by the PhotoViewController when an image download fails. The implementation of this method should display
     /// an error to the user, and optionally, offer to retry the image download.

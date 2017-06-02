@@ -28,9 +28,7 @@ class SDWebImageIntegration: NSObject, NetworkIntegration {
                 return
             }
             
-            let progress = Progress(totalUnitCount: Int64(expectedSize))
-            progress.completedUnitCount = Int64(receivedSize)
-            uSelf.delegate?.networkIntegration?(uSelf, didUpdateLoadingProgress: progress, for: photo)
+            uSelf.delegate?.networkIntegration?(uSelf, didUpdateLoadingProgress: CGFloat(receivedSize / expectedSize), for: photo)
         }
         
         let completion: SDWebImageDownloaderCompletedBlock = { [weak self] (image, data, error, finished) in
