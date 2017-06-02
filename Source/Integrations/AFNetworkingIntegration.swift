@@ -8,11 +8,13 @@
 
 import AFNetworking
 
-public class AFNetworkingIntegration: NSObject, NetworkIntegration {
+class AFNetworkingIntegration: NSObject, NetworkIntegration {
     
     weak public var delegate: NetworkIntegrationDelegate?
     
-    public func loadPhoto(_ photo: Photo) {
+    fileprivate var downloadReceipts = NSMapTable<PhotoProtocol, AFImageDownloadReceipt>(keyOptions: .strongMemory, valueOptions: .strongMemory)
+    
+    public func loadPhoto(_ photo: PhotoProtocol) {
         if photo.imageData != nil || photo.image != nil {
             self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
         }
@@ -26,6 +28,7 @@ public class AFNetworkingIntegration: NSObject, NetworkIntegration {
                 return
             }
             
+            uSelf.downloadReceipts.removeObject(forKey: photo)
             photo.image = image
             uSelf.delegate?.networkIntegration(uSelf, loadDidFinishWith: photo)
         }
@@ -35,11 +38,35 @@ public class AFNetworkingIntegration: NSObject, NetworkIntegration {
                 return
             }
             
+            uSelf.downloadReceipts.removeObject(forKey: photo)
             uSelf.delegate?.networkIntegration(uSelf, loadDidFailWith: error, for: photo)
         }
         
         let urlRequest = URLRequest(url: url)
-        AFImageDownloader.defaultInstance().downloadImage(for: urlRequest, success: success, failure: failure)
+        guard let receipt = AFImageDownloader.defaultInstance().downloadImage(for: urlRequest, success: success, failure: failure) else {
+            return
+        }
+        
+        self.downloadReceipts.setObject(receipt, forKey: photo)
+    }
+    
+    func cancelLoad(for photo: PhotoProtocol) {
+        guard let receipt = self.downloadReceipts.object(forKey: photo) else {
+            return
+        }
+        
+        AFImageDownloader.defaultInstance().cancelTask(for: receipt)
+        self.downloadReceipts.removeObject(forKey: photo)
+    }
+    
+    func cancelAllLoads() {
+        let enumerator = self.downloadReceipts.objectEnumerator()
+        
+        while let receipt = enumerator?.nextObject() as? AFImageDownloadReceipt {
+            AFImageDownloader.defaultInstance().cancelTask(for: receipt)
+        }
+        
+        self.downloadReceipts.removeAllObjects()
     }
     
 }
