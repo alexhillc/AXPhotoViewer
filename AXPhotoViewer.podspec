@@ -10,35 +10,35 @@ Pod::Spec.new do |s|
   s.platform        = :ios, '10.0'
   s.requires_arc    = true
 
-  s.source_files    = 'Source/Classes/*.{swift}',
-                      'Source/Protocols/*.{swift}',
-                      'Source/Extensions/*.{swift}',
-                      'Source/Integrations/NetworkIntegration.swift'
-  s.framework       = 'UIKit'
-  s.dependency        'FLAnimatedImage', '~> 1.0.12'
-  s.default_subspec = 'Lite'
+  s.default_subspec = 'Core'
 
-  s.subspec 'Lite' do |lite|
-    # subspec for users who don't want the added bloat of `SDWebImage`
-    # or `AFNetworking` integrations; this can be useful if the developer
-    # wishes to write their own async image downloading/caching logic
+  s.subspec 'Core' do |cs|
+    cs.dependency      'FLAnimatedImage', '>= 1.0.0'
+    cs.source_files  = 'Source/Classes/*.{swift}',
+                       'Source/Protocols/*.{swift}',
+                       'Source/Extensions/*.{swift}',
+                       'Source/Integrations/NetworkIntegration.swift'
+    cs.framework     = 'UIKit'
   end
 
-  s.subspec 'SDWebImage' do |sdwi|
-    sdwi.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_SDWI_SUPPORT' }
-    sdwi.source_files  = 'Source/Classes/*.{swift}',
-                         'Source/Protocols/*.{swift}',
-                         'Source/Extensions/*.{swift}',
-                         'Source/Integrations/SDWebImageIntegration.swift', 'Source/Integrations/NetworkIntegration.swift'
-    sdwi.dependency      'SDWebImage', '~> 4.0.0'
+  s.subspec 'SDWebImage' do |ss|
+    ss.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_SDWI_SUPPORT' }
+    ss.dependency      'AXPhotoViewer/Core'
+    ss.source_files  = 'Source/Integrations/SDWebImageIntegration.swift'
+    ss.dependency      'SDWebImage', '>= 4.0.0'
   end
 
-  s.subspec 'AFNetworking' do |afn|
-    afn.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_AFN_SUPPORT' }
-    afn.source_files  = 'Source/Classes/*.{swift}',
-                        'Source/Protocols/*.{swift}',
-                        'Source/Extensions/*.{swift}',
-                        'Source/Integrations/AFNetworkingIntegration.swift', 'Source/Integrations/NetworkIntegration.swift'
-    afn.dependency      'AFNetworking', '~> 3.1.0'
+  s.subspec 'PINRemoteImage' do |ps|
+    ps.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_PINRI_SUPPORT' }
+    ps.dependency      'AXPhotoViewer/Core'
+    ps.dependency      'PINRemoteImage/FLAnimatedImage', '~> 3.0.0-beta.9'
+    ps.source_files  = 'Source/Integrations/PINRemoteImageIntegration.swift'
+  end
+
+  s.subspec 'AFNetworking' do |as|
+    as.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_AFN_SUPPORT' }
+    as.dependency      'AXPhotoViewer/Core'
+    as.dependency      'AFNetworking', '>= 3.1.0'
+    as.source_files  = 'Source/Integrations/AFNetworkingIntegration.swift'
   end
 end

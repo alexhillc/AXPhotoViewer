@@ -41,6 +41,8 @@ import ObjectiveC
     public let networkIntegration: NetworkIntegration = SDWebImageIntegration()
     #elseif AX_AFN_SUPPORT
     public let networkIntegration: NetworkIntegration = AFNetworkingIntegration()
+    #elseif AX_PINRI_SUPPORT
+    public let networkIntegration: NetworkIntegration = PINRemoteImageIntegration()
     #else
     public let networkIntegration: NetworkIntegration
     #endif
@@ -65,7 +67,7 @@ import ObjectiveC
     fileprivate let notificationCenter = NotificationCenter()
     
     // MARK: - Initialization
-    #if AX_SDWI_SUPPORT || AX_AFN_SUPPORT
+    #if AX_SDWI_SUPPORT || AX_PINRI_SUPPORT || AX_AFN_SUPPORT
     public init(dataSource: PhotosDataSource, transitionInfo: TransitionInfo? = nil, pagingConfig: PagingConfig = PagingConfig()) {
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
                                                        navigationOrientation: pagingConfig.navigationOrientation,
@@ -170,7 +172,7 @@ import ObjectiveC
     
     // MARK: - Loading helpers
     fileprivate func loadPhotos(at index: Int) {
-        let numberOfPhotosToLoad = self.dataSource.photosFetchingBehavior.rawValue
+        let numberOfPhotosToLoad = self.dataSource.prefetchBehavior.rawValue
         let startIndex = (((index - (numberOfPhotosToLoad / 2)) >= 0) ? (index - (numberOfPhotosToLoad / 2)) : 0)
         let indexes = startIndex..<(startIndex + numberOfPhotosToLoad + 1)
         
@@ -187,7 +189,7 @@ import ObjectiveC
     }
     
     fileprivate func cancelLoadForPhotos(at index: Int) {
-        let numberOfPhotosToLoad = self.dataSource.photosFetchingBehavior.rawValue
+        let numberOfPhotosToLoad = self.dataSource.prefetchBehavior.rawValue
         let lowerIndex = (index - (numberOfPhotosToLoad / 2) - 1 >= 0) ? index - (numberOfPhotosToLoad / 2) - 1: NSNotFound
         let upperIndex = (index + (numberOfPhotosToLoad / 2) + 1 < self.dataSource.numberOfPhotos) ? index + (numberOfPhotosToLoad / 2) + 1 : NSNotFound
         

@@ -8,7 +8,7 @@
 
 @objc(AXPhotosDataSource) open class PhotosDataSource: NSObject {
     
-    @objc(AXPhotosFetchingBehavior) public enum PhotosFetchingBehavior: Int {
+    @objc(AXPhotosPrefetchBehavior) public enum PhotosPrefetchBehavior: Int {
         case conservative = 0
         case regular      = 2
         case aggressive   = 4
@@ -18,7 +18,7 @@
     /// Setting this property to `conservative`, only the current photo will be loaded.
     /// Setting this property to `regular` (default), the current photo, the previous photo, and the next photo will be loaded.
     /// Setting this property to `aggressive`, the current photo, the previous two photos, and the next two photos will be loaded.
-    fileprivate(set) var photosFetchingBehavior: PhotosFetchingBehavior
+    fileprivate(set) var prefetchBehavior: PhotosPrefetchBehavior
     
     /// The photos to display in the PhotosViewController.
     fileprivate var photos: [PhotoProtocol]
@@ -27,9 +27,9 @@
     private(set) var initialPhotoIndex: Int = 0
     
     // MARK: - Initialization
-    public init(photos: [PhotoProtocol], initialPhotoIndex: Int? = nil, photosFetchingBehavior: PhotosFetchingBehavior = .regular) {
+    public init(photos: [PhotoProtocol], initialPhotoIndex: Int? = nil, prefetchBehavior: PhotosPrefetchBehavior = .regular) {
         self.photos = photos
-        self.photosFetchingBehavior = photosFetchingBehavior
+        self.prefetchBehavior = prefetchBehavior
         
         if let initialPhotoIndex = initialPhotoIndex {
             assert(photos.count > initialPhotoIndex, "Invalid initial photo index provided.")

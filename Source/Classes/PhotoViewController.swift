@@ -102,7 +102,7 @@ import FLAnimatedImage
                 self?.loadingView?.startLoading(initialProgress: photo.progress)
             })
         case .loaded:
-            guard let image = photo.image else {
+            guard photo.image != nil || photo.imageData != nil else {
                 assertionFailure("Must provide valid `UIImage` in \(#function)")
                 return
             }
@@ -111,12 +111,8 @@ import FLAnimatedImage
             self.loadingView?.stopLoading()
             
             if let imageData = photo.imageData {
-                if image.isAnimatedGIF() {
-                    self.zoomingImageView.animatedImage = FLAnimatedImage(animatedGIFData: imageData)
-                } else {
-                    self.zoomingImageView.image = UIImage(data: imageData)
-                }
-            } else {
+                self.zoomingImageView.animatedImage = FLAnimatedImage(animatedGIFData: imageData)
+            } else if let image = photo.image {
                 self.zoomingImageView.image = image
             }
         }
