@@ -72,6 +72,7 @@ import FLAnimatedImage
         (self.loadingView as? UIView)?.frame = CGRect(origin: CGPoint(x: (self.view.bounds.size.width - loadingViewSize.width) / 2,
                                                                       y: (self.view.bounds.size.height - loadingViewSize.height) / 2),
                                                       size: loadingViewSize)
+        (self.loadingView as? UIView)?.setNeedsLayout()
     }
     
     public func applyPhoto(_ photo: PhotoProtocol) {
@@ -119,6 +120,8 @@ import FLAnimatedImage
                 self.zoomingImageView.image = image
             }
         }
+        
+        self.view.setNeedsLayout()
     }
     
     // MARK: - Recyclable
@@ -169,7 +172,10 @@ import FLAnimatedImage
                     self?.delegate?.photoViewController(uSelf, retryDownloadFor: photo)
                     self?.loadingView?.removeError()
                     self?.loadingView?.startLoading(initialProgress: photo.progress)
+                    self?.view.setNeedsLayout()
                 })
+                
+                self?.view.setNeedsLayout()
             }
         }
     }

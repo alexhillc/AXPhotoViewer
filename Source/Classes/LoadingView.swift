@@ -40,7 +40,7 @@
         self.errorLabel = UILabel()
         self.errorLabel?.text = NSLocalizedString("An error occurred while loading this image.\nTap to try again.", comment: "")
         self.errorLabel?.textAlignment = .center
-        self.errorLabel?.numberOfLines = 2
+        self.errorLabel?.numberOfLines = 3
         self.errorLabel?.textColor = .white
         self.addSubview(self.errorLabel!)
         
@@ -78,8 +78,8 @@
     }
     
     open override func sizeThatFits(_ size: CGSize) -> CGSize {
-        let indicatorViewSize = self.indicatorView.sizeThatFits(self.frame.size)
-        let errorLabelSize = self.errorLabel?.sizeThatFits(self.frame.size) ?? .zero
+        let indicatorViewSize = self.indicatorView.sizeThatFits(size)
+        let errorLabelSize = self.errorLabel?.sizeThatFits(size) ?? .zero
         return CGSize(width: max(indicatorViewSize.width, errorLabelSize.width),
                       height: max(indicatorViewSize.height, errorLabelSize.height))
     }

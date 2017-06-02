@@ -143,7 +143,7 @@ import ObjectiveC
     fileprivate func configurePageViewController() {
         guard let photo = self.dataSource.photo(at: self.dataSource.initialPhotoIndex),
               let photoViewController = self.makePhotoViewController(for: self.dataSource.initialPhotoIndex) else {
-            self.pageViewController.setViewControllers([UIViewController()], direction: .forward, animated: false, completion: nil)
+            self.pageViewController.setViewControllers(nil, direction: .forward, animated: false, completion: nil)
             return
         }
         
@@ -166,7 +166,6 @@ import ObjectiveC
                                                       attributedDescription: photo.attributedDescription,
                                                       attributedCredit: photo.attributedCredit)
         self.overlayView.setNeedsLayout()
-        self.overlayView.layoutIfNeeded()
     }
     
     // MARK: - Loading helpers
@@ -385,8 +384,6 @@ import ObjectiveC
         }
         
         self.overlayView.titleView?.tweenBetweenLowIndex?(lowIndex, highIndex: highIndex, percent: percent)
-        
-        print("percentSwiped: \(swipePercent), lowIndex: \(lowIndex), highIndex: \(highIndex)")
     }
     
     fileprivate func computeVisibleViewControllers(in referenceView: UIScrollView) -> [PhotoViewController] {

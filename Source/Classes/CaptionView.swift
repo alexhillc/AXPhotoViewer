@@ -13,6 +13,24 @@ import UIKit
     var titleLabel = UILabel()
     var descriptionLabel = UILabel()
     var creditLabel = UILabel()
+
+    fileprivate let CaptionAnimDuration: TimeInterval = 0.25
+    open override var frame: CGRect {
+        set(value) {
+            let animation: () -> Void = { super.frame = value }
+            
+            if self.isFirstLayout {
+                animation()
+            } else {
+                UIView.animate(withDuration: CaptionAnimDuration, animations: animation)
+            }
+        }
+        get {
+            return super.frame
+        }
+    }
+    
+    fileprivate var isFirstLayout: Bool = true
     
     var defaultTitleAttributes: [String: Any] {
         get {
@@ -95,7 +113,7 @@ import UIKit
             }
             
             UIView.transition(with: label,
-                              duration: OverlayTransitionAnimationDuration,
+                              duration: CaptionAnimDuration,
                               options: [.transitionCrossDissolve], animations: {
                 label.attributedText = text
             }) { (finished) in
@@ -158,6 +176,7 @@ import UIKit
     open override func layoutSubviews() {
         super.layoutSubviews()
         self.computeSize(for: self.frame.size, applyLayout: true)
+        self.isFirstLayout = false
     }
 
     open override func sizeThatFits(_ size: CGSize) -> CGSize {

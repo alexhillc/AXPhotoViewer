@@ -8,8 +8,6 @@
 
 import UIKit
 
-let OverlayTransitionAnimationDuration: TimeInterval = 0.25
-
 @objc(AXOverlayView) open class OverlayView: UIView {
     
     /// The caption view to be used in the overlay.
@@ -120,6 +118,7 @@ let OverlayTransitionAnimationDuration: TimeInterval = 0.25
         
         let navigationBarSize: CGSize = self.navigationBar.sizeThatFits(self.frame.size)
         self.navigationBar.frame = CGRect(origin: .zero, size: navigationBarSize)
+        self.navigationBar.setNeedsLayout()
         
         if let captionView = self.captionView as? UIView {
             if captionView.superview == nil {
@@ -127,14 +126,8 @@ let OverlayTransitionAnimationDuration: TimeInterval = 0.25
             }
             
             let captionViewSize = captionView.sizeThatFits(self.frame.size)
-            UIView.animate(withDuration: OverlayTransitionAnimationDuration, animations: { [weak self] in
-                guard let uSelf = self else {
-                    return
-                }
-                
-                captionView.frame = CGRect(origin: CGPoint(x: 0, y: uSelf.frame.size.height - captionViewSize.height),
-                                           size: captionViewSize)
-            })
+            captionView.frame = CGRect(origin: CGPoint(x: 0, y: self.frame.size.height - captionViewSize.height),
+                                       size: captionViewSize)
             captionView.setNeedsLayout()
         }
     }
