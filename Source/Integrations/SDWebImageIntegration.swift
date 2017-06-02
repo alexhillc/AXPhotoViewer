@@ -73,6 +73,8 @@ class SDWebImageIntegration: NSObject, NetworkIntegration {
         while let downloadToken = enumerator?.nextObject() as? SDWebImageDownloadToken {
             SDWebImageDownloader.shared().cancel(downloadToken)
         }
+        
+        self.downloadTokens.removeAllObjects()
     }
     
 }
