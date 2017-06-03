@@ -37,12 +37,12 @@ import ObjectiveC
     ///              Changing these values will result in breakage.
     public let pageViewController: UIPageViewController
     
-    #if AX_SDWI_SUPPORT
+    #if AX_SDWEBIMAGE_SUPPORT
     public let networkIntegration: NetworkIntegration = SDWebImageIntegration()
-    #elseif AX_AFN_SUPPORT
-    public let networkIntegration: NetworkIntegration = AFNetworkingIntegration()
-    #elseif AX_PINRI_SUPPORT
+    #elseif AX_PINREMOTEIMAGE_SUPPORT
     public let networkIntegration: NetworkIntegration = PINRemoteImageIntegration()
+    #elseif AX_AFNETWORKING_SUPPORT
+    public let networkIntegration: NetworkIntegration = AFNetworkingIntegration()
     #else
     public let networkIntegration: NetworkIntegration
     #endif
@@ -67,7 +67,7 @@ import ObjectiveC
     fileprivate let notificationCenter = NotificationCenter()
     
     // MARK: - Initialization
-    #if AX_SDWI_SUPPORT || AX_PINRI_SUPPORT || AX_AFN_SUPPORT
+    #if AX_SDWEBIMAGE_SUPPORT || AX_PINREMOTEIMAGE_SUPPORT || AX_AFNETWORKING_SUPPORT
     public init(dataSource: PhotosDataSource, transitionInfo: TransitionInfo? = nil, pagingConfig: PagingConfig = PagingConfig()) {
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
                                                        navigationOrientation: pagingConfig.navigationOrientation,

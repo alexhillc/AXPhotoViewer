@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name            = "AXPhotoViewer"
   s.version         = "1.0"
-  s.license         = 'MIT'
+  s.license         = { :type  => 'MIT', :file => 'LICENSE' }
   s.summary         = "An iPhone/iPad photo gallery viewer, useful for viewing a large number of photos."
   s.homepage        = "https://github.com/alexhillc/AXPhotoViewer"
   s.author          = { "Alex Hill" => "alexhill.c@gmail.com" }
@@ -18,25 +18,26 @@ Pod::Spec.new do |s|
                        'Source/Protocols/*.{swift}',
                        'Source/Extensions/*.{swift}',
                        'Source/Integrations/NetworkIntegration.swift'
-    cs.framework     = 'UIKit'
+    cs.frameworks    = 'UIKit'
   end
 
   s.subspec 'SDWebImage' do |ss|
-    ss.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_SDWI_SUPPORT' }
+    ss.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_SDWEBIMAGE_SUPPORT' }
     ss.dependency      'AXPhotoViewer/Core'
     ss.source_files  = 'Source/Integrations/SDWebImageIntegration.swift'
     ss.dependency      'SDWebImage', '>= 4.0.0'
   end
 
   s.subspec 'PINRemoteImage' do |ps|
-    ps.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_PINRI_SUPPORT' }
+    ps.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_PINREMOTEIMAGE_SUPPORT' }
     ps.dependency      'AXPhotoViewer/Core'
     ps.dependency      'PINRemoteImage/FLAnimatedImage', '~> 3.0.0-beta.9'
     ps.source_files  = 'Source/Integrations/PINRemoteImageIntegration.swift'
   end
 
   s.subspec 'AFNetworking' do |as|
-    as.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_AFN_SUPPORT' }
+    as.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_AFNETWORKING_SUPPORT' }
+    as.frameworks    = 'ImageIO'
     as.dependency      'AXPhotoViewer/Core'
     as.dependency      'AFNetworking', '>= 3.1.0'
     as.source_files  = 'Source/Integrations/AFNetworkingIntegration.swift'
