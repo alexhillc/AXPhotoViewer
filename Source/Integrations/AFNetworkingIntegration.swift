@@ -111,7 +111,7 @@ class AXAFImageResponseSerializer: AFImageResponseSerializer {
         
         let options: [String: Any] = [kCGImageSourceShouldCache as String: false]
         guard let imageSource = CGImageSourceCreateWithData(imageSourceData, options as CFDictionary?),
-            let imageSourceContainerType = CGImageSourceGetType(imageSource)else {
+            let imageSourceContainerType = CGImageSourceGetType(imageSource) else {
                 
             return super.responseObject(for: response, data: data, error: error)
         }

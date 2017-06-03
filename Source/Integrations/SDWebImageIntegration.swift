@@ -28,7 +28,7 @@ class SDWebImageIntegration: NSObject, NetworkIntegration {
                 return
             }
             
-            uSelf.delegate?.networkIntegration?(uSelf, didUpdateLoadingProgress: CGFloat(receivedSize / expectedSize), for: photo)
+            uSelf.delegate?.networkIntegration?(uSelf, didUpdateLoadingProgress: CGFloat(receivedSize) / CGFloat(expectedSize), for: photo)
         }
         
         let completion: SDWebImageDownloaderCompletedBlock = { [weak self] (image, data, error, finished) in
@@ -41,7 +41,7 @@ class SDWebImageIntegration: NSObject, NetworkIntegration {
             if let error = error {
                 uSelf.delegate?.networkIntegration(uSelf, loadDidFailWith: error, for: photo)
             } else if let image = image, let data = data, finished {
-                if image.isAnimatedGIF() {
+                if image.isGIF() {
                     photo.imageData = data
                     photo.image = image
                 } else {

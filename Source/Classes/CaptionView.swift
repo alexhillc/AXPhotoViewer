@@ -10,11 +10,15 @@ import UIKit
 
 @objc(AXCaptionView) open class CaptionView: UIView, CaptionViewProtocol {
     
+    public weak var delegate: CaptionViewDelegate?
+    
     var titleLabel = UILabel()
     var descriptionLabel = UILabel()
     var creditLabel = UILabel()
+    
+    fileprivate var needsUpdateContentSize = false
 
-    fileprivate let CaptionAnimDuration: TimeInterval = 0.25
+    fileprivate let CaptionAnimDuration: TimeInterval = 0.3
     open override var frame: CGRect {
         set(value) {
             let animation: () -> Void = { super.frame = value }
@@ -22,7 +26,7 @@ import UIKit
             if self.isFirstLayout {
                 animation()
             } else {
-                UIView.animate(withDuration: CaptionAnimDuration, animations: animation)
+                UIView.animate(withDuration: CaptionAnimDuration, delay: 0, options: [.curveEaseOut], animations: animation, completion: nil)
             }
         }
         get {
@@ -107,24 +111,6 @@ import UIKit
                           attributedDescription: NSAttributedString?,
                           attributedCredit: NSAttributedString?) {
         
-        func transitionLabel(_ label: UILabel, hidden: Bool, text: NSAttributedString?) {
-            if !hidden {
-                label.isHidden = false
-            }
-            
-            UIView.transition(with: label,
-                              duration: CaptionAnimDuration,
-                              options: [.transitionCrossDissolve], animations: {
-                label.attributedText = text
-            }) { (finished) in
-                guard finished && hidden else {
-                    return
-                }
-                
-                label.isHidden = true
-            }
-        }
-        
         func makeAttributedStringWithDefaults(_ defaults: [String: Any], for attributedString: NSAttributedString?) -> NSAttributedString? {
             guard let defaultAttributedString = attributedString?.mutableCopy() as? NSMutableAttributedString else {
                 return attributedString
@@ -149,28 +135,62 @@ import UIKit
         }
         
         self.visibleLabels = []
-        var isLabelHidden = false
         
         let title = makeAttributedStringWithDefaults(self.defaultTitleAttributes, for: attributedTitle)
-        isLabelHidden = title?.string.isEmpty ?? true
-        transitionLabel(self.titleLabel, hidden: isLabelHidden, text: title)
-        if !isLabelHidden {
-            self.visibleLabels.append(self.titleLabel)
-        }
-        
         let description = makeAttributedStringWithDefaults(self.defaultDescriptionAttributes, for: attributedDescription)
-        isLabelHidden = description?.string.isEmpty ?? true
-        transitionLabel(self.descriptionLabel, hidden: isLabelHidden, text: description)
-        if !isLabelHidden {
-            self.visibleLabels.append(self.descriptionLabel)
-        }
-        
         let credit = makeAttributedStringWithDefaults(self.defaultCreditAttributes, for: attributedCredit)
-        isLabelHidden = credit?.string.isEmpty ?? true
-        transitionLabel(self.creditLabel, hidden: isLabelHidden, text: credit)
-        if !isLabelHidden {
-            self.visibleLabels.append(self.creditLabel)
+
+        self.titleLabel.alpha = 1
+        self.descriptionLabel.alpha = 1
+        self.creditLabel.alpha = 1
+        
+        UIView.animate(withDuration: CaptionAnimDuration / 2, delay: 0, options: [.curveEaseOut], animations: { [weak self] in
+            self?.titleLabel.alpha = 0
+            self?.descriptionLabel.alpha = 0
+            self?.creditLabel.alpha = 0
+        }) { [weak self] (finished) in
+            guard let uSelf = self, finished else {
+                return
+            }
+            
+            uSelf.titleLabel.attributedText = title
+            uSelf.descriptionLabel.attributedText = description
+            uSelf.creditLabel.attributedText = credit
+            
+            if uSelf.titleLabel.attributedText?.string.isEmpty ?? true {
+                uSelf.titleLabel.isHidden = true
+            } else {
+                uSelf.titleLabel.isHidden = false
+                uSelf.visibleLabels.append(uSelf.titleLabel)
+            }
+            
+            if uSelf.descriptionLabel.attributedText?.string.isEmpty ?? true {
+                uSelf.descriptionLabel.isHidden = true
+            } else {
+                uSelf.descriptionLabel.isHidden = false
+                uSelf.visibleLabels.append(uSelf.descriptionLabel)
+            }
+            
+            if uSelf.creditLabel.attributedText?.string.isEmpty ?? true {
+                uSelf.creditLabel.isHidden = true
+            } else {
+                uSelf.creditLabel.isHidden = false
+                uSelf.visibleLabels.append(uSelf.creditLabel)
+            }
+            
+            uSelf.setNeedsUpdateContentSize()
+            
+            UIView.animate(withDuration: uSelf.CaptionAnimDuration / 2, delay: 0, options: [.curveEaseIn], animations: {
+                uSelf.titleLabel.alpha = 1
+                uSelf.descriptionLabel.alpha = 1
+                uSelf.creditLabel.alpha = 1
+            })
         }
+    }
+    
+    fileprivate func setNeedsUpdateContentSize() {
+        self.needsUpdateContentSize = true
+        self.setNeedsLayout()
     }
     
     open override func layoutSubviews() {
@@ -240,7 +260,14 @@ import UIKit
             }
         }
         
-        return CGSize(width: constrainedSize.width, height: yOffset)
+        let sizeThatFits = CGSize(width: constrainedSize.width, height: yOffset)
+        
+        if self.needsUpdateContentSize {
+            self.delegate?.captionView(self, contentSizeDidChange: sizeThatFits)
+            self.needsUpdateContentSize = false
+        }
+        
+        return sizeThatFits
     }
 
 }

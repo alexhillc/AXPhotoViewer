@@ -26,7 +26,7 @@
     
 }
 
-@objc(AXNetworkIntegrationDelegate) public protocol NetworkIntegrationDelegate: class {
+@objc(AXNetworkIntegrationDelegate) public protocol NetworkIntegrationDelegate: AnyObject, NSObjectProtocol {
     
     /// Called when a `Photo` successfully finishes loading.
     ///

@@ -8,12 +8,13 @@
 
 import UIKit
 
-@objc(AXOverlayView) open class OverlayView: UIView {
+@objc(AXOverlayView) open class OverlayView: UIView, CaptionViewDelegate {
     
     /// The caption view to be used in the overlay.
     public var captionView: CaptionViewProtocol = CaptionView() {
         didSet {
             (oldValue as? UIView)?.removeFromSuperview()
+            self.captionView.delegate = self
             self.setNeedsLayout()
         }
     }
@@ -98,6 +99,8 @@ import UIKit
     init() {
         super.init(frame: .zero)
         
+        self.captionView.delegate = self
+        
         self.navigationBar.backgroundColor = .clear
         self.navigationBar.barTintColor = nil
         self.navigationBar.isTranslucent = true
@@ -125,10 +128,16 @@ import UIKit
                 self.addSubview(captionView)
             }
             
+            assert(captionView.superview == self, "The supplied caption view's superview must be `AXOverlayView`")
             let captionViewSize = captionView.sizeThatFits(self.frame.size)
             captionView.frame = CGRect(origin: CGPoint(x: 0, y: self.frame.size.height - captionViewSize.height),
                                        size: captionViewSize)
             captionView.setNeedsLayout()
         }
+    }
+    
+    // MARK: - CaptionViewDelegate
+    public func captionView(_ captionView: CaptionViewProtocol, contentSizeDidChange newSize: CGSize) {
+        (captionView as? UIView)?.frame = CGRect(origin: CGPoint(x: 0, y: self.frame.size.height - newSize.height), size: newSize)
     }
 }

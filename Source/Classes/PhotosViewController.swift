@@ -167,7 +167,6 @@ import ObjectiveC
         self.overlayView.captionView.applyCaptionInfo(attributedTitle: photo.attributedTitle,
                                                       attributedDescription: photo.attributedDescription,
                                                       attributedCredit: photo.attributedCredit)
-        self.overlayView.setNeedsLayout()
     }
     
     // MARK: - Loading helpers
