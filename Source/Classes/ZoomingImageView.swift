@@ -46,7 +46,6 @@ import FLAnimatedImage
         self.addGestureRecognizer(self.doubleTapGestureRecognizer)
         
         self.imageView.contentMode = .scaleAspectFit
-        self.imageView.isUserInteractionEnabled = true
         self.addSubview(self.imageView)
         
         self.autoresizingMask = [.flexibleWidth, .flexibleHeight]

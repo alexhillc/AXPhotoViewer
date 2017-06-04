@@ -9,13 +9,13 @@
 @objc(AXPhotoProtocol) public protocol PhotoProtocol: AnyObject, NSObjectProtocol {
     
     /// The attributed title of the image that will be displayed in the photo's `captionView`.
-    var attributedTitle: NSAttributedString? { get }
+    @objc optional var attributedTitle: NSAttributedString? { get }
     
     /// The attributed description of the image that will be displayed in the photo's `captionView`.
-    var attributedDescription: NSAttributedString? { get }
+    @objc optional var attributedDescription: NSAttributedString? { get }
     
     /// The attributed credit of the image that will be displayed in the photo's `captionView`.
-    var attributedCredit: NSAttributedString? { get }
+    @objc optional var attributedCredit: NSAttributedString? { get }
     
     /// The image data. If this value is present, it will be prioritized over `image`.
     /// Provide animated GIF data to this property.

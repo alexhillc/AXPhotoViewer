@@ -19,22 +19,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate, PhotosViewControllerDeleg
         self.window = UIWindow(frame: UIScreen.main.bounds)
         
         let photos = [
-            ExamplePhoto(attributedTitle: NSAttributedString(string: "The Flash Poster"),
-                         attributedDescription: NSAttributedString(string: "Season 3"),
-                         attributedCredit: NSAttributedString(string: "Vignette"),
-                         url: URL(string: "https://goo.gl/T4oZdY")!),
-            ExamplePhoto(attributedTitle: NSAttributedString(string: "The Flash and Savitar"),
-                         attributedDescription: NSAttributedString(string: "Season 3"),
-                         attributedCredit: NSAttributedString(string: "Screen Rant"),
-                         url: URL(string: "https://goo.gl/pYeJ4H")!),
-            ExamplePhoto(attributedTitle: NSAttributedString(string: "The Flash: Rebirth"),
-                         attributedDescription: NSAttributedString(string: "Comic Book"),
-                         attributedCredit: NSAttributedString(string: "DC Comics"),
-                         url: URL(string: "https://goo.gl/9wgyAo")!),
-            ExamplePhoto(attributedTitle: NSAttributedString(string: "The Flash has a cute smile"),
-                         attributedDescription: nil,
-                         attributedCredit: NSAttributedString(string: "Giphy"),
-                         url: URL(string: "https://media.giphy.com/media/IOEcl8A8iLIUo/giphy.gif")!)
+            Photo(attributedTitle: NSAttributedString(string: "The Flash Poster"),
+                  attributedDescription: NSAttributedString(string: "Season 3"),
+                  attributedCredit: NSAttributedString(string: "Vignette"),
+                  url: URL(string: "https://goo.gl/T4oZdY")!),
+            Photo(attributedTitle: NSAttributedString(string: "The Flash and Savitar"),
+                  attributedDescription: NSAttributedString(string: "Season 3"),
+                  attributedCredit: NSAttributedString(string: "Screen Rant"),
+                  url: URL(string: "https://goo.gl/pYeJ4H")!),
+            Photo(attributedTitle: NSAttributedString(string: "The Flash: Rebirth"),
+                  attributedDescription: NSAttributedString(string: "Comic Book"),
+                  attributedCredit: NSAttributedString(string: "DC Comics"),
+                  url: URL(string: "https://goo.gl/9wgyAo")!),
+            Photo(attributedTitle: NSAttributedString(string: "The Flash has a cute smile"),
+                  attributedDescription: nil,
+                  attributedCredit: NSAttributedString(string: "Giphy"),
+                  url: URL(string: "https://media.giphy.com/media/IOEcl8A8iLIUo/giphy.gif")!)
         ]
         let dataSource = PhotosDataSource(photos: photos, prefetchBehavior: .conservative)
         let pagingConfig = PagingConfig(navigationOrientation: .horizontal)

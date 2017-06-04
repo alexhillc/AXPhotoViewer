@@ -18,7 +18,7 @@ import UIKit
     
     fileprivate var needsUpdateContentSize = false
 
-    fileprivate let CaptionAnimDuration: TimeInterval = 0.3
+    fileprivate let CaptionAnimDuration: TimeInterval = 0.25
     open override var frame: CGRect {
         set(value) {
             let animation: () -> Void = { super.frame = value }
@@ -144,11 +144,13 @@ import UIKit
         self.descriptionLabel.alpha = 1
         self.creditLabel.alpha = 1
         
-        UIView.animate(withDuration: CaptionAnimDuration / 2, delay: 0, options: [.curveEaseOut], animations: { [weak self] in
+        let animateOut: () -> Void = { [weak self] in
             self?.titleLabel.alpha = 0
             self?.descriptionLabel.alpha = 0
             self?.creditLabel.alpha = 0
-        }) { [weak self] (finished) in
+        }
+        
+        let animateOutCompletion: (_ finished: Bool) -> Void = { [weak self] (finished) in
             guard let uSelf = self, finished else {
                 return
             }
@@ -179,12 +181,27 @@ import UIKit
             }
             
             uSelf.setNeedsUpdateContentSize()
-            
-            UIView.animate(withDuration: uSelf.CaptionAnimDuration / 2, delay: 0, options: [.curveEaseIn], animations: {
-                uSelf.titleLabel.alpha = 1
-                uSelf.descriptionLabel.alpha = 1
-                uSelf.creditLabel.alpha = 1
-            })
+        }
+        
+        let animateIn: () -> Void = { [weak self] in
+            self?.titleLabel.alpha = 1
+            self?.descriptionLabel.alpha = 1
+            self?.creditLabel.alpha = 1
+        }
+        
+        if self.isFirstLayout {
+            animateOut()
+            animateOutCompletion(true)
+            animateIn()
+        } else {
+            UIView.animate(withDuration: CaptionAnimDuration / 2, delay: 0, options: [.curveEaseOut], animations: animateOut) { [weak self] (finished) in
+                guard let uSelf = self else {
+                    return
+                }
+                
+                animateOutCompletion(finished)
+                UIView.animate(withDuration: uSelf.CaptionAnimDuration / 2, delay: 0, options: [.curveEaseIn], animations: animateIn)
+            }
         }
     }
     
@@ -231,7 +248,7 @@ import UIKit
         
         let VerticalPadding: CGFloat = 10
         let HorizontalPadding: CGFloat = 15
-        let InterLabelSpacing: CGFloat = 4
+        let InterLabelSpacing: CGFloat = 2
         var yOffset: CGFloat = 0
 
         for (index, label) in self.visibleLabels.enumerated() {

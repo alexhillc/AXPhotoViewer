@@ -21,6 +21,7 @@ import UIKit
     
     /// The navigation bar used to set the `titleView`, `leftBarButtonItems`, `rightBarButtonItems`
     public let navigationBar = UINavigationBar()
+    public let navigationBarUnderlay = UIView()
     
     /// The title view displayed in the navigation bar. This view is sized and centered between the `leftBarButtonItems` and `rightBarButtonItems`.
     /// This is prioritized over `title`.
@@ -96,10 +97,19 @@ import UIKit
     /// The underlying `UINavigationItem` used for setting the `titleView`, `leftBarButtonItems`, `rightBarButtonItems`.
     fileprivate var navigationItem = UINavigationItem()
     
+    /// The inset of the contents of the `OverlayView`. Use this property to adjust layout for things such as status bar height.
+    /// For internal use only.
+    var contentInset: UIEdgeInsets = .zero
+    
+    fileprivate let OverlayAnimDuration: TimeInterval = 0.25
+    
     init() {
         super.init(frame: .zero)
         
         self.captionView.delegate = self
+        
+        self.navigationBarUnderlay.backgroundColor = (self.captionView as? UIView)?.backgroundColor
+        self.addSubview(self.navigationBarUnderlay)
         
         self.navigationBar.backgroundColor = .clear
         self.navigationBar.barTintColor = nil
@@ -108,7 +118,6 @@ import UIKit
         self.navigationBar.setBackgroundImage(UIImage(), for: .default)
         self.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.white]
         self.navigationBar.items = [self.navigationItem]
-        
         self.addSubview(self.navigationBar)
     }
     
@@ -119,20 +128,61 @@ import UIKit
     open override func layoutSubviews() {
         super.layoutSubviews()
         
-        let navigationBarSize: CGSize = self.navigationBar.sizeThatFits(self.frame.size)
-        self.navigationBar.frame = CGRect(origin: .zero, size: navigationBarSize)
+        var insetSize = self.bounds.size
+        insetSize.width -= (self.contentInset.left + self.contentInset.right)
+        insetSize.height -= (self.contentInset.top + self.contentInset.bottom)
+        
+        let navigationBarSize: CGSize = self.navigationBar.sizeThatFits(insetSize)
+        self.navigationBar.frame = CGRect(origin: CGPoint(x: self.contentInset.left, y: self.contentInset.top),
+                                          size: navigationBarSize)
         self.navigationBar.setNeedsLayout()
+        
+        self.navigationBarUnderlay.frame = CGRect(origin: .zero,
+                                                  size: CGSize(width: self.frame.size.width,
+                                                               height: self.navigationBar.frame.origin.y + self.navigationBar.frame.size.height))
         
         if let captionView = self.captionView as? UIView {
             if captionView.superview == nil {
                 self.addSubview(captionView)
             }
             
-            assert(captionView.superview == self, "The supplied caption view's superview must be `AXOverlayView`")
-            let captionViewSize = captionView.sizeThatFits(self.frame.size)
-            captionView.frame = CGRect(origin: CGPoint(x: 0, y: self.frame.size.height - captionViewSize.height),
+            let captionViewSize = captionView.sizeThatFits(insetSize)
+            captionView.frame = CGRect(origin: CGPoint(x: self.contentInset.left, y: self.frame.size.height -
+                                                                                     self.contentInset.bottom -
+                                                                                     captionViewSize.height),
                                        size: captionViewSize)
             captionView.setNeedsLayout()
+        }
+    }
+    
+    open override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        if let view = super.hitTest(point, with: event) as? UIButton {
+            return view
+        }
+        
+        return nil
+    }
+    
+    // MARK: - Show / hide interface
+    func setShowInterface(_ show: Bool, animateWith closure: (() -> Void)?) {
+        let alpha: CGFloat = show ? 1 : 0
+        guard self.alpha != alpha else {
+            return
+        }
+        
+        if alpha == 1 {
+            self.isHidden = false
+        }
+        
+        UIView.animate(withDuration: OverlayAnimDuration, animations: { [weak self] in
+            self?.alpha = alpha
+            closure?()
+        }) { (finished) in
+            guard alpha == 0 else {
+                return
+            }
+            
+            self.isHidden = true
         }
     }
     
@@ -141,3 +191,4 @@ import UIKit
         (captionView as? UIView)?.frame = CGRect(origin: CGPoint(x: 0, y: self.frame.size.height - newSize.height), size: newSize)
     }
 }
+

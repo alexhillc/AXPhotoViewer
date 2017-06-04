@@ -4,6 +4,8 @@ target 'AXPhotoViewerExample' do
 
   use_frameworks!
 
+  pod 'Reveal-SDK'
+
   # AXPhotoViewer
   pod 'AXPhotoViewer/SDWebImage', :path => '../AXPhotoViewer.podspec'
 

@@ -7,10 +7,9 @@
 //
 
 import UIKit
-import ObjectiveC
 
 @objc(AXPhotosViewController) open class PhotosViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource,
-                                                               PhotoViewControllerDelegate, UIScrollViewDelegate, NetworkIntegrationDelegate {
+                                                               PhotoViewControllerDelegate, NetworkIntegrationDelegate {
     
     public weak var delegate: PhotosViewControllerDelegate?
     
@@ -36,6 +35,9 @@ import ObjectiveC
     /// - Important: `AXPhotosViewController` is this page view controller's `UIPageViewControllerDelegate`, `UIPageViewControllerDataSource`.
     ///              Changing these values will result in breakage.
     public let pageViewController: UIPageViewController
+    
+    /// The internal tap gesture recognizer that is used to hide/show the overlay interface.
+    public let singleTapGestureRecognizer = UITapGestureRecognizer()
     
     #if AX_SDWEBIMAGE_SUPPORT
     public let networkIntegration: NetworkIntegration = SDWebImageIntegration()
@@ -65,6 +67,22 @@ import ObjectiveC
     fileprivate var recycledLoadingViews = [String: [LoadingViewProtocol]]()
     
     fileprivate let notificationCenter = NotificationCenter()
+    
+    fileprivate var _prefersStatusBarHidden: Bool = false
+    open override var prefersStatusBarHidden: Bool {
+        get {
+            return _prefersStatusBarHidden
+        }
+        set {
+            _prefersStatusBarHidden = newValue
+        }
+    }
+    
+    open override var preferredStatusBarStyle: UIStatusBarStyle {
+        get {
+            return .lightContent
+        }
+    }
     
     // MARK: - Initialization
     #if AX_SDWEBIMAGE_SUPPORT || AX_PINREMOTEIMAGE_SUPPORT || AX_AFNETWORKING_SUPPORT
@@ -112,9 +130,15 @@ import ObjectiveC
     open override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.view.backgroundColor = .black
+        
         self.pageViewController.delegate = self
         self.pageViewController.dataSource = self
         self.pageViewController.scrollView.addContentOffsetObserver(self)
+        
+        self.singleTapGestureRecognizer.numberOfTapsRequired = 1
+        self.singleTapGestureRecognizer.addTarget(self, action: #selector(singleTapAction(_:)))
+        self.pageViewController.view.addGestureRecognizer(self.singleTapGestureRecognizer)
         
         self.addChildViewController(self.pageViewController)
         self.view.addSubview(self.pageViewController.view)
@@ -122,7 +146,8 @@ import ObjectiveC
         
         self.configurePageViewController()
         
-        self.overlayView.isUserInteractionEnabled = false
+        self.overlayView.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareAction(_:)))
+        self.overlayView.tintColor = .white
         self.view.addSubview(self.overlayView)
     }
     
@@ -139,6 +164,10 @@ import ObjectiveC
         super.viewWillLayoutSubviews()
         self.pageViewController.view.frame = self.view.bounds
         self.overlayView.frame = self.view.bounds
+        self.overlayView.contentInset = UIEdgeInsets(top: UIApplication.shared.statusBarFrame.size.height,
+                                                     left: 0,
+                                                     bottom: 0, 
+                                                     right: 0)
     }
     
     // MARK: - Page VC Configuration
@@ -157,16 +186,38 @@ import ObjectiveC
         self.loadPhotos(at: self.dataSource.initialPhotoIndex)
     }
     
-    // MARK: - Overlay
+    // MARK: - Overlay and UIGestureRecognizerDelegate
     fileprivate func updateOverlay(for photoIndex: Int) {
         guard let photo = self.dataSource.photo(at: photoIndex) else {
             return
         }
         
         self.overlayView.title = NSLocalizedString("\(photoIndex + 1) of \(self.dataSource.numberOfPhotos)", comment: "")
-        self.overlayView.captionView.applyCaptionInfo(attributedTitle: photo.attributedTitle,
-                                                      attributedDescription: photo.attributedDescription,
-                                                      attributedCredit: photo.attributedCredit)
+        self.overlayView.captionView.applyCaptionInfo(attributedTitle: photo.attributedTitle ?? nil,
+                                                      attributedDescription: photo.attributedDescription ?? nil,
+                                                      attributedCredit: photo.attributedCredit ?? nil)
+    }
+    
+    @objc fileprivate func shareAction(_ barButtonItem: UIBarButtonItem) {
+        
+    }
+    
+    @objc fileprivate func singleTapAction(_ sender: UITapGestureRecognizer) {
+        let showInterface = (self.overlayView.alpha == 0)
+        self.overlayView.setShowInterface(showInterface) { [weak self] in
+            self?.prefersStatusBarHidden = !showInterface
+            self?.setNeedsStatusBarAppearanceUpdate()
+            if showInterface {
+                UIView.performWithoutAnimation {
+                    self?.overlayView.contentInset = UIEdgeInsets(top: UIApplication.shared.statusBarFrame.size.height,
+                                                                  left: 0,
+                                                                  bottom: 0,
+                                                                  right: 0)
+                    self?.overlayView.setNeedsLayout()
+                    self?.overlayView.layoutIfNeeded()
+                }
+            }
+        }
     }
     
     // MARK: - Loading helpers
@@ -231,6 +282,8 @@ import ObjectiveC
             photoViewController = PhotoViewController(loadingView: loadingView, notificationCenter: self.notificationCenter)
             photoViewController.addLifecycleObserver(self)
             photoViewController.delegate = self
+            
+            self.singleTapGestureRecognizer.require(toFail: photoViewController.zoomingImageView.doubleTapGestureRecognizer)
         }
         
         photoViewController.pageIndex = pageIndex
