@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import MobileCoreServices
 
 @objc(AXPhotosViewController) open class PhotosViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource,
                                                                PhotoViewControllerDelegate, NetworkIntegrationDelegate {
@@ -199,7 +200,42 @@ import UIKit
     }
     
     @objc fileprivate func shareAction(_ barButtonItem: UIBarButtonItem) {
+        guard let photo = self.dataSource.photo(at: self.currentPhotoIndex) else {
+            return
+        }
         
+        if let _ = self.delegate?.photosViewController?(self, handleActionButtonTappedFor: photo) {
+            return
+        }
+
+        var anyRepresentation: Any?
+        if let imageData = photo.imageData {
+            anyRepresentation = imageData
+        } else if let image = photo.image {
+            anyRepresentation = image
+        }
+        
+        guard let uAnyRepresentation = anyRepresentation else {
+            return
+        }
+        
+        let activityViewController = UIActivityViewController(activityItems: [uAnyRepresentation], applicationActivities: nil)
+        activityViewController.completionWithItemsHandler = { [weak self] (activityType, completed, returnedItems, activityError) in
+            guard let uSelf = self else {
+                return
+            }
+            
+            if completed, let activityType = activityType {
+                uSelf.delegate?.photosViewController?(uSelf, actionCompletedWith: activityType, for: photo)
+            }
+        }
+        
+        if self.traitCollection.userInterfaceIdiom == .phone {
+            self.present(activityViewController, animated: true)
+        } else {
+            activityViewController.popoverPresentationController?.barButtonItem = barButtonItem
+            self.present(activityViewController, animated: true)
+        }
     }
     
     @objc fileprivate func singleTapAction(_ sender: UITapGestureRecognizer) {
@@ -641,6 +677,21 @@ fileprivate extension UIScrollView {
     optional func photosViewController(_ photosViewController: PhotosViewController,
                                        loadingViewClassFor photo: PhotoProtocol) -> LoadingViewProtocol.Type
     
+    /// Called when the action button is tapped for a photo. If no implementation is provided, will fall back to default action.
+    ///
+    /// - Parameters:
+    ///   - photosViewController: The `PhotosViewController` handling the action.
+    ///   - photo: The related `Photo`.
+    @objc(photosViewController:handleActionButtonTappedForPhoto:)
+    optional func photosViewController(_ photosViewController: PhotosViewController, handleActionButtonTappedFor photo: PhotoProtocol)
+    
+    /// Called when an action button action is completed.
+    ///
+    /// - Parameters:
+    ///   - photosViewController: The `PhotosViewController` that handled the action.
+    ///   - photo: The related `Photo`.
+    @objc(photosViewController:actionCompletedWithActivityType:forPhoto:)
+    optional func photosViewController(_ photosViewController: PhotosViewController, actionCompletedWith activityType: UIActivityType, for photo: PhotoProtocol)
 }
 
 // MARK: - Notification definitions
