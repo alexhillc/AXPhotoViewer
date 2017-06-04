@@ -9,6 +9,8 @@
 import UIKit
 import FLAnimatedImage
 
+fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
+
 @objc(AXZoomingImageView) class ZoomingImageView: UIScrollView, UIScrollViewDelegate {
     
     var image: UIImage? {
@@ -99,7 +101,7 @@ import FLAnimatedImage
     }
     
     public func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
-        guard abs(scale - self.minimumZoomScale) <= CGFloat.ulpOfOne else {
+        guard abs(scale - self.minimumZoomScale) <= ZoomScaleEpsilon else {
             return
         }
         
@@ -127,7 +129,7 @@ import FLAnimatedImage
         let point = sender.location(in: self.imageView)
         
         var zoomScale = self.maximumZoomScale
-        if self.zoomScale >= self.maximumZoomScale || abs(self.zoomScale - self.maximumZoomScale) <= CGFloat.ulpOfOne {
+        if self.zoomScale >= self.maximumZoomScale || abs(self.zoomScale - self.maximumZoomScale) <= ZoomScaleEpsilon {
             zoomScale = self.minimumZoomScale
         }
         
