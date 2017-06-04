@@ -37,6 +37,7 @@ Pod::Spec.new do |s|
 
   s.subspec 'AFNetworking' do |as|
     as.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_AFNETWORKING_SUPPORT' }
+    as.frameworks    = 'ImageIO'
     as.dependency      'AXPhotoViewer/Core'
     as.dependency      'AFNetworking', '>= 3.1.0'
     as.source_files  = 'Source/Integrations/AFNetworkingIntegration.swift'
