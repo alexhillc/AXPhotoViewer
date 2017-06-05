@@ -12,6 +12,10 @@ import MobileCoreServices
 @objc(AXPhotosViewController) open class PhotosViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource,
                                                                PhotoViewControllerDelegate, NetworkIntegrationDelegate {
     
+    @objc(AXViewControllerType) public enum ViewControllerType: Int {
+        case photo, video
+    }
+    
     public weak var delegate: PhotosViewControllerDelegate?
     
     /// The underlying `OverlayView` that is used for displaying photo captions, titles, and actions.
@@ -65,7 +69,9 @@ import MobileCoreServices
     
     fileprivate var orderedViewControllers = [PhotoViewController]()
     fileprivate var recycledViewControllers = [PhotoViewController]()
-    fileprivate var recycledLoadingViews = [String: [LoadingViewProtocol]]()
+    fileprivate var mappedLoadingViewTypes: [String: LoadingViewProtocol.Type] = [
+        String(describing: PhotoViewController.self): LoadingView.self
+    ]
     
     fileprivate let notificationCenter = NotificationCenter()
     
@@ -124,7 +130,6 @@ import MobileCoreServices
     open override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         self.recycledViewControllers.removeLifeycleObserver(self)
-        self.recycledLoadingViews.removeAll()
         self.recycledViewControllers.removeAll()
     }
 
@@ -147,8 +152,9 @@ import MobileCoreServices
         
         self.configurePageViewController()
         
-        self.overlayView.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareAction(_:)))
         self.overlayView.tintColor = .white
+        self.overlayView.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: #selector(closeAction(_:)))
+        self.overlayView.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareAction(_:)))
         self.view.addSubview(self.overlayView)
     }
     
@@ -187,6 +193,43 @@ import MobileCoreServices
         self.loadPhotos(at: self.dataSource.initialPhotoIndex)
     }
     
+    /// Change the loading view class that will be instantiated for each `PhotoViewController`. This method can be used to replace
+    /// the default implementation of `LoadingView`.
+    ///
+    /// - Parameters:
+    ///   - loadingViewType: The desired loading view class.
+    ///   - viewControllerType: The view controller type that will replace its loading view type. (Only `PhotoViewController` for the moment)
+    public func replaceLoadingView(_ loadingViewType: LoadingViewProtocol.Type, for viewControllerType: ViewControllerType) {
+        guard loadingViewType is UIView.Type else {
+            assertionFailure("`loadingViewType` must be a `UIView` that conforms to `LoadingViewProtocol`.")
+            return
+        }
+        
+        var key: String?
+        
+        switch viewControllerType {
+        case .photo:
+            key = String(describing: PhotoViewController.self)
+        case .video:
+            break
+        }
+        
+        guard let uKey = key else {
+            assertionFailure("Unsupported VC type.")
+            return
+        }
+        
+        self.mappedLoadingViewTypes[uKey] = loadingViewType
+        
+        for viewController in self.orderedViewControllers {
+            viewController.loadingView = self.makeLoadingView(for: viewController.pageIndex)
+        }
+        
+        for viewController in self.recycledViewControllers {
+            viewController.loadingView = self.makeLoadingView(for: viewController.pageIndex)
+        }
+    }
+    
     // MARK: - Overlay and UIGestureRecognizerDelegate
     fileprivate func updateOverlay(for photoIndex: Int) {
         guard let photo = self.dataSource.photo(at: photoIndex) else {
@@ -199,7 +242,26 @@ import MobileCoreServices
                                                       attributedCredit: photo.attributedCredit ?? nil)
     }
     
-    @objc fileprivate func shareAction(_ barButtonItem: UIBarButtonItem) {
+    @objc fileprivate func singleTapAction(_ sender: UITapGestureRecognizer) {
+        let showInterface = (self.overlayView.alpha == 0)
+        self.overlayView.setShowInterface(showInterface) { [weak self] in
+            self?.prefersStatusBarHidden = !showInterface
+            self?.setNeedsStatusBarAppearanceUpdate()
+            if showInterface {
+                UIView.performWithoutAnimation {
+                    self?.overlayView.contentInset = UIEdgeInsets(top: UIApplication.shared.statusBarFrame.size.height,
+                                                                  left: 0,
+                                                                  bottom: 0,
+                                                                  right: 0)
+                    self?.overlayView.setNeedsLayout()
+                    self?.overlayView.layoutIfNeeded()
+                }
+            }
+        }
+    }
+    
+    // MARK: - Default bar button actions
+    @objc public func shareAction(_ barButtonItem: UIBarButtonItem) {
         guard let photo = self.dataSource.photo(at: self.currentPhotoIndex) else {
             return
         }
@@ -207,7 +269,7 @@ import MobileCoreServices
         if let _ = self.delegate?.photosViewController?(self, handleActionButtonTappedFor: photo) {
             return
         }
-
+        
         var anyRepresentation: Any?
         if let imageData = photo.imageData {
             anyRepresentation = imageData
@@ -230,7 +292,7 @@ import MobileCoreServices
             }
         }
         
-        if self.traitCollection.userInterfaceIdiom == .phone {
+        if self.traitCollection.horizontalSizeClass == .compact {
             self.present(activityViewController, animated: true)
         } else {
             activityViewController.popoverPresentationController?.barButtonItem = barButtonItem
@@ -238,22 +300,8 @@ import MobileCoreServices
         }
     }
     
-    @objc fileprivate func singleTapAction(_ sender: UITapGestureRecognizer) {
-        let showInterface = (self.overlayView.alpha == 0)
-        self.overlayView.setShowInterface(showInterface) { [weak self] in
-            self?.prefersStatusBarHidden = !showInterface
-            self?.setNeedsStatusBarAppearanceUpdate()
-            if showInterface {
-                UIView.performWithoutAnimation {
-                    self?.overlayView.contentInset = UIEdgeInsets(top: UIApplication.shared.statusBarFrame.size.height,
-                                                                  left: 0,
-                                                                  bottom: 0,
-                                                                  right: 0)
-                    self?.overlayView.setNeedsLayout()
-                    self?.overlayView.layoutIfNeeded()
-                }
-            }
-        }
+    @objc public func closeAction(_ sender: UIBarButtonItem) {
+        self.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
     // MARK: - Loading helpers
@@ -308,7 +356,6 @@ import MobileCoreServices
         
         if self.recycledViewControllers.count > 0 {
             photoViewController = self.recycledViewControllers.removeLast()
-            photoViewController.loadingView = self.makeLoadingView(for: pageIndex)
             photoViewController.prepareForReuse()
         } else {
             guard let loadingView = self.makeLoadingView(for: pageIndex) else {
@@ -334,33 +381,11 @@ import MobileCoreServices
     }
     
     fileprivate func makeLoadingView(for pageIndex: Int) -> LoadingViewProtocol? {
-        guard let photo = self.dataSource.photo(at: pageIndex) else {
+        guard let loadingViewType = self.mappedLoadingViewTypes[String(describing: PhotoViewController.self)] else {
             return nil
         }
         
-        var loadingView: LoadingViewProtocol
-        var loadingViewClass: LoadingViewProtocol.Type
-
-        if let uLoadingViewClass = photo.loadingViewClass {
-            loadingViewClass = uLoadingViewClass
-        } else if let uLoadingViewClass = self.delegate?.photosViewController?(self, loadingViewClassFor: photo) {
-            assert(uLoadingViewClass is UIView.Type, "`loadingView` must be a `UIView`")
-            loadingViewClass = uLoadingViewClass
-        } else {
-            loadingViewClass = LoadingView.self
-        }
-        
-        photo.loadingViewClass = loadingViewClass
-        
-        let key = String(describing: loadingViewClass)
-        if var recycledLoadingViews = self.recycledLoadingViews[key], recycledLoadingViews.count > 0 {
-            loadingView = recycledLoadingViews.removeLast()
-            self.recycledLoadingViews[key] = recycledLoadingViews
-        } else {
-            loadingView = (loadingViewClass as! UIView.Type).init() as! LoadingViewProtocol
-        }
-        
-        return loadingView
+        return (loadingViewType as? UIView.Type)?.init() as? LoadingViewProtocol
     }
     
     // MARK: - Recycling
@@ -372,16 +397,6 @@ import MobileCoreServices
         let insertionIndex = self.orderedViewControllers.insertionIndex(of: photoViewController, isOrderedBefore: { $0.pageIndex < $1.pageIndex })
         if insertionIndex.alreadyExists {
             self.orderedViewControllers.remove(at: insertionIndex.index)
-        }
-        
-        if let loadingView = photoViewController.loadingView as? UIView {
-            photoViewController.loadingView = nil
-            
-            let key = String(describing: type(of: loadingView))
-            if self.recycledLoadingViews[key] == nil {
-                self.recycledLoadingViews[key] = [LoadingViewProtocol]()
-            }
-            self.recycledLoadingViews[key]?.append(loadingView as! LoadingViewProtocol)
         }
         
         self.recycledViewControllers.append(photoViewController)
@@ -667,16 +682,6 @@ fileprivate extension UIScrollView {
     @objc optional func photosViewController(_ photosViewController: PhotosViewController,
                                              prepareViewControllerForEndDisplay photoViewController: PhotoViewController)
     
-    /// Called just before a new `PhotoViewController` is initialized. This custom `loadingView` must conform to `LoadingViewProtocol`.
-    ///
-    /// - Parameters:
-    ///   - photosViewController: The `PhotosViewController` requesting the loading view.
-    ///   - photo: The related `Photo`.
-    /// - Returns: A `UIView` that conforms to `LoadingViewProtocol`.
-    @objc(photosViewController:loadingViewClassForPhoto:)
-    optional func photosViewController(_ photosViewController: PhotosViewController,
-                                       loadingViewClassFor photo: PhotoProtocol) -> LoadingViewProtocol.Type
-    
     /// Called when the action button is tapped for a photo. If no implementation is provided, will fall back to default action.
     ///
     /// - Parameters:
@@ -690,6 +695,7 @@ fileprivate extension UIScrollView {
     /// - Parameters:
     ///   - photosViewController: The `PhotosViewController` that handled the action.
     ///   - photo: The related `Photo`.
+    /// - Note: This is only called for the default action.
     @objc(photosViewController:actionCompletedWithActivityType:forPhoto:)
     optional func photosViewController(_ photosViewController: PhotosViewController, actionCompletedWith activityType: UIActivityType, for photo: PhotoProtocol)
 }

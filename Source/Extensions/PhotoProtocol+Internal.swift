@@ -13,7 +13,6 @@ enum PhotoLoadingState: Int {
 var PhotoErrorAssociationKey: UInt8 = 0
 var PhotoProgressAssociationKey: UInt8 = 0
 var PhotoLoadingStateAssociationKey: UInt8 = 0
-var PhotoLoadingViewClassAssociationKey: UInt8 = 0
 
 // MARK: - Internal PhotoProtocol extension to be used by the framework.
 extension PhotoProtocol {
@@ -42,15 +41,6 @@ extension PhotoProtocol {
         }
         set(value) {
             objc_setAssociatedObject(self, &PhotoLoadingStateAssociationKey, value, .OBJC_ASSOCIATION_RETAIN)
-        }
-    }
-    
-    var loadingViewClass: LoadingViewProtocol.Type? {
-        get {
-            return objc_getAssociatedObject(self, &PhotoLoadingViewClassAssociationKey) as? LoadingViewProtocol.Type
-        }
-        set(value) {
-            objc_setAssociatedObject(self, &PhotoLoadingViewClassAssociationKey, value, .OBJC_ASSOCIATION_RETAIN)
         }
     }
     

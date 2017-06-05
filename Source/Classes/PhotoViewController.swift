@@ -9,7 +9,7 @@
 import UIKit
 import FLAnimatedImage
 
-@objc(AXPhotoViewController) open class PhotoViewController: UIViewController, Recyclable {
+@objc(AXPhotoViewController) open class PhotoViewController: UIViewController, PageableViewControllerProtocol {
     
     public weak var delegate: PhotoViewControllerDelegate?
     public var pageIndex: Int = 0
@@ -120,8 +120,8 @@ import FLAnimatedImage
         self.view.setNeedsLayout()
     }
     
-    // MARK: - Recyclable
-    public func prepareForReuse() {
+    // MARK: - PageableViewControllerProtocol
+    func prepareForReuse() {
         self.zoomingImageView.image = nil
         self.zoomingImageView.animatedImage = nil
     }

@@ -19,13 +19,9 @@ import UIKit
         }
     }
     
-    /// The navigation bar used to set the `titleView`, `leftBarButtonItems`, `rightBarButtonItems`
-    public let navigationBar = UINavigationBar()
-    public let navigationBarUnderlay = UIView()
-    
     /// The title view displayed in the navigation bar. This view is sized and centered between the `leftBarButtonItems` and `rightBarButtonItems`.
     /// This is prioritized over `title`.
-    var titleView: OverlayTitleViewProtocol? {
+    public var titleView: OverlayTitleViewProtocol? {
         set(value) {
             self.navigationItem.titleView = value as? UIView
         }
@@ -35,7 +31,7 @@ import UIKit
     }
     
     /// The title displayed in the navigation bar. This string is centered between the `leftBarButtonItems` and `rightBarButtonItems`.
-    var title: String? {
+    public var title: String? {
         set(value) {
             self.navigationItem.title = value
         }
@@ -45,7 +41,7 @@ import UIKit
     }
     
     /// The title text attributes inherited by the `title`.
-    var titleTextAttributes: [String: Any]? {
+    public var titleTextAttributes: [String: Any]? {
         set(value) {
             self.navigationBar.titleTextAttributes = value
         }
@@ -55,7 +51,7 @@ import UIKit
     }
     
     /// The bar button item that appears in the top left corner of the overlay.
-    var leftBarButtonItem: UIBarButtonItem? {
+    public var leftBarButtonItem: UIBarButtonItem? {
         set(value) {
             self.navigationItem.setLeftBarButton(value, animated: false)
         }
@@ -65,7 +61,7 @@ import UIKit
     }
     
     /// The bar button items that appear in the top left corner of the overlay.
-    var leftBarButtonItems: [UIBarButtonItem]? {
+    public var leftBarButtonItems: [UIBarButtonItem]? {
         set(value) {
             self.navigationItem.setLeftBarButtonItems(value, animated: false)
         }
@@ -75,7 +71,7 @@ import UIKit
     }
 
     /// The bar button item that appears in the top right corner of the overlay.
-    var rightBarButtonItem: UIBarButtonItem? {
+    public var rightBarButtonItem: UIBarButtonItem? {
         set(value) {
             self.navigationItem.setRightBarButton(value, animated: false)
         }
@@ -85,7 +81,7 @@ import UIKit
     }
     
     /// The bar button items that appear in the top right corner of the overlay.
-    var rightBarButtonItems: [UIBarButtonItem]? {
+    public var rightBarButtonItems: [UIBarButtonItem]? {
         set(value) {
             self.navigationItem.setRightBarButtonItems(value, animated: false)
         }
@@ -93,6 +89,10 @@ import UIKit
             return self.navigationItem.rightBarButtonItems
         }
     }
+    
+    /// The navigation bar used to set the `titleView`, `leftBarButtonItems`, `rightBarButtonItems`
+    public let navigationBar = UINavigationBar()
+    public let navigationBarUnderlay = UIView()
     
     /// The underlying `UINavigationItem` used for setting the `titleView`, `leftBarButtonItems`, `rightBarButtonItems`.
     fileprivate var navigationItem = UINavigationItem()
@@ -164,6 +164,7 @@ import UIKit
     }
     
     // MARK: - Show / hide interface
+    // For internal use only.
     func setShowInterface(_ show: Bool, animateWith closure: (() -> Void)?) {
         let alpha: CGFloat = show ? 1 : 0
         guard self.alpha != alpha else {
