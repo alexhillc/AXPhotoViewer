@@ -1,0 +1,58 @@
+//
+//  FLAnimatedImageView+AXExtensions.m
+//  Pods
+//
+//  Created by Alex Hill on 6/11/17.
+//
+//
+
+#import "FLAnimatedImageView+AXExtensions.h"
+#import <AXPhotoViewer/AXPhotoViewer-Swift.h>
+
+@interface FLAnimatedImageView ()
+
+/**
+ Unfortunately, FLAnimatedImageView does not allow for setting the current frame index, however, it should work just fine
+ when the requested frame is already cached.
+ Internal use only.
+ */
+@property NSUInteger currentFrameIndex;
+
+/**
+ Unfortunately, FLAnimatedImageView does not allow for setting the current frame, however, it should work just fine
+ when the requested frame is already cached.
+ Internal use only.
+ */
+@property UIImage *currentFrame;
+
+/**
+ When the requested internal frame is not cached, set this property for display ASAP.
+ Internal use only.
+ */
+@property BOOL needsDisplayWhenImageBecomesAvailable;
+
+@end
+
+@implementation FLAnimatedImageView (AXExtensions)
+
+- (id)copyWithZone:(struct _NSZone *)zone {
+    FLAnimatedImageView *imageView = [super copyWithZone:zone];
+    imageView.animatedImage = self.animatedImage;
+    imageView.currentFrame = self.currentFrame;
+    imageView.currentFrameIndex = self.currentFrameIndex;
+    imageView.runLoopMode = self.runLoopMode;
+    return imageView;
+}
+
+- (void)syncFramesWithImageView:(FLAnimatedImageView *)imageView {
+    if (self.animatedImage == nil || imageView.animatedImage == nil || ![self.animatedImage.data isEqualToData:imageView.animatedImage.data]) {
+        return;
+    }
+    
+    self.currentFrameIndex = imageView.currentFrameIndex;
+    self.currentFrame = imageView.currentFrame;
+    self.needsDisplayWhenImageBecomesAvailable = YES;
+    [self.layer setNeedsDisplay];
+}
+
+@end

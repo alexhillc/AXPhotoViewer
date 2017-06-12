@@ -18,7 +18,7 @@ import UIKit
     
     fileprivate var needsUpdateContentSize = false
 
-    fileprivate let CaptionAnimDuration: TimeInterval = 0.25
+    fileprivate let CaptionAnimDuration: TimeInterval = 0.20
     open override var frame: CGRect {
         set(value) {
             let animation: () -> Void = { super.frame = value }

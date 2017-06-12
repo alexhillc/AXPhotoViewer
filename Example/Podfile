@@ -6,7 +6,10 @@ target 'AXPhotoViewerExample' do
 
   pod 'Reveal-SDK'
 
+  # SDWebImage
+  pod 'SDWebImage/GIF'
+
   # AXPhotoViewer
-  pod 'AXPhotoViewer/SDWebImage', :path => '../AXPhotoViewer.podspec'
+  pod 'AXPhotoViewer/SDWebImage’, :path => '../AXPhotoViewer.podspec'
 
 end

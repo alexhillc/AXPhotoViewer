@@ -12,7 +12,7 @@ class SDWebImageIntegration: NSObject, NetworkIntegration {
     
     weak var delegate: NetworkIntegrationDelegate?
     
-    fileprivate var downloadTokens = NSMapTable<PhotoProtocol, SDWebImageDownloadToken>(keyOptions: .strongMemory, valueOptions: .strongMemory)
+    fileprivate var downloadOperations = NSMapTable<PhotoProtocol, SDWebImageOperation>(keyOptions: .strongMemory, valueOptions: .strongMemory)
     
     func loadPhoto(_ photo: PhotoProtocol) {
         if photo.imageData != nil || photo.image != nil {
@@ -22,7 +22,7 @@ class SDWebImageIntegration: NSObject, NetworkIntegration {
         guard let url = photo.url else {
             return
         }
-        
+                
         let progress: SDWebImageDownloaderProgressBlock = { [weak self] (receivedSize, expectedSize, targetURL) in
             guard let uSelf = self else {
                 return
@@ -31,50 +31,52 @@ class SDWebImageIntegration: NSObject, NetworkIntegration {
             uSelf.delegate?.networkIntegration?(uSelf, didUpdateLoadingProgress: CGFloat(receivedSize) / CGFloat(expectedSize), for: photo)
         }
         
-        let completion: SDWebImageDownloaderCompletedBlock = { [weak self] (image, data, error, finished) in
+        let completion: SDInternalCompletionBlock = { [weak self] (image, data, error, cacheType, finished, imageURL) in
             guard let uSelf = self else {
                 return
             }
             
-            self?.downloadTokens.removeObject(forKey: photo)
+            self?.downloadOperations.removeObject(forKey: photo)
             
             if let error = error {
                 uSelf.delegate?.networkIntegration(uSelf, loadDidFailWith: error, for: photo)
-            } else if let image = image, let data = data, finished {
-                if image.isGIF() {
-                    photo.imageData = data
+            } else {
+                if let image = image {
+                    if image.isGIF() {
+                        photo.imageData = data
+                    }
                     photo.image = image
-                } else {
-                    photo.image = image
+                } else if let imageData = data {
+                    photo.imageData = imageData
                 }
                 
                 uSelf.delegate?.networkIntegration(uSelf, loadDidFinishWith: photo)
             }
         }
         
-        guard let token = SDWebImageDownloader.shared().downloadImage(with: url, options: [], progress: progress, completed: completion) else {
+        guard let operation = SDWebImageManager.shared().loadImage(with: url, options: [], progress: progress, completed: completion) else {
             return
         }
         
-        self.downloadTokens.setObject(token, forKey: photo)
+        self.downloadOperations.setObject(operation, forKey: photo)
     }
     
     func cancelLoad(for photo: PhotoProtocol) {
-        guard let token = self.downloadTokens.object(forKey: photo) else {
+        guard let downloadOperation = self.downloadOperations.object(forKey: photo) else {
             return
         }
         
-        SDWebImageDownloader.shared().cancel(token)
+        downloadOperation.cancel()
     }
     
     func cancelAllLoads() {
-        let enumerator = self.downloadTokens.objectEnumerator()
+        let enumerator = self.downloadOperations.objectEnumerator()
         
-        while let downloadToken = enumerator?.nextObject() as? SDWebImageDownloadToken {
-            SDWebImageDownloader.shared().cancel(downloadToken)
+        while let downloadOperation = enumerator?.nextObject() as? SDWebImageOperation {
+            downloadOperation.cancel()
         }
         
-        self.downloadTokens.removeAllObjects()
+        self.downloadOperations.removeAllObjects()
     }
     
 }

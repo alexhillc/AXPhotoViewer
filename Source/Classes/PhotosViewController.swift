@@ -10,7 +10,8 @@ import UIKit
 import MobileCoreServices
 
 @objc(AXPhotosViewController) open class PhotosViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource,
-                                                               PhotoViewControllerDelegate, NetworkIntegrationDelegate {
+                                                               UIViewControllerTransitioningDelegate, PhotoViewControllerDelegate, NetworkIntegrationDelegate,
+                                                               PhotosViewControllerTransitionAnimatorDelegate {
     
     @objc(AXViewControllerType) public enum ViewControllerType: Int {
         case photo, video
@@ -28,10 +29,6 @@ import MobileCoreServices
             self.configurePageViewController()
         }
     }
-    
-    /// The transition object used when animating presentation/dismissal transitions.
-    /// If this object is not present, the presentation will revert to the iOS default.
-    fileprivate(set) var transitionInfo: TransitionInfo?
     
     /// The configuration object applied to the internal pager at initialization.
     fileprivate(set) var pagingConfig: PagingConfig
@@ -66,6 +63,7 @@ import MobileCoreServices
     }
     
     fileprivate var isSizeTransitioning = false
+    fileprivate var isFirstAppearance = true
     
     fileprivate var orderedViewControllers = [PhotoViewController]()
     fileprivate var recycledViewControllers = [PhotoViewController]()
@@ -74,6 +72,7 @@ import MobileCoreServices
     ]
     
     fileprivate let notificationCenter = NotificationCenter()
+    fileprivate var transitionAnimator: PhotosViewControllerTransitionAnimator?
     
     fileprivate var _prefersStatusBarHidden: Bool = false
     open override var prefersStatusBarHidden: Bool {
@@ -93,23 +92,22 @@ import MobileCoreServices
     
     // MARK: - Initialization
     #if AX_SDWEBIMAGE_SUPPORT || AX_PINREMOTEIMAGE_SUPPORT || AX_AFNETWORKING_SUPPORT
-    public init(dataSource: PhotosDataSource, transitionInfo: TransitionInfo? = nil, pagingConfig: PagingConfig = PagingConfig()) {
+    public init(dataSource: PhotosDataSource, pagingConfig: PagingConfig = PagingConfig()) {
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
                                                        navigationOrientation: pagingConfig.navigationOrientation,
                                                        options: [UIPageViewControllerOptionInterPageSpacingKey: pagingConfig.interPhotoSpacing])
         self.dataSource = dataSource
-        self.transitionInfo = transitionInfo
         self.pagingConfig = pagingConfig
         super.init(nibName: nil, bundle: nil)
         self.networkIntegration.delegate = self
+        self.transitioningDelegate = self
     }
     #else
-    public init(dataSource: PhotosDataSource, transitionInfo: TransitionInfo? = nil, pagingConfig: PagingConfig = PagingConfig(), networkIntegration: NetworkIntegration) {
+    public init(dataSource: PhotosDataSource, pagingConfig: PagingConfig = PagingConfig(), networkIntegration: NetworkIntegration) {
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
                                                        navigationOrientation: pagingConfig.navigationOrientation,
                                                        options: [UIPageViewControllerOptionInterPageSpacingKey: pagingConfig.interPhotoSpacing])
         self.dataSource = dataSource
-        self.transitionInfo = transitionInfo
         self.pagingConfig = pagingConfig
         self.networkIntegration = networkIntegration
         super.init(nibName: nil, bundle: nil)
@@ -123,7 +121,7 @@ import MobileCoreServices
     
     deinit {
         self.recycledViewControllers.removeLifeycleObserver(self)
-        self.pageViewController.viewControllers?.removeLifeycleObserver(self)
+        self.orderedViewControllers.removeLifeycleObserver(self)
         self.pageViewController.scrollView.removeContentOffsetObserver(self)
     }
     
@@ -153,9 +151,21 @@ import MobileCoreServices
         self.configurePageViewController()
         
         self.overlayView.tintColor = .white
+        self.overlayView.setShowInterface(false, animateWith: nil)
         self.overlayView.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: #selector(closeAction(_:)))
         self.overlayView.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareAction(_:)))
         self.view.addSubview(self.overlayView)
+    }
+    
+    open override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        if self.isFirstAppearance {
+            self.overlayView.setShowInterface(true, animateWith: { [weak self] in
+                self?.updateStatusBarAppearance(show: true)
+            })
+            self.isFirstAppearance = false
+        }
     }
     
     open override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -175,6 +185,49 @@ import MobileCoreServices
                                                      left: 0,
                                                      bottom: 0, 
                                                      right: 0)
+    }
+    
+    // MARK: - UIViewControllerTransitioningDelegate, PhotosViewControllerTransitionAnimatorDelegate
+    public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        guard let photo = self.dataSource.photo(at: self.currentPhotoIndex),
+            let transitionInfo = self.delegate?.photosViewController?(self, transitionInfoForDismissalPhoto: photo,
+                                                                      at: self.currentPhotoIndex) else {
+            return nil
+        }
+        
+        self.transitionAnimator?.transitionInfo = transitionInfo
+        self.transitionAnimator?.mode = .dismissing
+        return self.transitionAnimator
+    }
+    
+    public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        guard let photo = self.dataSource.photo(at: self.currentPhotoIndex),
+            let transitionInfo = self.delegate?.photosViewController?(self, transitionInfoForPresentationPhoto: photo,
+                                                                      at: self.currentPhotoIndex) else {
+            return nil
+        }
+        
+        self.transitionAnimator = PhotosViewControllerTransitionAnimator(transitionInfo: transitionInfo)
+        self.transitionAnimator?.delegate = self
+        self.transitionAnimator?.mode = .presenting
+        return self.transitionAnimator
+    }
+    
+    func animationController(_ animationController: PhotosViewControllerTransitionAnimator,
+                             didFinishAnimatingWith view: UIImageView,
+                             animatorMode: PhotosViewControllerTransitionAnimatorMode) {
+        
+        guard let photo = self.dataSource.photo(at: self.currentPhotoIndex) else {
+            return
+        }
+        
+        if animatorMode == .presenting {
+            self.notificationCenter.post(name: .photoImageUpdate,
+                                         object: photo,
+                                         userInfo: [
+                                            PhotosViewControllerNotification.ReferenceViewKey: view
+                                         ])
+        }
     }
     
     // MARK: - Page VC Configuration
@@ -245,17 +298,21 @@ import MobileCoreServices
     @objc fileprivate func singleTapAction(_ sender: UITapGestureRecognizer) {
         let showInterface = (self.overlayView.alpha == 0)
         self.overlayView.setShowInterface(showInterface) { [weak self] in
-            self?.prefersStatusBarHidden = !showInterface
-            self?.setNeedsStatusBarAppearanceUpdate()
-            if showInterface {
-                UIView.performWithoutAnimation {
-                    self?.overlayView.contentInset = UIEdgeInsets(top: UIApplication.shared.statusBarFrame.size.height,
-                                                                  left: 0,
-                                                                  bottom: 0,
-                                                                  right: 0)
-                    self?.overlayView.setNeedsLayout()
-                    self?.overlayView.layoutIfNeeded()
-                }
+            self?.updateStatusBarAppearance(show: showInterface)
+        }
+    }
+    
+    fileprivate func updateStatusBarAppearance(show: Bool) {
+        self.prefersStatusBarHidden = !show
+        self.setNeedsStatusBarAppearanceUpdate()
+        if show {
+            UIView.performWithoutAnimation { [weak self] in
+                self?.overlayView.contentInset = UIEdgeInsets(top: UIApplication.shared.statusBarFrame.size.height,
+                                                              left: 0,
+                                                              bottom: 0,
+                                                              right: 0)
+                self?.overlayView.setNeedsLayout()
+                self?.overlayView.layoutIfNeeded()
             }
         }
     }
@@ -575,39 +632,47 @@ import MobileCoreServices
     public func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFinishWith photo: PhotoProtocol) {
         if let imageData = photo.imageData {
             photo.loadingState = .loaded
-            self.notificationCenter.post(name: .photoImageUpdate,
-                                         object: photo,
-                                         userInfo: [
-                                            PhotosViewControllerNotification.ImageDataKey: imageData,
-                                            PhotosViewControllerNotification.LoadingStateKey: PhotoLoadingState.loaded
-                                         ])
+            DispatchQueue.main.async { [weak self] in
+                self?.notificationCenter.post(name: .photoImageUpdate,
+                                              object: photo,
+                                              userInfo: [
+                                                 PhotosViewControllerNotification.ImageDataKey: imageData,
+                                                 PhotosViewControllerNotification.LoadingStateKey: PhotoLoadingState.loaded
+                                              ])
+            }
         } else if let image = photo.image {
             photo.loadingState = .loaded
-            self.notificationCenter.post(name: .photoImageUpdate,
-                                         object: photo,
-                                         userInfo: [
-                                            PhotosViewControllerNotification.ImageKey: image,
-                                            PhotosViewControllerNotification.LoadingStateKey: PhotoLoadingState.loaded
-                                         ])
+            DispatchQueue.main.async { [weak self] in
+                self?.notificationCenter.post(name: .photoImageUpdate,
+                                              object: photo,
+                                              userInfo: [
+                                                PhotosViewControllerNotification.ImageKey: image,
+                                                PhotosViewControllerNotification.LoadingStateKey: PhotoLoadingState.loaded
+                                              ])
+            }
         }
     }
     
     public func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFailWith error: Error, for photo: PhotoProtocol) {
         photo.loadingState = .loadingFailed
         photo.error = error
-        self.notificationCenter.post(name: .photoImageUpdate,
-                                     object: photo,
-                                     userInfo: [
-                                        PhotosViewControllerNotification.ErrorKey: error,
-                                        PhotosViewControllerNotification.LoadingStateKey: PhotoLoadingState.loadingFailed
-                                     ])
+        DispatchQueue.main.async { [weak self] in
+            self?.notificationCenter.post(name: .photoImageUpdate,
+                                          object: photo,
+                                          userInfo: [
+                                            PhotosViewControllerNotification.ErrorKey: error,
+                                            PhotosViewControllerNotification.LoadingStateKey: PhotoLoadingState.loadingFailed
+                                          ])
+        }
     }
     
     public func networkIntegration(_ networkIntegration: NetworkIntegration, didUpdateLoadingProgress progress: CGFloat, for photo: PhotoProtocol) {
         photo.progress = progress
-        self.notificationCenter.post(name: .photoLoadingProgressUpdate,
-                                     object: photo,
-                                     userInfo: [PhotosViewControllerNotification.ProgressKey: progress])
+        DispatchQueue.main.async { [weak self] in
+            self?.notificationCenter.post(name: .photoLoadingProgressUpdate,
+                                          object: photo,
+                                          userInfo: [PhotosViewControllerNotification.ProgressKey: progress])
+        }
     }
 
 }
@@ -682,6 +747,32 @@ fileprivate extension UIScrollView {
     @objc optional func photosViewController(_ photosViewController: PhotosViewController,
                                              prepareViewControllerForEndDisplay photoViewController: PhotoViewController)
     
+    /// Called just before presentation occurs. This should provide the transition object used when animating the presentation transition.
+    /// If this object is not present, the presentation will revert to the iOS default.
+    ///
+    /// - Parameters:
+    ///   - photosViewController: The `PhotosViewController` presenting.
+    ///   - photo: The `Photo` being transitioned to.
+    ///   - index: The `index` in the dataSource of the `Photo` being transitioned to.
+    /// - Returns: The TransitionInfo object, which should provide a `referenceView` if contextual animation is desired.
+    @objc(photosViewController:transitionInfoForPresentationPhoto:atIndex:)
+    optional func photosViewController(_ photosViewController: PhotosViewController,
+                                       transitionInfoForPresentationPhoto photo: PhotoProtocol,
+                                       at index: Int) -> TransitionInfo?
+    
+    /// Called just before dismissal occurs. This should provide the transition object used when animating the dismissal transition.
+    /// If this object is not present, the presentation will revert to the iOS default.
+    ///
+    /// - Parameters:
+    ///   - photosViewController: The `PhotosViewController` presenting.
+    ///   - photo: The `Photo` being used to transition dismissal.
+    ///   - index: The `index` in the dataSource of the used `Photo`.
+    /// - Returns: The TransitionInfo object, which should provide a `referenceView` if contextual animation is desired.
+    @objc(photosViewController:transitionInfoForDismissalPhoto:atIndex:)
+    optional func photosViewController(_ photosViewController: PhotosViewController,
+                                       transitionInfoForDismissalPhoto photo: PhotoProtocol,
+                                       at index: Int) -> TransitionInfo?
+    
     /// Called when the action button is tapped for a photo. If no implementation is provided, will fall back to default action.
     ///
     /// - Parameters:
@@ -707,6 +798,7 @@ fileprivate extension UIScrollView {
     static let ImageUpdate = Notification.Name.photoImageUpdate.rawValue
     static let ImageKey = "AXPhotosViewControllerImage"
     static let ImageDataKey = "AXPhotosViewControllerImageData"
+    static let ReferenceViewKey = "AXPhotosViewControllerReferenceView"
     static let LoadingStateKey = "AXPhotosViewControllerLoadingState"
     static let ProgressKey = "AXPhotosViewControllerProgress"
     static let ErrorKey = "AXPhotosViewControllerError"

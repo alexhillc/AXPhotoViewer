@@ -37,8 +37,8 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
         }
     }
     
-    private(set) var doubleTapGestureRecognizer = UITapGestureRecognizer()
-    fileprivate var imageView = FLAnimatedImageView()
+    fileprivate(set) var doubleTapGestureRecognizer = UITapGestureRecognizer()
+    fileprivate(set) var imageView = FLAnimatedImageView()
 
     public init() {
         super.init(frame: .zero)
@@ -47,6 +47,7 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
         self.doubleTapGestureRecognizer.addTarget(self, action: #selector(doubleTapAction(_:)))
         self.addGestureRecognizer(self.doubleTapGestureRecognizer)
         
+        self.imageView.layer.masksToBounds = true
         self.imageView.contentMode = .scaleAspectFit
         self.addSubview(self.imageView)
         
@@ -64,8 +65,6 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
     
     fileprivate func updateImageView(image: UIImage?, animatedImage: FLAnimatedImage?) {
         self.imageView.transform = .identity
-        self.imageView.animatedImage = nil
-        self.imageView.image = nil
         
         var imageSize: CGSize = .zero
         

@@ -154,25 +154,28 @@ import FLAnimatedImage
         
         if notification.userInfo?[PhotosViewControllerNotification.ImageDataKey] != nil ||
             notification.userInfo?[PhotosViewControllerNotification.ImageKey] != nil {
+            self.applyPhoto(photo)
+
+        } else if let referenceView = notification.userInfo?[PhotosViewControllerNotification.ReferenceViewKey] as? FLAnimatedImageView {
+            guard self.zoomingImageView.animatedImage != nil && referenceView.animatedImage != nil else {
+                return
+            }
             
-            DispatchQueue.main.async { [weak self] in
-                self?.applyPhoto(photo)
-            }
+            self.zoomingImageView.imageView.syncFrames(with: referenceView)
+            
         } else if let error = notification.userInfo?[PhotosViewControllerNotification.ErrorKey] as? Error {
-            DispatchQueue.main.async { [weak self] in
-                self?.loadingView?.showError(error, retryHandler: {
-                    guard let uSelf = self, let photo = uSelf.photo else {
-                        return
-                    }
-                    
-                    self?.delegate?.photoViewController(uSelf, retryDownloadFor: photo)
-                    self?.loadingView?.removeError()
-                    self?.loadingView?.startLoading(initialProgress: photo.progress)
-                    self?.view.setNeedsLayout()
-                })
+            self.loadingView?.showError(error, retryHandler: { [weak self] in
+                guard let uSelf = self, let photo = uSelf.photo else {
+                    return
+                }
                 
+                self?.delegate?.photoViewController(uSelf, retryDownloadFor: photo)
+                self?.loadingView?.removeError()
+                self?.loadingView?.startLoading(initialProgress: photo.progress)
                 self?.view.setNeedsLayout()
-            }
+            })
+            
+            self.view.setNeedsLayout()
         }
     }
 

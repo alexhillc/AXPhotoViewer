@@ -9,21 +9,25 @@ PODS:
   - SDWebImage (4.0.0):
     - SDWebImage/Core (= 4.0.0)
   - SDWebImage/Core (4.0.0)
+  - SDWebImage/GIF (4.0.0):
+    - FLAnimatedImage (~> 1.0)
+    - SDWebImage/Core
 
 DEPENDENCIES:
   - AXPhotoViewer/SDWebImage (from `../AXPhotoViewer.podspec`)
   - Reveal-SDK
+  - SDWebImage/GIF
 
 EXTERNAL SOURCES:
   AXPhotoViewer:
     :path: "../AXPhotoViewer.podspec"
 
 SPEC CHECKSUMS:
-  AXPhotoViewer: a028850fbe1ae4b5c7ad9cd37ef0d88552b1388e
+  AXPhotoViewer: 9a01762d19d8413d3c375869f84d1088d56d6baf
   FLAnimatedImage: 4a0b56255d9b05f18b6dd7ee06871be5d3b89e31
   Reveal-SDK: 43be4e662864e937960d0d04d005135e29c4e53b
   SDWebImage: 76a6348bdc74eb5a55dd08a091ef298e56b55e41
 
-PODFILE CHECKSUM: 61fdf9aea69be997a0692053e5fdba6a7577cbe5
+PODFILE CHECKSUM: b29183906b000caf62c4a4bab47745918621ec0d
 
 COCOAPODS: 1.2.1

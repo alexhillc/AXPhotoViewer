@@ -8,14 +8,12 @@
 
 @objc(AXTransitionInfo) open class TransitionInfo: NSObject {
     
-    fileprivate(set) var referenceRect: CGRect
-    fileprivate(set) var referenceView: UIView
+    fileprivate(set) weak var referenceView: UIImageView?
     
-    var duration: TimeInterval = 0.25
+    var duration: TimeInterval = 0.35
     var interactive: Bool = true
     
-    public init(referenceRect: CGRect, referenceView: UIView) {
-        self.referenceRect = referenceRect
+    public init(referenceView: UIImageView?) {
         self.referenceView = referenceView
         super.init()
     }
