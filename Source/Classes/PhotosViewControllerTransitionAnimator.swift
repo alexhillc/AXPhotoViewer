@@ -85,9 +85,13 @@ class PhotosViewControllerTransitionAnimator: NSObject, UIViewControllerAnimated
         
         transitionContext.containerView.layoutIfNeeded()
         
-        UIView.springyAnimate(withDuration: self.transitionDuration(using: transitionContext),
-                              animations: scaleAnimations,
-                              completion: scaleCompletion)
+        UIView.animate(withDuration: self.transitionDuration(using: transitionContext),
+                       delay: 0,
+                       usingSpringWithDamping: 0.8,
+                       initialSpringVelocity: 0,
+                       options: [.curveEaseInOut, .beginFromCurrentState, .allowAnimatedContent],
+                       animations: scaleAnimations,
+                       completion: scaleCompletion)
         
         UIView.animate(withDuration: self.transitionDuration(using: transitionContext) * FadeInOutTransitionRatio,
                        delay: 0,
@@ -150,9 +154,13 @@ class PhotosViewControllerTransitionAnimator: NSObject, UIViewControllerAnimated
         
         transitionContext.containerView.layoutIfNeeded()
         
-        UIView.springyAnimate(withDuration: self.transitionDuration(using: transitionContext),
-                              animations: scaleAnimations,
-                              completion: scaleCompletion)
+        UIView.animate(withDuration: self.transitionDuration(using: transitionContext),
+                       delay: 0,
+                       usingSpringWithDamping: 1.0,
+                       initialSpringVelocity: 0,
+                       options: [.curveEaseInOut, .beginFromCurrentState, .allowAnimatedContent],
+                       animations: scaleAnimations,
+                       completion: scaleCompletion)
         
         UIView.animate(withDuration: self.transitionDuration(using: transitionContext) * FadeInOutTransitionRatio,
                        delay: 0,

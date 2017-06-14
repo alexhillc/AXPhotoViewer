@@ -21,6 +21,13 @@ Pod::Spec.new do |s|
     cs.frameworks    = 'UIKit', 'MobileCoreServices'
   end
 
+  s.subspec 'Lite' do |ls|
+    ls.frameworks    = 'ImageIO'
+    ls.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_LITE_SUPPORT' }
+    ls.dependency      'AXPhotoViewer/Core'
+    ls.source_files  = 'Source/Integrations/SimpleNetworkIntegration.swift'
+  end
+
   s.subspec 'SDWebImage' do |ss|
     ss.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_SDWEBIMAGE_SUPPORT' }
     ss.dependency      'AXPhotoViewer/Core'

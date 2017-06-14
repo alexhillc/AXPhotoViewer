@@ -137,9 +137,7 @@ import FLAnimatedImage
             return
         }
         
-        DispatchQueue.main.async { [weak self] in
-            self?.loadingView?.updateProgress?(progress)
-        }
+        self.loadingView?.updateProgress?(progress)
     }
     
     @objc fileprivate func photoImageDidUpdate(_ notification: Notification) {
@@ -148,22 +146,15 @@ import FLAnimatedImage
             return
         }
         
-        guard photo === self.photo else {
+        guard photo === self.photo, let userInfo = notification.userInfo else {
             return
         }
         
-        if notification.userInfo?[PhotosViewControllerNotification.ImageDataKey] != nil ||
-            notification.userInfo?[PhotosViewControllerNotification.ImageKey] != nil {
+        if userInfo[PhotosViewControllerNotification.ImageDataKey] != nil || userInfo[PhotosViewControllerNotification.ImageKey] != nil {
             self.applyPhoto(photo)
-
-        } else if let referenceView = notification.userInfo?[PhotosViewControllerNotification.ReferenceViewKey] as? FLAnimatedImageView {
-            guard self.zoomingImageView.animatedImage != nil && referenceView.animatedImage != nil else {
-                return
-            }
-            
+        } else if let referenceView = userInfo[PhotosViewControllerNotification.ReferenceViewKey] as? FLAnimatedImageView {
             self.zoomingImageView.imageView.syncFrames(with: referenceView)
-            
-        } else if let error = notification.userInfo?[PhotosViewControllerNotification.ErrorKey] as? Error {
+        } else if let error = userInfo[PhotosViewControllerNotification.ErrorKey] as? Error {
             self.loadingView?.showError(error, retryHandler: { [weak self] in
                 guard let uSelf = self, let photo = uSelf.photo else {
                     return

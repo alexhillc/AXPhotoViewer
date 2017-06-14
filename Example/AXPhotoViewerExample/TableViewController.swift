@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  TableViewController.swift
 //  AXPhotoViewerExample
 //
 //  Created by Alex Hill on 6/4/17.
@@ -8,11 +8,10 @@
 
 import UIKit
 import AXPhotoViewer
-import SDWebImage
 import FLAnimatedImage
 
 // This class contains some hacked together sample project code that I couldn't be arsed to make less ugly. ¯\_(ツ)_/¯
-class ViewController: UITableViewController, PhotosViewControllerDelegate {
+class TableViewController: UITableViewController, PhotosViewControllerDelegate {
     
     let ReuseIdentifier = "AXReuseIdentifier"
     
@@ -81,25 +80,47 @@ class ViewController: UITableViewController, PhotosViewControllerDelegate {
             cell.contentView.addSubview(imageView)
         }
         
+        return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         guard let imageView = cell.contentView.viewWithTag(666) as? FLAnimatedImageView else {
-            return UITableViewCell()
+            return
         }
         
-        imageView.sd_setImage(with: self.photos[indexPath.row].url, completed: { (image, error, cacheType, url) in
-            guard let uImage = image else {
+        imageView.image = nil
+        imageView.animatedImage = nil
+        
+        let maxSize = cell.frame.size.height
+        
+        self.urlSession.dataTask(with: self.photos[indexPath.row].url!) { (data, response, error) in
+            guard let uData = data else {
                 return
             }
-                        
-            let maxSize: CGFloat = cell.frame.size.height
-            let imageViewSize = (uImage.size.width > uImage.size.height) ? CGSize(width: maxSize,
-                                                                                height: (maxSize * uImage.size.height / uImage.size.width)) :
-                                                                                        CGSize(width: maxSize * uImage.size.width / uImage.size.height,
-                                                                                               height: maxSize)
-            imageView.frame.size = imageViewSize
-            imageView.center = cell.contentView.center
-        })
-        
-        return cell
+            
+            var imageViewSize: CGSize
+            if let animatedImage = FLAnimatedImage(animatedGIFData: uData) {
+                imageViewSize = (animatedImage.size.width > animatedImage.size.height) ?
+                    CGSize(width: maxSize,height: (maxSize * animatedImage.size.height / animatedImage.size.width)) :
+                    CGSize(width: maxSize * animatedImage.size.width / animatedImage.size.height, height: maxSize)
+                
+                DispatchQueue.main.async {
+                    imageView.animatedImage = animatedImage
+                    imageView.frame.size = imageViewSize
+                    imageView.center = cell.contentView.center
+                }
+            } else if let image = UIImage(data: uData) {
+                imageViewSize = (image.size.width > image.size.height) ?
+                    CGSize(width: maxSize,height: (maxSize * image.size.height / image.size.width)) :
+                    CGSize(width: maxSize * image.size.width / image.size.height, height: maxSize)
+                
+                DispatchQueue.main.async {
+                    imageView.image = image
+                    imageView.frame.size = imageViewSize
+                    imageView.center = cell.contentView.center
+                }
+            }
+        }.resume()
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

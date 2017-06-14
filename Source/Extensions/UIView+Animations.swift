@@ -10,18 +10,6 @@ import UIKit
 
 extension UIView {
     
-    class func springyAnimate(withDuration duration: TimeInterval, animations: @escaping () -> Void, completion: ((Bool) -> Void)? = nil) {
-        UIView.animate(
-            withDuration: duration,
-            delay: 0,
-            usingSpringWithDamping: 0.8,
-            initialSpringVelocity: 0,
-            options: [.curveEaseInOut, .beginFromCurrentState, .allowAnimatedContent],
-            animations: animations,
-            completion: completion
-        )
-    }
-    
     class func animateCornerRadii(withDuration duration: TimeInterval, to value: CGFloat, views: [UIView], completion: ((Bool) -> Void)? = nil) {
         assert(views.count > 0, "Must call `animateCornerRadii:duration:value:views:completion:` with at least 1 view.")
         

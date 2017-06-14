@@ -47,6 +47,8 @@ import MobileCoreServices
     public let networkIntegration: NetworkIntegration = PINRemoteImageIntegration()
     #elseif AX_AFNETWORKING_SUPPORT
     public let networkIntegration: NetworkIntegration = AFNetworkingIntegration()
+    #elseif AX_LITE_SUPPORT
+    public let networkIntegration: NetworkIntegration = SimpleNetworkIntegration()
     #else
     public let networkIntegration: NetworkIntegration
     #endif
@@ -91,7 +93,7 @@ import MobileCoreServices
     }
     
     // MARK: - Initialization
-    #if AX_SDWEBIMAGE_SUPPORT || AX_PINREMOTEIMAGE_SUPPORT || AX_AFNETWORKING_SUPPORT
+    #if AX_SDWEBIMAGE_SUPPORT || AX_PINREMOTEIMAGE_SUPPORT || AX_AFNETWORKING_SUPPORT || AX_LITE_SUPPORT
     public init(dataSource: PhotosDataSource, pagingConfig: PagingConfig = PagingConfig()) {
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
                                                        navigationOrientation: pagingConfig.navigationOrientation,
@@ -100,7 +102,6 @@ import MobileCoreServices
         self.pagingConfig = pagingConfig
         super.init(nibName: nil, bundle: nil)
         self.networkIntegration.delegate = self
-        self.transitioningDelegate = self
     }
     #else
     public init(dataSource: PhotosDataSource, pagingConfig: PagingConfig = PagingConfig(), networkIntegration: NetworkIntegration) {
@@ -134,6 +135,8 @@ import MobileCoreServices
     open override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.transitioningDelegate = self
+
         self.view.backgroundColor = .black
         
         self.pageViewController.delegate = self
@@ -252,7 +255,8 @@ import MobileCoreServices
     /// - Parameters:
     ///   - loadingViewType: The desired loading view class.
     ///   - viewControllerType: The view controller type that will replace its loading view type. (Only `PhotoViewController` for the moment)
-    public func replaceLoadingView(_ loadingViewType: LoadingViewProtocol.Type, for viewControllerType: ViewControllerType) {
+    @objc(replaceLoadingViewForViewControllerType:withLoadingViewType:)
+    public func replaceLoadingView(for viewControllerType: ViewControllerType, with loadingViewType: LoadingViewProtocol.Type) {
         guard loadingViewType is UIView.Type else {
             assertionFailure("`loadingViewType` must be a `UIView` that conforms to `LoadingViewProtocol`.")
             return
@@ -476,10 +480,7 @@ import MobileCoreServices
         }
         
         if change?[.newKey] is NSNull {
-            self.delegate?.photosViewController?(self, prepareViewControllerForEndDisplay: photoViewController)
             self.recyclePhotoViewController(photoViewController)
-        } else {
-            self.delegate?.photosViewController?(self, prepareViewControllerForDisplay: photoViewController)
         }
     }
     
@@ -541,8 +542,16 @@ import MobileCoreServices
         
         if swipePercent < 0.5 && self.currentPhotoIndex != lowIndex  {
             self.currentPhotoIndex = lowIndex
+            
+            if let photo = self.dataSource.photo(at: lowIndex) {
+                self.delegate?.photosViewController?(self, didNavigateTo: photo, at: lowIndex)
+            }
         } else if swipePercent > 0.5 && self.currentPhotoIndex != highIndex {
             self.currentPhotoIndex = highIndex
+            
+            if let photo = self.dataSource.photo(at: highIndex) {
+                self.delegate?.photosViewController?(self, didNavigateTo: photo, at: highIndex)
+            }
         }
         
         self.overlayView.titleView?.tweenBetweenLowIndex?(lowIndex, highIndex: highIndex, percent: percent)
@@ -729,23 +738,17 @@ fileprivate extension UIScrollView {
 // MARK: - PhotosViewControllerDelegate
 @objc(AXPhotosViewControllerDelegate) public protocol PhotosViewControllerDelegate {
     
-    /// Called just after the `PhotoViewController` is added to the view hierarchy as an opportunity to configure the view controller
-    /// before it comes onscreen.
+    /// Called when the `PhotosViewController` navigates to a new photo. This is defined as when the swipe percent between pages
+    /// is greater than the threshold (>0.5).
     ///
     /// - Parameters:
-    ///   - photosViewController: The `PhotosViewController` that will display the view controller.
-    ///   - photoViewController: The related `PhotoViewController`.
-    @objc optional func photosViewController(_ photosViewController: PhotosViewController,
-                                             prepareViewControllerForDisplay photoViewController: PhotoViewController)
-    
-    /// Called just before the `PhotoViewController` is removed from the view hierarchy as an opportunity to prepare the 
-    /// view controller for offscreen.
-    ///
-    /// - Parameters:
-    ///   - photosViewController: The `PhotosViewController` ending display of the view controller.
-    ///   - photoViewController: The related `PhotoViewController`.
-    @objc optional func photosViewController(_ photosViewController: PhotosViewController,
-                                             prepareViewControllerForEndDisplay photoViewController: PhotoViewController)
+    ///   - photosViewController: The `PhotosViewController` that is navigating.
+    ///   - photo: The `Photo` that was navigated to.
+    ///   - index: The `index` in the dataSource of the `Photo` being transitioned to.
+    @objc(photosViewController:didNavigateToPhoto:atIndex:)
+    optional func photosViewController(_ photosViewController: PhotosViewController,
+                                       didNavigateTo photo: PhotoProtocol,
+                                       at index: Int)
     
     /// Called just before presentation occurs. This should provide the transition object used when animating the presentation transition.
     /// If this object is not present, the presentation will revert to the iOS default.
@@ -779,7 +782,8 @@ fileprivate extension UIScrollView {
     ///   - photosViewController: The `PhotosViewController` handling the action.
     ///   - photo: The related `Photo`.
     @objc(photosViewController:handleActionButtonTappedForPhoto:)
-    optional func photosViewController(_ photosViewController: PhotosViewController, handleActionButtonTappedFor photo: PhotoProtocol)
+    optional func photosViewController(_ photosViewController: PhotosViewController, 
+                                       handleActionButtonTappedFor photo: PhotoProtocol)
     
     /// Called when an action button action is completed.
     ///
@@ -788,7 +792,9 @@ fileprivate extension UIScrollView {
     ///   - photo: The related `Photo`.
     /// - Note: This is only called for the default action.
     @objc(photosViewController:actionCompletedWithActivityType:forPhoto:)
-    optional func photosViewController(_ photosViewController: PhotosViewController, actionCompletedWith activityType: UIActivityType, for photo: PhotoProtocol)
+    optional func photosViewController(_ photosViewController: PhotosViewController, 
+                                       actionCompletedWith activityType: UIActivityType, 
+                                       for photo: PhotoProtocol)
 }
 
 // MARK: - Notification definitions
