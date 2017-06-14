@@ -105,20 +105,8 @@ class AXAFHTTPSessionManager: AFHTTPSessionManager {
 class AXAFImageResponseSerializer: AFImageResponseSerializer {
     
     override func responseObject(for response: URLResponse?, data: Data?, error: NSErrorPointer) -> Any? {
-        guard let imageSourceData = data as CFData? else {
-            return super.responseObject(for: response, data: data, error: error)
-        }
-        
-        let options: [String: Any] = [kCGImageSourceShouldCache as String: false]
-        guard let imageSource = CGImageSourceCreateWithData(imageSourceData, options as CFDictionary?),
-            let imageSourceContainerType = CGImageSourceGetType(imageSource) else {
-                
-            return super.responseObject(for: response, data: data, error: error)
-        }
-        
-        let isGIFData = UTTypeConformsTo(imageSourceContainerType, kUTTypeGIF)
-        if isGIFData {
-            return data
+        if let uData = data, uData.containsGIF() {
+            return uData
         }
         
         return super.responseObject(for: response, data: data, error: error)
