@@ -41,6 +41,24 @@ import MobileCoreServices
     /// The internal tap gesture recognizer that is used to hide/show the overlay interface.
     public let singleTapGestureRecognizer = UITapGestureRecognizer()
     
+    /// The close bar button item that is initially set in the overlay's navigation bar. Any 'action' provided to this button will be overwritten.
+    /// Overriding this is purely for customizing the look and feel of the button.
+    /// Alternatively, you may create your own `UIBarButtonItem`s and directly set them _and_ their actions on the `overlayView` property.
+    public var closeBarButtonItem: UIBarButtonItem {
+        get {
+            return UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: nil)
+        }
+    }
+    
+    /// The action bar button item that is initially set in the overlay's navigation bar. Any 'action' provided to this button will be overwritten.
+    /// Overriding this is purely for customizing the look and feel of the button.
+    /// Alternatively, you may create your own `UIBarButtonItem`s and directly set them _and_ their actions on the `overlayView` property.
+    public var actionBarButtonItem: UIBarButtonItem {
+        get {
+            return UIBarButtonItem(barButtonSystemItem: .action, target: self, action: nil)
+        }
+    }
+    
     #if AX_SDWEBIMAGE_SUPPORT
     public let networkIntegration: NetworkIntegration = SDWebImageIntegration()
     #elseif AX_PINREMOTEIMAGE_SUPPORT
@@ -53,12 +71,18 @@ import MobileCoreServices
     public let networkIntegration: NetworkIntegration
     #endif
     
-    // MARK: - Private variables
+    // MARK: - Private/internal variables
     fileprivate enum SwipeDirection {
         case none, left, right
     }
     
-    fileprivate var currentPhotoIndex: Int = 0 {
+    var currentPhotoViewController: PhotoViewController? {
+        get {
+            return self.orderedViewControllers.filter({ $0.pageIndex == currentPhotoIndex }).first
+        }
+    }
+    
+    fileprivate(set) var currentPhotoIndex: Int = 0 {
         didSet {
             self.updateOverlay(for: currentPhotoIndex)
         }
@@ -154,9 +178,16 @@ import MobileCoreServices
         self.configurePageViewController()
         
         self.overlayView.tintColor = .white
-        self.overlayView.setShowInterface(false, animateWith: nil)
-        self.overlayView.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: #selector(closeAction(_:)))
-        self.overlayView.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareAction(_:)))
+        self.overlayView.setShowInterface(false, animated: false, alongside: nil)
+        
+        let closeBarButtonItem = self.closeBarButtonItem
+        closeBarButtonItem.action = #selector(closeAction(_:))
+        self.overlayView.leftBarButtonItem = closeBarButtonItem
+        
+        let actionBarButtonItem = self.actionBarButtonItem
+        actionBarButtonItem.action = #selector(shareAction(_:))
+        self.overlayView.rightBarButtonItem = actionBarButtonItem
+        
         self.view.addSubview(self.overlayView)
     }
     
@@ -164,7 +195,7 @@ import MobileCoreServices
         super.viewDidAppear(animated)
         
         if self.isFirstAppearance {
-            self.overlayView.setShowInterface(true, animateWith: { [weak self] in
+            self.overlayView.setShowInterface(true, animated: true, alongside: { [weak self] in
                 self?.updateStatusBarAppearance(show: true)
             })
             self.isFirstAppearance = false
@@ -300,9 +331,9 @@ import MobileCoreServices
     }
     
     @objc fileprivate func singleTapAction(_ sender: UITapGestureRecognizer) {
-        let showInterface = (self.overlayView.alpha == 0)
-        self.overlayView.setShowInterface(showInterface) { [weak self] in
-            self?.updateStatusBarAppearance(show: showInterface)
+        let show = (self.overlayView.alpha == 0)
+        self.overlayView.setShowInterface(show, animated: true) { [weak self] in
+            self?.updateStatusBarAppearance(show: show)
         }
     }
     

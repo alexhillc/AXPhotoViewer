@@ -165,7 +165,7 @@ import UIKit
     
     // MARK: - Show / hide interface
     // For internal use only.
-    func setShowInterface(_ show: Bool, animateWith closure: (() -> Void)?) {
+    func setShowInterface(_ show: Bool, animated: Bool, alongside closure: (() -> Void)?) {
         let alpha: CGFloat = show ? 1 : 0
         guard self.alpha != alpha else {
             return
@@ -175,15 +175,24 @@ import UIKit
             self.isHidden = false
         }
         
-        UIView.animate(withDuration: OverlayAnimDuration, animations: { [weak self] in
+        let animations = { [weak self] in
             self?.alpha = alpha
             closure?()
-        }) { (finished) in
+        }
+        
+        let completion: (_ finished: Bool) -> Void = { [weak self] (finished) in
             guard alpha == 0 else {
                 return
             }
             
-            self.isHidden = true
+            self?.isHidden = true
+        }
+        
+        if animated {
+            UIView.animate(withDuration: OverlayAnimDuration, animations: animations, completion: completion)
+        } else {
+            animations()
+            completion(true)
         }
     }
     

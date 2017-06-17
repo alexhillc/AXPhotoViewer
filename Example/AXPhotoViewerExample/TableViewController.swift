@@ -16,7 +16,7 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
     let ReuseIdentifier = "AXReuseIdentifier"
     
     var urlSession = URLSession(configuration: .default)
-    var imageViews = [FLAnimatedImageView]()
+    var content = [Int: Data]()
     
     let photos = [
         Photo(attributedTitle: NSAttributedString(string: "The Flash Poster"),
@@ -69,7 +69,7 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
             return UITableViewCell()
         }
         
-        // sample project lulz
+        // sample project worst practices top kek
         if cell.contentView.viewWithTag(666) == nil {
             let imageView = FLAnimatedImageView()
             imageView.tag = 666
@@ -92,10 +92,16 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
         imageView.animatedImage = nil
         
         let maxSize = cell.frame.size.height
-        
-        self.urlSession.dataTask(with: self.photos[indexPath.row].url!) { (data, response, error) in
-            guard let uData = data else {
-                return
+
+        self.loadContent(at: indexPath) { (uData) in
+            func onMainQueue(_ block: @escaping () -> Void) {
+                if Thread.isMainThread {
+                    block()
+                } else {
+                    DispatchQueue.main.async {
+                        block()
+                    }
+                }
             }
             
             var imageViewSize: CGSize
@@ -104,23 +110,24 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
                     CGSize(width: maxSize,height: (maxSize * animatedImage.size.height / animatedImage.size.width)) :
                     CGSize(width: maxSize * animatedImage.size.width / animatedImage.size.height, height: maxSize)
                 
-                DispatchQueue.main.async {
+                onMainQueue {
                     imageView.animatedImage = animatedImage
                     imageView.frame.size = imageViewSize
                     imageView.center = cell.contentView.center
                 }
+                
             } else if let image = UIImage(data: uData) {
                 imageViewSize = (image.size.width > image.size.height) ?
                     CGSize(width: maxSize,height: (maxSize * image.size.height / image.size.width)) :
                     CGSize(width: maxSize * image.size.width / image.size.height, height: maxSize)
                 
-                DispatchQueue.main.async {
+                onMainQueue {
                     imageView.image = image
                     imageView.frame.size = imageViewSize
                     imageView.center = cell.contentView.center
                 }
             }
-        }.resume()
+        }
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -135,7 +142,33 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
         self.present(photosViewController, animated: true, completion: nil)
     }
     
+    // MARK: - Loading
+    func loadContent(at indexPath: IndexPath, completion: ((_ data: Data) -> Void)?) {
+        if let data = self.content[indexPath.row] {
+            completion?(data)
+            return
+        }
+        
+        self.urlSession.dataTask(with: self.photos[indexPath.row].url!) { [weak self] (data, response, error) in
+            guard let uSelf = self, let uData = data else {
+                return
+            }
+            
+            uSelf.content[indexPath.row] = uData
+            completion?(uData)
+        }.resume()
+    }
+    
     // MARK: - PhotosViewControllerDelegate
+    func photosViewController(_ photosViewController: PhotosViewController, didNavigateTo photo: PhotoProtocol, at index: Int) {
+        let indexPath = IndexPath(row: index, section: 0)
+        self.tableView.scrollToRow(at: indexPath, at: .none, animated: false)
+        
+        // ideally, _your_ URL cache will be large enough to the point where this isn't necessary 
+        // (or, you're using a predefined integration that has a shared cache with your codebase)
+        self.loadContent(at: indexPath, completion: nil)
+    }
+    
     func photosViewController(_ photosViewController: PhotosViewController, transitionInfoForDismissalPhoto photo: PhotoProtocol, at index: Int) -> TransitionInfo? {
         let cell = self.tableView.cellForRow(at: IndexPath(row: index, section: 0))
         guard let imageView = cell?.contentView.viewWithTag(666) as? FLAnimatedImageView else {

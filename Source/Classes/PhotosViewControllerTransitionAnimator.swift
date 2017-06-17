@@ -106,7 +106,7 @@ class PhotosViewControllerTransitionAnimator: NSObject, UIViewControllerAnimated
     fileprivate func animateDismissal(transitionContext: UIViewControllerContextTransitioning) {
         guard let to = transitionContext.viewController(forKey: .to),
             let from = transitionContext.viewController(forKey: .from) as? PhotosViewController,
-            let imageView = (from.pageViewController.viewControllers?.first as? PhotoViewController)?.zoomingImageView.imageView as UIImageView?,
+            let imageView = from.currentPhotoViewController?.zoomingImageView.imageView as UIImageView?,
             let referenceView = self.transitionInfo.referenceView else {
                 assertionFailure("No. ಠ_ಠ")
                 return
