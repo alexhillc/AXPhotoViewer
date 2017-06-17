@@ -41,21 +41,21 @@ import MobileCoreServices
     /// The internal tap gesture recognizer that is used to hide/show the overlay interface.
     public let singleTapGestureRecognizer = UITapGestureRecognizer()
     
-    /// The close bar button item that is initially set in the overlay's navigation bar. Any 'action' provided to this button will be overwritten.
+    /// The close bar button item that is initially set in the overlay's navigation bar. Any 'target' or 'action' provided to this button will be overwritten.
     /// Overriding this is purely for customizing the look and feel of the button.
     /// Alternatively, you may create your own `UIBarButtonItem`s and directly set them _and_ their actions on the `overlayView` property.
     public var closeBarButtonItem: UIBarButtonItem {
         get {
-            return UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: nil)
+            return UIBarButtonItem(barButtonSystemItem: .stop, target: nil, action: nil)
         }
     }
     
-    /// The action bar button item that is initially set in the overlay's navigation bar. Any 'action' provided to this button will be overwritten.
+    /// The action bar button item that is initially set in the overlay's navigation bar. Any 'target' or 'action' provided to this button will be overwritten.
     /// Overriding this is purely for customizing the look and feel of the button.
     /// Alternatively, you may create your own `UIBarButtonItem`s and directly set them _and_ their actions on the `overlayView` property.
     public var actionBarButtonItem: UIBarButtonItem {
         get {
-            return UIBarButtonItem(barButtonSystemItem: .action, target: self, action: nil)
+            return UIBarButtonItem(barButtonSystemItem: .action, target: nil, action: nil)
         }
     }
     
@@ -181,10 +181,12 @@ import MobileCoreServices
         self.overlayView.setShowInterface(false, animated: false, alongside: nil)
         
         let closeBarButtonItem = self.closeBarButtonItem
+        closeBarButtonItem.target = self
         closeBarButtonItem.action = #selector(closeAction(_:))
         self.overlayView.leftBarButtonItem = closeBarButtonItem
         
         let actionBarButtonItem = self.actionBarButtonItem
+        actionBarButtonItem.target = self
         actionBarButtonItem.action = #selector(shareAction(_:))
         self.overlayView.rightBarButtonItem = actionBarButtonItem
         
