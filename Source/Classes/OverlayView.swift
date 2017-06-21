@@ -132,9 +132,9 @@ import UIKit
         insetSize.width -= (self.contentInset.left + self.contentInset.right)
         insetSize.height -= (self.contentInset.top + self.contentInset.bottom)
         
-        let navigationBarSize: CGSize = self.navigationBar.sizeThatFits(insetSize)
-        self.navigationBar.frame = CGRect(origin: CGPoint(x: self.contentInset.left, y: self.contentInset.top),
-                                          size: navigationBarSize)
+        let navigationBarSize = self.navigationBar.sizeThatFits(insetSize)
+        let navigationBarOrigin = CGPoint(x: self.contentInset.left, y: self.contentInset.top)
+        self.navigationBar.frame = CGRect(origin: navigationBarOrigin, size: navigationBarSize)
         self.navigationBar.setNeedsLayout()
         
         self.navigationBarUnderlay.frame = CGRect(origin: .zero,
@@ -147,10 +147,8 @@ import UIKit
             }
             
             let captionViewSize = captionView.sizeThatFits(insetSize)
-            captionView.frame = CGRect(origin: CGPoint(x: self.contentInset.left, y: self.frame.size.height -
-                                                                                     self.contentInset.bottom -
-                                                                                     captionViewSize.height),
-                                       size: captionViewSize)
+            let captionViewOrigin = CGPoint(x: self.contentInset.left, y: self.frame.size.height - self.contentInset.bottom - captionViewSize.height)
+            captionView.frame = CGRect(origin: captionViewOrigin, size: captionViewSize)
             captionView.setNeedsLayout()
         }
     }
@@ -165,7 +163,7 @@ import UIKit
     
     // MARK: - Show / hide interface
     // For internal use only.
-    func setShowInterface(_ show: Bool, animated: Bool, alongside closure: (() -> Void)?) {
+    func setShowInterface(_ show: Bool, animated: Bool, alongside closure: (() -> Void)? = nil, completion: ((Bool) -> Void)? = nil) {
         let alpha: CGFloat = show ? 1 : 0
         guard self.alpha != alpha else {
             return
@@ -180,19 +178,21 @@ import UIKit
             closure?()
         }
         
-        let completion: (_ finished: Bool) -> Void = { [weak self] (finished) in
+        let internalCompletion: (_ finished: Bool) -> Void = { [weak self] (finished) in
             guard alpha == 0 else {
+                completion?(finished)
                 return
             }
             
             self?.isHidden = true
+            completion?(finished)
         }
         
         if animated {
-            UIView.animate(withDuration: OverlayAnimDuration, animations: animations, completion: completion)
+            UIView.animate(withDuration: OverlayAnimDuration, animations: animations, completion: internalCompletion)
         } else {
             animations()
-            completion(true)
+            internalCompletion(true)
         }
     }
     

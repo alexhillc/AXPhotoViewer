@@ -131,14 +131,19 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 300
+        return 200
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let cell = tableView.cellForRow(at: indexPath)
+        let imageView = cell?.contentView.viewWithTag(666) as? FLAnimatedImageView
+        
+        let transitionInfo = TransitionInfo(referenceView: imageView, interactiveDismissalEnabled: true)
         let dataSource = PhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row, prefetchBehavior: .regular)
         let pagingConfig = PagingConfig(navigationOrientation: .horizontal)
-        let photosViewController = PhotosViewController(dataSource: dataSource, pagingConfig: pagingConfig)
+        let photosViewController = PhotosViewController(dataSource: dataSource, pagingConfig: pagingConfig, transitionInfo: transitionInfo)
         photosViewController.delegate = self
+        
         self.present(photosViewController, animated: true, completion: nil)
     }
     
@@ -150,41 +155,39 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
         }
         
         self.urlSession.dataTask(with: self.photos[indexPath.row].url!) { [weak self] (data, response, error) in
-            guard let uSelf = self, let uData = data else {
+            guard let uData = data else {
                 return
             }
             
-            uSelf.content[indexPath.row] = uData
+            self?.content[indexPath.row] = uData
             completion?(uData)
         }.resume()
     }
     
     // MARK: - PhotosViewControllerDelegate
-    func photosViewController(_ photosViewController: PhotosViewController, didNavigateTo photo: PhotoProtocol, at index: Int) {
+    func photosViewController(_ photosViewController: PhotosViewController,
+                              didNavigateTo photo: PhotoProtocol,
+                              at index: Int) {
+        
         let indexPath = IndexPath(row: index, section: 0)
-        self.tableView.scrollToRow(at: indexPath, at: .none, animated: false)
         
         // ideally, _your_ URL cache will be large enough to the point where this isn't necessary 
         // (or, you're using a predefined integration that has a shared cache with your codebase)
         self.loadContent(at: indexPath, completion: nil)
     }
     
-    func photosViewController(_ photosViewController: PhotosViewController, transitionInfoForDismissalPhoto photo: PhotoProtocol, at index: Int) -> TransitionInfo? {
-        let cell = self.tableView.cellForRow(at: IndexPath(row: index, section: 0))
-        guard let imageView = cell?.contentView.viewWithTag(666) as? FLAnimatedImageView else {
-            return nil
-        }
+    func photosViewController(_ photosViewController: PhotosViewController,
+                              prepareTransitionInfo transitionInfo: TransitionInfo,
+                              forDismissalPhoto photo: PhotoProtocol,
+                              at index: Int) {
         
-        return TransitionInfo(referenceView: imageView)
-    }
-    
-    func photosViewController(_ photosViewController: PhotosViewController, transitionInfoForPresentationPhoto photo: PhotoProtocol, at index: Int) -> TransitionInfo? {
+        let indexPath = IndexPath(row: index, section: 0)
+        self.tableView.scrollToRow(at: indexPath, at: .middle, animated: false)
         let cell = self.tableView.cellForRow(at: IndexPath(row: index, section: 0))
-        guard let imageView = cell?.contentView.viewWithTag(666) as? FLAnimatedImageView else {
-            return nil
-        }
-        
-        return TransitionInfo(referenceView: imageView)
+        let imageView = cell?.contentView.viewWithTag(666) as? FLAnimatedImageView
+
+        // adjusting the reference view attached to our transition info to allow for contextual animation
+        transitionInfo.referenceView = imageView
     }
 
 }

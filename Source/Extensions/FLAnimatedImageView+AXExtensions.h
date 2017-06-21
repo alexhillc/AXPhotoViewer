@@ -16,6 +16,6 @@
 
  @param imageView The `imageView` to inherit from.
  */
-- (void)syncFramesWithImageView:(FLAnimatedImageView *)imageView;
+- (void)ax_syncFramesWithImageView:(FLAnimatedImageView *)imageView;
 
 @end

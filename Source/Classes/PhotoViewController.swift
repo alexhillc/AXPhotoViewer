@@ -153,7 +153,7 @@ import FLAnimatedImage
         if userInfo[PhotosViewControllerNotification.ImageDataKey] != nil || userInfo[PhotosViewControllerNotification.ImageKey] != nil {
             self.applyPhoto(photo)
         } else if let referenceView = userInfo[PhotosViewControllerNotification.ReferenceViewKey] as? FLAnimatedImageView {
-            self.zoomingImageView.imageView.syncFrames(with: referenceView)
+            self.zoomingImageView.imageView.ax_syncFrames(with: referenceView)
         } else if let error = userInfo[PhotosViewControllerNotification.ErrorKey] as? Error {
             self.loadingView?.showError(error, retryHandler: { [weak self] in
                 guard let uSelf = self, let photo = uSelf.photo else {

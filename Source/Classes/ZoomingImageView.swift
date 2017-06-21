@@ -39,6 +39,8 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
     
     fileprivate(set) var doubleTapGestureRecognizer = UITapGestureRecognizer()
     fileprivate(set) var imageView = FLAnimatedImageView()
+    
+    fileprivate var needsUpdateImageView = false
 
     public init() {
         super.init(frame: .zero)
@@ -69,10 +71,14 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
         var imageSize: CGSize = .zero
         
         if let image = image {
-            self.imageView.image = image
+            if self.imageView.image != image {
+                self.imageView.image = image
+            }
             imageSize = image.size
         } else if let animatedImage = animatedImage {
-            self.imageView.animatedImage = animatedImage
+            if self.imageView.animatedImage != animatedImage {
+                self.imageView.animatedImage = animatedImage
+            }
             imageSize = animatedImage.size
         }
         
@@ -80,6 +86,24 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
         self.contentSize = imageSize
         
         self.updateZoomScale()
+        
+        self.needsUpdateImageView = false
+    }
+    
+    override func willRemoveSubview(_ subview: UIView) {
+        super.willRemoveSubview(subview)
+        
+        if subview === self.imageView {
+            self.needsUpdateImageView = true
+        }
+    }
+    
+    override func didAddSubview(_ subview: UIView) {
+        super.didAddSubview(subview)
+        
+        if subview === self.imageView && self.needsUpdateImageView {
+            self.updateImageView(image: self.imageView.image, animatedImage: self.imageView.animatedImage)
+        }
     }
     
     // MARK: - UIScrollViewDelegate

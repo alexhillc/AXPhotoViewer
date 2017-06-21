@@ -11,7 +11,7 @@ import MobileCoreServices
 
 @objc(AXPhotosViewController) open class PhotosViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource,
                                                                UIViewControllerTransitioningDelegate, PhotoViewControllerDelegate, NetworkIntegrationDelegate,
-                                                               PhotosViewControllerTransitionAnimatorDelegate {
+                                                               PhotosViewControllerTransitionControllerDelegate {
     
     @objc(AXViewControllerType) public enum ViewControllerType: Int {
         case photo, video
@@ -25,6 +25,7 @@ import MobileCoreServices
     /// The photos to display in the PhotosViewController.
     public var dataSource: PhotosDataSource {
         didSet {
+            self.pageViewController.dataSource = (self.dataSource.numberOfPhotos > 1) ? self : nil
             self.networkIntegration.cancelAllLoads()
             self.configurePageViewController()
         }
@@ -59,6 +60,11 @@ import MobileCoreServices
         }
     }
     
+    /// The `TransitionInfo` passed in at initialization. This object is used to define constraints for the presentation and dismissal
+    /// of the `PhotosViewController`.
+    /// - Note: See the `photosViewController:prepareTransitionInfo:forDismissalPhoto:atIndex:` delegation method in the `PhotosViewControllerDelegate` protocol.
+    fileprivate(set) var transitionInfo: TransitionInfo?
+        
     #if AX_SDWEBIMAGE_SUPPORT
     public let networkIntegration: NetworkIntegration = SDWebImageIntegration()
     #elseif AX_PINREMOTEIMAGE_SUPPORT
@@ -90,6 +96,7 @@ import MobileCoreServices
     
     fileprivate var isSizeTransitioning = false
     fileprivate var isFirstAppearance = true
+    fileprivate var isForcingNonInteractiveDismissal = false
     
     fileprivate var orderedViewControllers = [PhotoViewController]()
     fileprivate var recycledViewControllers = [PhotoViewController]()
@@ -98,7 +105,7 @@ import MobileCoreServices
     ]
     
     fileprivate let notificationCenter = NotificationCenter()
-    fileprivate var transitionAnimator: PhotosViewControllerTransitionAnimator?
+    fileprivate var transitionController: PhotosViewControllerTransitionController?
     
     fileprivate var _prefersStatusBarHidden: Bool = false
     open override var prefersStatusBarHidden: Bool {
@@ -118,22 +125,24 @@ import MobileCoreServices
     
     // MARK: - Initialization
     #if AX_SDWEBIMAGE_SUPPORT || AX_PINREMOTEIMAGE_SUPPORT || AX_AFNETWORKING_SUPPORT || AX_LITE_SUPPORT
-    public init(dataSource: PhotosDataSource, pagingConfig: PagingConfig = PagingConfig()) {
+    public init(dataSource: PhotosDataSource, pagingConfig: PagingConfig = PagingConfig(), transitionInfo: TransitionInfo? = nil) {
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
                                                        navigationOrientation: pagingConfig.navigationOrientation,
                                                        options: [UIPageViewControllerOptionInterPageSpacingKey: pagingConfig.interPhotoSpacing])
         self.dataSource = dataSource
         self.pagingConfig = pagingConfig
+        self.transitionInfo = transitionInfo
         super.init(nibName: nil, bundle: nil)
         self.networkIntegration.delegate = self
     }
     #else
-    public init(dataSource: PhotosDataSource, pagingConfig: PagingConfig = PagingConfig(), networkIntegration: NetworkIntegration) {
+    public init(dataSource: PhotosDataSource, pagingConfig: PagingConfig = PagingConfig(), transitionInfo: TransitionInfo? = nil, networkIntegration: NetworkIntegration) {
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
                                                        navigationOrientation: pagingConfig.navigationOrientation,
                                                        options: [UIPageViewControllerOptionInterPageSpacingKey: pagingConfig.interPhotoSpacing])
         self.dataSource = dataSource
         self.pagingConfig = pagingConfig
+        self.transitionInfo = transitionInfo
         self.networkIntegration = networkIntegration
         super.init(nibName: nil, bundle: nil)
         self.networkIntegration.delegate = self
@@ -159,12 +168,16 @@ import MobileCoreServices
     open override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.transitioningDelegate = self
-
+        if let transitionInfo = self.transitionInfo {
+            self.transitionController = PhotosViewControllerTransitionController(photosViewController: self, transitionInfo: transitionInfo)
+            self.transitionController?.delegate = self
+            self.transitioningDelegate = self
+        }
+        
         self.view.backgroundColor = .black
         
         self.pageViewController.delegate = self
-        self.pageViewController.dataSource = self
+        self.pageViewController.dataSource = (self.dataSource.numberOfPhotos > 1) ? self : nil
         self.pageViewController.scrollView.addContentOffsetObserver(self)
         
         self.singleTapGestureRecognizer.numberOfTapsRequired = 1
@@ -178,7 +191,7 @@ import MobileCoreServices
         self.configurePageViewController()
         
         self.overlayView.tintColor = .white
-        self.overlayView.setShowInterface(false, animated: false, alongside: nil)
+        self.overlayView.setShowInterface(false, animated: false)
         
         let closeBarButtonItem = self.closeBarButtonItem
         closeBarButtonItem.target = self
@@ -225,39 +238,51 @@ import MobileCoreServices
     
     // MARK: - UIViewControllerTransitioningDelegate, PhotosViewControllerTransitionAnimatorDelegate
     public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        guard let photo = self.dataSource.photo(at: self.currentPhotoIndex),
-            let transitionInfo = self.delegate?.photosViewController?(self, transitionInfoForDismissalPhoto: photo,
-                                                                      at: self.currentPhotoIndex) else {
+        guard let photo = self.dataSource.photo(at: self.currentPhotoIndex) else {
             return nil
         }
         
-        self.transitionAnimator?.transitionInfo = transitionInfo
-        self.transitionAnimator?.mode = .dismissing
-        return self.transitionAnimator
+        if let transitionInfo = self.transitionInfo {
+            self.delegate?.photosViewController?(self, prepareTransitionInfo: transitionInfo, forDismissalPhoto: photo, at: self.currentPhotoIndex)
+        }
+
+        guard let transitionController = self.transitionController, !self.isForcingNonInteractiveDismissal ||
+                                                                    (self.isForcingNonInteractiveDismissal &&
+                                                                        transitionController.supportsContextualAnimation) else {
+            return nil
+        }
+        
+        transitionController.mode = .dismissing
+        return transitionController
     }
     
     public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        guard let photo = self.dataSource.photo(at: self.currentPhotoIndex),
-            let transitionInfo = self.delegate?.photosViewController?(self, transitionInfoForPresentationPhoto: photo,
-                                                                      at: self.currentPhotoIndex) else {
+        guard let transitionController = self.transitionController, transitionController.supportsContextualAnimation else {
             return nil
         }
         
-        self.transitionAnimator = PhotosViewControllerTransitionAnimator(transitionInfo: transitionInfo)
-        self.transitionAnimator?.delegate = self
-        self.transitionAnimator?.mode = .presenting
-        return self.transitionAnimator
+        transitionController.mode = .presenting
+        return transitionController
     }
     
-    func animationController(_ animationController: PhotosViewControllerTransitionAnimator,
-                             didFinishAnimatingWith view: UIImageView,
-                             animatorMode: PhotosViewControllerTransitionAnimatorMode) {
+    public func interactionControllerForDismissal(using animator: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? {
+        guard let transitionController = self.transitionController, !self.isForcingNonInteractiveDismissal &&
+                                                                    transitionController.supportsInteractiveDismissal else {
+            return nil
+        }
+        
+        return transitionController
+    }
+    
+    func transitionController(_ transitionController: PhotosViewControllerTransitionController,
+                              didFinishAnimatingWith view: UIImageView, 
+                              transitionControllerMode: PhotosViewControllerTransitionControllerMode) {
         
         guard let photo = self.dataSource.photo(at: self.currentPhotoIndex) else {
             return
         }
         
-        if animatorMode == .presenting {
+        if transitionControllerMode == .presenting {
             self.notificationCenter.post(name: .photoImageUpdate,
                                          object: photo,
                                          userInfo: [
@@ -320,13 +345,15 @@ import MobileCoreServices
         }
     }
     
-    // MARK: - Overlay and UIGestureRecognizerDelegate
+    // MARK: - Overlay
     fileprivate func updateOverlay(for photoIndex: Int) {
         guard let photo = self.dataSource.photo(at: photoIndex) else {
             return
         }
         
-        self.overlayView.title = NSLocalizedString("\(photoIndex + 1) of \(self.dataSource.numberOfPhotos)", comment: "")
+        if self.dataSource.numberOfPhotos > 1 {
+            self.overlayView.title = NSLocalizedString("\(photoIndex + 1) of \(self.dataSource.numberOfPhotos)", comment: "")
+        }
         self.overlayView.captionView.applyCaptionInfo(attributedTitle: photo.attributedTitle ?? nil,
                                                       attributedDescription: photo.attributedDescription ?? nil,
                                                       attributedCredit: photo.attributedCredit ?? nil)
@@ -334,9 +361,9 @@ import MobileCoreServices
     
     @objc fileprivate func singleTapAction(_ sender: UITapGestureRecognizer) {
         let show = (self.overlayView.alpha == 0)
-        self.overlayView.setShowInterface(show, animated: true) { [weak self] in
+        self.overlayView.setShowInterface(show, animated: true, alongside: { [weak self] in
             self?.updateStatusBarAppearance(show: show)
-        }
+        })
     }
     
     fileprivate func updateStatusBarAppearance(show: Bool) {
@@ -395,6 +422,7 @@ import MobileCoreServices
     }
     
     @objc public func closeAction(_ sender: UIBarButtonItem) {
+        self.isForcingNonInteractiveDismissal = true
         self.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
@@ -783,31 +811,20 @@ fileprivate extension UIScrollView {
                                        didNavigateTo photo: PhotoProtocol,
                                        at index: Int)
     
-    /// Called just before presentation occurs. This should provide the transition object used when animating the presentation transition.
-    /// If this object is not present, the presentation will revert to the iOS default.
+    /// Called just before dismissal occurs. This delegation method provides an opportunity to resolve the `referenceView` of the `TransitionInfo`
+    /// object, which should be adjusted according to the dismissal photo if contextual animation is desired.
     ///
     /// - Parameters:
     ///   - photosViewController: The `PhotosViewController` presenting.
-    ///   - photo: The `Photo` being transitioned to.
-    ///   - index: The `index` in the dataSource of the `Photo` being transitioned to.
-    /// - Returns: The TransitionInfo object, which should provide a `referenceView` if contextual animation is desired.
-    @objc(photosViewController:transitionInfoForPresentationPhoto:atIndex:)
-    optional func photosViewController(_ photosViewController: PhotosViewController,
-                                       transitionInfoForPresentationPhoto photo: PhotoProtocol,
-                                       at index: Int) -> TransitionInfo?
-    
-    /// Called just before dismissal occurs. This should provide the transition object used when animating the dismissal transition.
-    /// If this object is not present, the presentation will revert to the iOS default.
-    ///
-    /// - Parameters:
-    ///   - photosViewController: The `PhotosViewController` presenting.
+    ///   - transitionInfo: The `TransitionInfo` to change in preparation for dismissal.
     ///   - photo: The `Photo` being used to transition dismissal.
     ///   - index: The `index` in the dataSource of the used `Photo`.
-    /// - Returns: The TransitionInfo object, which should provide a `referenceView` if contextual animation is desired.
-    @objc(photosViewController:transitionInfoForDismissalPhoto:atIndex:)
+    /// - Note: This delegation method is only called if a `TransitionInfo` object was passed in at initialization.
+    @objc(photosViewController:prepareTransitionInfo:forDismissalPhoto:atIndex:)
     optional func photosViewController(_ photosViewController: PhotosViewController,
-                                       transitionInfoForDismissalPhoto photo: PhotoProtocol,
-                                       at index: Int) -> TransitionInfo?
+                                       prepareTransitionInfo transitionInfo: TransitionInfo,
+                                       forDismissalPhoto photo: PhotoProtocol,
+                                       at index: Int) -> Void
     
     /// Called when the action button is tapped for a photo. If no implementation is provided, will fall back to default action.
     ///
