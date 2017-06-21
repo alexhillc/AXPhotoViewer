@@ -1,13 +1,13 @@
 Pod::Spec.new do |s|
   s.name            = "AXPhotoViewer"
-  s.version         = "1.0"
+  s.version         = "1.0-beta.5"
   s.license         = { :type  => 'MIT', :file => 'LICENSE.md' }
   s.summary         = "An iPhone/iPad photo gallery viewer, useful for viewing a large number of photos."
   s.homepage        = "https://github.com/alexhillc/AXPhotoViewer"
   s.author          = { "Alex Hill" => "alexhill.c@gmail.com" }
   s.source          = { :git => "https://github.com/alexhillc/AXPhotoViewer.git", :tag => "v#{s.version}" }
 
-  s.platform        = :ios, '10.0'
+  s.platform        = :ios, '9.0'
   s.requires_arc    = true
 
   s.default_subspec = 'Core'

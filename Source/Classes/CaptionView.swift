@@ -38,8 +38,14 @@ import UIKit
     
     var defaultTitleAttributes: [String: Any] {
         get {
-            let fontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body,
+            var fontDescriptor: UIFontDescriptor
+            if #available(iOS 10.0, *) {
+                fontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body,
                                                                           compatibleWith: self.traitCollection)
+            } else {
+                fontDescriptor = UIFont.preferredFont(forTextStyle: .body).fontDescriptor
+            }
+            
             let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFontWeightBold)
             let textColor = UIColor.white
             
@@ -52,8 +58,14 @@ import UIKit
     
     var defaultDescriptionAttributes: [String: Any] {
         get {
-            let fontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body,
-                                                                          compatibleWith: self.traitCollection)
+            var fontDescriptor: UIFontDescriptor
+            if #available(iOS 10.0, *) {
+                fontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body,
+                                                                              compatibleWith: self.traitCollection)
+            } else {
+                fontDescriptor = UIFont.preferredFont(forTextStyle: .body).fontDescriptor
+            }
+            
             let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFontWeightLight)
             let textColor = UIColor.lightGray
             
@@ -66,8 +78,14 @@ import UIKit
     
     var defaultCreditAttributes: [String: Any] {
         get {
-            let fontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .caption1,
+            var fontDescriptor: UIFontDescriptor
+            if #available(iOS 10.0, *) {
+                fontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .caption1,
                                                                           compatibleWith: self.traitCollection)
+            } else {
+                fontDescriptor = UIFont.preferredFont(forTextStyle: .caption1).fontDescriptor
+            }
+            
             let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFontWeightLight)
             let textColor = UIColor.gray
             
@@ -233,7 +251,13 @@ import UIKit
                     return
                 }
                 
-                let newFontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: fontTextStyle, compatibleWith: self?.traitCollection)
+                var newFontDescriptor: UIFontDescriptor
+                if #available(iOS 10.0, *) {
+                    newFontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: fontTextStyle, compatibleWith: self?.traitCollection)
+                } else {
+                    newFontDescriptor = UIFont.preferredFont(forTextStyle: fontTextStyle).fontDescriptor
+                }
+                                                                
                 let newFont = oldFont.withSize(newFontDescriptor.pointSize)
                 fontAdjustedAttributedString.removeAttribute(NSFontAttributeName, range: range)
                 fontAdjustedAttributedString.addAttribute(NSFontAttributeName, value: newFont, range: range)

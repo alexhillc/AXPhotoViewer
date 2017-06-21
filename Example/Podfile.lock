@@ -1,7 +1,7 @@
 PODS:
-  - AXPhotoViewer/Core (1.0):
+  - AXPhotoViewer/Core (1.0-beta.1):
     - FLAnimatedImage (>= 1.0.0)
-  - AXPhotoViewer/Lite (1.0):
+  - AXPhotoViewer/Lite (1.0-beta.1):
     - AXPhotoViewer/Core
   - FLAnimatedImage (1.0.12)
   - Reveal-SDK (8)
@@ -15,7 +15,7 @@ EXTERNAL SOURCES:
     :path: "../AXPhotoViewer.podspec"
 
 SPEC CHECKSUMS:
-  AXPhotoViewer: 9affee1d8f6d71a062c0922ea8935cf27e429a3c
+  AXPhotoViewer: 9c15d3ecaa2b8d63c934fdc8b666b6b47e8fe2b7
   FLAnimatedImage: 4a0b56255d9b05f18b6dd7ee06871be5d3b89e31
   Reveal-SDK: 43be4e662864e937960d0d04d005135e29c4e53b
 
