@@ -46,13 +46,23 @@ class PhotosViewControllerTransitionController: NSObject, UIViewControllerAnimat
     fileprivate var overlayViewOriginalFrame: CGRect = .zero
     fileprivate var overlayViewOriginalSuperview: UIView?
     
-    var supportsContextualAnimation: Bool {
+    var supportsContextualPresentation: Bool {
         get {
             guard let photosVC = self.photosViewController else {
                 return false
             }
             
-            return self.canPerformContextualAnimation(using: photosVC.view)
+            return self.canPerformContextualAnimation(using: self.transitionInfo.startingView, in: photosVC.view)
+        }
+    }
+    
+    var supportsContextualDismissal: Bool {
+        get {
+            guard let photosVC = self.photosViewController else {
+                return false
+            }
+            
+            return self.canPerformContextualAnimation(using: self.transitionInfo.endingView, in: photosVC.view)
         }
     }
     
@@ -89,8 +99,8 @@ class PhotosViewControllerTransitionController: NSObject, UIViewControllerAnimat
     fileprivate func animatePresentation(transitionContext: UIViewControllerContextTransitioning) {
         guard let to = transitionContext.viewController(forKey: .to) as? PhotosViewController,
             let from = transitionContext.viewController(forKey: .from),
-            let referenceView = self.transitionInfo.referenceView,
-            let referenceViewCopy = self.transitionInfo.referenceView?.copy() as? UIImageView else {
+            let referenceView = self.transitionInfo.startingView,
+            let referenceViewCopy = self.transitionInfo.startingView?.copy() as? UIImageView else {
                 assertionFailure("No. ಠ_ಠ")
                 return
         }
@@ -160,7 +170,7 @@ class PhotosViewControllerTransitionController: NSObject, UIViewControllerAnimat
         }
         
         let continuingFromInteraction = (transitionContext.isInteractive)
-        let usingContextualAnimation = self.canPerformContextualAnimation(using: transitionContext.containerView)
+        let usingContextualAnimation = self.canPerformContextualAnimation(using: transitionInfo.endingView, in: transitionContext.containerView)
         
         if continuingFromInteraction {
             let imageViewFrame = imageView.frame
@@ -180,7 +190,7 @@ class PhotosViewControllerTransitionController: NSObject, UIViewControllerAnimat
             transitionContext.containerView.addSubview(imageView)
             
             if usingContextualAnimation {
-                guard let referenceView = self.transitionInfo.referenceView else {
+                guard let referenceView = self.transitionInfo.endingView else {
                     assertionFailure("No. ಠ_ಠ")
                     return
                 }
@@ -195,7 +205,7 @@ class PhotosViewControllerTransitionController: NSObject, UIViewControllerAnimat
             }
             
             if usingContextualAnimation {
-                guard let referenceView = uSelf.transitionInfo.referenceView else {
+                guard let referenceView = uSelf.transitionInfo.endingView else {
                     assertionFailure("No. ಠ_ಠ")
                     return
                 }
@@ -217,7 +227,7 @@ class PhotosViewControllerTransitionController: NSObject, UIViewControllerAnimat
             uSelf.delegate?.transitionController(uSelf, didFinishAnimatingWith: imageView, transitionControllerMode: .dismissing)
             
             if usingContextualAnimation {
-                guard let referenceView = uSelf.transitionInfo.referenceView else {
+                guard let referenceView = uSelf.transitionInfo.endingView else {
                     assertionFailure("No. ಠ_ಠ")
                     return
                 }
@@ -279,7 +289,7 @@ class PhotosViewControllerTransitionController: NSObject, UIViewControllerAnimat
                        animations: fadeAnimations)
         
         if usingContextualAnimation {
-            guard let referenceView = self.transitionInfo.referenceView else {
+            guard let referenceView = self.transitionInfo.endingView else {
                 assertionFailure("No. ಠ_ಠ")
                 return
             }
@@ -318,9 +328,9 @@ class PhotosViewControllerTransitionController: NSObject, UIViewControllerAnimat
                 return
             }
 
-            let usingContextualAnimation = uSelf.canPerformContextualAnimation(using: transitionContext.containerView)
+            let usingContextualAnimation = uSelf.canPerformContextualAnimation(using: uSelf.transitionInfo.endingView, in: transitionContext.containerView)
             if usingContextualAnimation {
-                guard let referenceView = uSelf.transitionInfo.referenceView else {
+                guard let referenceView = uSelf.transitionInfo.endingView else {
                     assertionFailure("No. ಠ_ಠ")
                     return
                 }
@@ -391,9 +401,9 @@ class PhotosViewControllerTransitionController: NSObject, UIViewControllerAnimat
         
         from.view.alpha = 0
         
-        let usingContextualAnimation = self.canPerformContextualAnimation(using: transitionContext.containerView)
+        let usingContextualAnimation = self.canPerformContextualAnimation(using: self.transitionInfo.endingView, in: transitionContext.containerView)
         if usingContextualAnimation {
-            guard let referenceView = self.transitionInfo.referenceView else {
+            guard let referenceView = self.transitionInfo.endingView else {
                 assertionFailure("No. ಠ_ಠ")
                 return
             }
@@ -472,8 +482,8 @@ class PhotosViewControllerTransitionController: NSObject, UIViewControllerAnimat
     }
     
     // MARK: - Helpers
-    fileprivate func canPerformContextualAnimation(using view: UIView) -> Bool {
-        guard let referenceView = self.transitionInfo.referenceView, referenceView.superview != nil else {
+    fileprivate func canPerformContextualAnimation(using referenceView: UIView?, in view: UIView) -> Bool {
+        guard let referenceView = referenceView, referenceView.superview != nil else {
             return false
         }
         

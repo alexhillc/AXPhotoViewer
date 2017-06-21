@@ -242,13 +242,10 @@ import MobileCoreServices
             return nil
         }
         
-        if let transitionInfo = self.transitionInfo {
-            self.delegate?.photosViewController?(self, prepareTransitionInfo: transitionInfo, forDismissalPhoto: photo, at: self.currentPhotoIndex)
-        }
-
+        self.transitionInfo?.resolveEndingView?(photo, self.currentPhotoIndex)
         guard let transitionController = self.transitionController, !self.isForcingNonInteractiveDismissal ||
                                                                     (self.isForcingNonInteractiveDismissal &&
-                                                                        transitionController.supportsContextualAnimation) else {
+                                                                        transitionController.supportsContextualDismissal) else {
             return nil
         }
         
@@ -257,7 +254,7 @@ import MobileCoreServices
     }
     
     public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        guard let transitionController = self.transitionController, transitionController.supportsContextualAnimation else {
+        guard let transitionController = self.transitionController, transitionController.supportsContextualPresentation else {
             return nil
         }
         
@@ -810,21 +807,6 @@ fileprivate extension UIScrollView {
     optional func photosViewController(_ photosViewController: PhotosViewController,
                                        didNavigateTo photo: PhotoProtocol,
                                        at index: Int)
-    
-    /// Called just before dismissal occurs. This delegation method provides an opportunity to resolve the `referenceView` of the `TransitionInfo`
-    /// object, which should be adjusted according to the dismissal photo if contextual animation is desired.
-    ///
-    /// - Parameters:
-    ///   - photosViewController: The `PhotosViewController` presenting.
-    ///   - transitionInfo: The `TransitionInfo` to change in preparation for dismissal.
-    ///   - photo: The `Photo` being used to transition dismissal.
-    ///   - index: The `index` in the dataSource of the used `Photo`.
-    /// - Note: This delegation method is only called if a `TransitionInfo` object was passed in at initialization.
-    @objc(photosViewController:prepareTransitionInfo:forDismissalPhoto:atIndex:)
-    optional func photosViewController(_ photosViewController: PhotosViewController,
-                                       prepareTransitionInfo transitionInfo: TransitionInfo,
-                                       forDismissalPhoto photo: PhotoProtocol,
-                                       at index: Int) -> Void
     
     /// Called when the action button is tapped for a photo. If no implementation is provided, will fall back to default action.
     ///

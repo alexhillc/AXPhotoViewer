@@ -138,7 +138,20 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
         let cell = tableView.cellForRow(at: indexPath)
         let imageView = cell?.contentView.viewWithTag(666) as? FLAnimatedImageView
         
-        let transitionInfo = TransitionInfo(referenceView: imageView, interactiveDismissalEnabled: true)
+        let transitionInfo = TransitionInfo(interactiveDismissalEnabled: true, startingView: imageView) { [weak self] (photo, index) -> UIImageView? in
+            guard let uSelf = self else {
+                return nil
+            }
+            
+            let indexPath = IndexPath(row: index, section: 0)
+            uSelf.tableView.scrollToRow(at: indexPath, at: .middle, animated: false)
+            let cell = uSelf.tableView.cellForRow(at: IndexPath(row: index, section: 0))
+            let imageView = cell?.contentView.viewWithTag(666) as? FLAnimatedImageView
+            
+            // adjusting the reference view attached to our transition info to allow for contextual animation
+            return imageView
+        }
+        
         let dataSource = PhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row, prefetchBehavior: .regular)
         let pagingConfig = PagingConfig(navigationOrientation: .horizontal)
         let photosViewController = PhotosViewController(dataSource: dataSource, pagingConfig: pagingConfig, transitionInfo: transitionInfo)
@@ -175,19 +188,4 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
         // (or, you're using a predefined integration that has a shared cache with your codebase)
         self.loadContent(at: indexPath, completion: nil)
     }
-    
-    func photosViewController(_ photosViewController: PhotosViewController,
-                              prepareTransitionInfo transitionInfo: TransitionInfo,
-                              forDismissalPhoto photo: PhotoProtocol,
-                              at index: Int) {
-        
-        let indexPath = IndexPath(row: index, section: 0)
-        self.tableView.scrollToRow(at: indexPath, at: .middle, animated: false)
-        let cell = self.tableView.cellForRow(at: IndexPath(row: index, section: 0))
-        let imageView = cell?.contentView.viewWithTag(666) as? FLAnimatedImageView
-
-        // adjusting the reference view attached to our transition info to allow for contextual animation
-        transitionInfo.referenceView = imageView
-    }
-
 }
