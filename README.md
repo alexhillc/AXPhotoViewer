@@ -29,7 +29,8 @@ Installation can easily be done through Cocoapods:
 pod install 'AXPhotoViewer', '~> 1.0.0-beta.5'
 ```
 If you prefer not to use Cocoapods, add the contents of the 'Source' directory to your project to get started.
-NOTE: If you don't use Cocoapods, you must add `MobileCoreServices.framework` and `ImageIO.framework` to your project.
+
+**Note:** If you don't use Cocoapods, you must add `MobileCoreServices.framework` and `ImageIO.framework` to your project.
 
 ### Configuration
 There are many configurable properties that can be set before presenting your `AXPhotosViewController`. 
@@ -55,6 +56,30 @@ let transitionInfo = TransitionInfo(interactiveDismissalEnabled: false, starting
     // this closure can be used to adjust your UI before returning an `endingImageView`.
     return self?.endingImageView
 }
+```
+
+### Network Integrations
+A network integration, in relation to this library, is a class conforming to the `AXNetworkIntegration` protocol. This protocol defines some methods to be used for downloading images, as well as delegating their completions (and errors!) to the library. If you wish to create your own module for async downloading/caching of images and gifs, the protocol is fairly lightweight.
+
+Some pre-defined `AXNetworkIntegrations` have already been made as Cocoapod subspecs (SDWebImage, PINRemoteImage, AFNetworking..., as well as a simple network integration using NSURLSession that will serve most people's purposes quite sufficiently). To use these pre-defined subspecs, simply change your `Podfile`:
+
+```ruby
+pod install 'AXPhotoViewer/Lite', '~> 1.0.0-beta.5'
+pod install 'AXPhotoViewer/SDWebImage', '~> 1.0.0-beta.5'
+pod install 'AXPhotoViewer/PINRemoteImage', '~> 1.0.0-beta.5'
+pod install 'AXPhotoViewer/AFNetworking', '~> 1.0.0-beta.5'
+```
+
+To create your own `AXNetworkIntegration`:
+```ruby
+pod install 'AXPhotoViewer/Core', '~> 1.0.0-beta.5'
+```
+```swift
+let dataSource = ...
+let pagingConfig = ...
+let transitionInfo = ...
+let customNetworkIntegration = CustomNetworkIntegration() // instantiate your custom network integration
+let photosViewController = PhotosViewController(dataSource: dataSource, pagingConfig: pagingConfig, transitionInfo: transitionInfo, networkIntegration: customNetworkIntegration)
 ```
 
 ### Customization
