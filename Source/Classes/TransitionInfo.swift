@@ -24,13 +24,9 @@
     /// This value determines whether or not the user can dismiss the `PhotosViewController` by panning vertically.
     fileprivate(set) var interactiveDismissalEnabled: Bool = true
     
-    public init(interactiveDismissalEnabled: Bool? = nil, startingView: UIImageView? = nil, endingView: ((_ photo: PhotoProtocol, _ index: Int) -> UIImageView?)? = nil) {
+    public init(interactiveDismissalEnabled: Bool, startingView: UIImageView?, endingView: ((_ photo: PhotoProtocol, _ index: Int) -> UIImageView?)?) {
         super.init()
-        
-        if let uInteractiveDismissalEnabled = interactiveDismissalEnabled {
-            self.interactiveDismissalEnabled = uInteractiveDismissalEnabled
-        }
-        
+        self.interactiveDismissalEnabled = interactiveDismissalEnabled
         self.startingView = startingView
         
         if let endingView = endingView {
@@ -38,6 +34,10 @@
                 self?.endingView = endingView(photo, index)
             }
         }
+    }
+    
+    public convenience override init() {
+        self.init(interactiveDismissalEnabled: true, startingView: nil, endingView: nil)
     }
 
 }

@@ -27,23 +27,26 @@
     private(set) var initialPhotoIndex: Int = 0
     
     // MARK: - Initialization
-    public init(photos: [PhotoProtocol], initialPhotoIndex: Int? = nil, prefetchBehavior: PhotosPrefetchBehavior = .regular) {
+    public init(photos: [PhotoProtocol], initialPhotoIndex: Int, prefetchBehavior: PhotosPrefetchBehavior) {
         self.photos = photos
         self.prefetchBehavior = prefetchBehavior
         
-        if let initialPhotoIndex = initialPhotoIndex {
-            assert(photos.count > initialPhotoIndex, "Invalid initial photo index provided.")
-            self.initialPhotoIndex = initialPhotoIndex
-        }
+        assert(photos.count > initialPhotoIndex, "Invalid initial photo index provided.")
+        self.initialPhotoIndex = initialPhotoIndex
         
         super.init()
     }
     
+    public convenience init(photos: [PhotoProtocol]) {
+        self.init(photos: photos, initialPhotoIndex: 0, prefetchBehavior: .regular)
+    }
+    
     // MARK: - DataSource
-    var numberOfPhotos: Int {
+    public var numberOfPhotos: Int {
         return self.photos.count
     }
     
+    @objc(photoAtIndex:)
     public func photo(at index: Int) -> PhotoProtocol? {
         if index < self.photos.count {
             return self.photos[index]

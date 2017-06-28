@@ -11,7 +11,7 @@ import MobileCoreServices
 
 @objc(AXPhotosViewController) open class PhotosViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource,
                                                                UIViewControllerTransitioningDelegate, PhotoViewControllerDelegate, NetworkIntegrationDelegate,
-                                                               PhotosViewControllerTransitionControllerDelegate {
+                                                               PhotosTransitionControllerDelegate {
     
     @objc(AXViewControllerType) public enum ViewControllerType: Int {
         case photo, video
@@ -60,10 +60,9 @@ import MobileCoreServices
         }
     }
     
-    /// The `TransitionInfo` passed in at initialization. This object is used to define constraints for the presentation and dismissal
+    /// The `TransitionInfo` passed in at initialization. This object is used to define functionality for the presentation and dismissal
     /// of the `PhotosViewController`.
-    /// - Note: See the `photosViewController:prepareTransitionInfo:forDismissalPhoto:atIndex:` delegation method in the `PhotosViewControllerDelegate` protocol.
-    fileprivate(set) var transitionInfo: TransitionInfo?
+    fileprivate(set) var transitionInfo: TransitionInfo
         
     #if AX_SDWEBIMAGE_SUPPORT
     public let networkIntegration: NetworkIntegration = SDWebImageIntegration()
@@ -95,8 +94,8 @@ import MobileCoreServices
     }
     
     fileprivate var isSizeTransitioning = false
-    fileprivate var isFirstAppearance = true
     fileprivate var isForcingNonInteractiveDismissal = false
+    fileprivate var isFirstAppearance = true
     
     fileprivate var orderedViewControllers = [PhotoViewController]()
     fileprivate var recycledViewControllers = [PhotoViewController]()
@@ -104,8 +103,8 @@ import MobileCoreServices
         String(describing: PhotoViewController.self): LoadingView.self
     ]
     
+    fileprivate var transitionController: PhotosTransitionController?
     fileprivate let notificationCenter = NotificationCenter()
-    fileprivate var transitionController: PhotosViewControllerTransitionController?
     
     fileprivate var _prefersStatusBarHidden: Bool = false
     open override var prefersStatusBarHidden: Bool {
@@ -125,7 +124,7 @@ import MobileCoreServices
     
     // MARK: - Initialization
     #if AX_SDWEBIMAGE_SUPPORT || AX_PINREMOTEIMAGE_SUPPORT || AX_AFNETWORKING_SUPPORT || AX_LITE_SUPPORT
-    public init(dataSource: PhotosDataSource, pagingConfig: PagingConfig = PagingConfig(), transitionInfo: TransitionInfo? = nil) {
+    public init(dataSource: PhotosDataSource, pagingConfig: PagingConfig = PagingConfig(), transitionInfo: TransitionInfo = TransitionInfo()) {
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
                                                        navigationOrientation: pagingConfig.navigationOrientation,
                                                        options: [UIPageViewControllerOptionInterPageSpacingKey: pagingConfig.interPhotoSpacing])
@@ -136,7 +135,7 @@ import MobileCoreServices
         self.networkIntegration.delegate = self
     }
     #else
-    public init(dataSource: PhotosDataSource, pagingConfig: PagingConfig = PagingConfig(), transitionInfo: TransitionInfo? = nil, networkIntegration: NetworkIntegration) {
+    public init(dataSource: PhotosDataSource, pagingConfig: PagingConfig = PagingConfig(), transitionInfo: TransitionInfo = TransitionInfo(), networkIntegration: NetworkIntegration) {
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
                                                        navigationOrientation: pagingConfig.navigationOrientation,
                                                        options: [UIPageViewControllerOptionInterPageSpacingKey: pagingConfig.interPhotoSpacing])
@@ -168,11 +167,9 @@ import MobileCoreServices
     open override func viewDidLoad() {
         super.viewDidLoad()
         
-        if let transitionInfo = self.transitionInfo {
-            self.transitionController = PhotosViewControllerTransitionController(photosViewController: self, transitionInfo: transitionInfo)
-            self.transitionController?.delegate = self
-            self.transitioningDelegate = self
-        }
+        self.transitionController = PhotosTransitionController(photosViewController: self, transitionInfo: self.transitionInfo)
+        self.transitionController?.delegate = self
+        self.transitioningDelegate = self
         
         self.view.backgroundColor = .black
         
@@ -235,14 +232,14 @@ import MobileCoreServices
                                                      bottom: 0, 
                                                      right: 0)
     }
-    
-    // MARK: - UIViewControllerTransitioningDelegate, PhotosViewControllerTransitionAnimatorDelegate
+
+    // MARK: - UIViewControllerTransitioningDelegate, PhotosViewControllerTransitionAnimatorDelegate, PhotosViewControllerTransitionAnimatorDelegate
     public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         guard let photo = self.dataSource.photo(at: self.currentPhotoIndex) else {
             return nil
         }
         
-        self.transitionInfo?.resolveEndingView?(photo, self.currentPhotoIndex)
+        self.transitionInfo.resolveEndingView?(photo, self.currentPhotoIndex)
         guard let transitionController = self.transitionController, !self.isForcingNonInteractiveDismissal ||
                                                                     (self.isForcingNonInteractiveDismissal &&
                                                                         transitionController.supportsContextualDismissal) else {
@@ -271,9 +268,9 @@ import MobileCoreServices
         return transitionController
     }
     
-    func transitionController(_ transitionController: PhotosViewControllerTransitionController,
+    func transitionController(_ transitionController: PhotosTransitionController,
                               didFinishAnimatingWith view: UIImageView, 
-                              transitionControllerMode: PhotosViewControllerTransitionControllerMode) {
+                              transitionControllerMode: PhotosTransitionControllerMode) {
         
         guard let photo = self.dataSource.photo(at: self.currentPhotoIndex) else {
             return
@@ -420,7 +417,7 @@ import MobileCoreServices
     
     @objc public func closeAction(_ sender: UIBarButtonItem) {
         self.isForcingNonInteractiveDismissal = true
-        self.presentingViewController?.dismiss(animated: true, completion: nil)
+        self.presentingViewController?.dismiss(animated: true)
     }
     
     // MARK: - Loading helpers
@@ -555,9 +552,9 @@ import MobileCoreServices
         }
         
         var horizontalSwipeDirection: SwipeDirection = .none
-        if percent > CGFloat.ulpOfOne {
+        if percent > .ulpOfOne {
             horizontalSwipeDirection = .right
-        } else if percent < -CGFloat.ulpOfOne {
+        } else if percent < -.ulpOfOne {
             horizontalSwipeDirection = .left
         }
         

@@ -40,6 +40,10 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
               attributedCredit: NSAttributedString(string: "Giphy"),
               url: URL(string: "https://media.giphy.com/media/lXiRDbPcRYfUgxOak/giphy.gif"))
     ]
+    
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        return [.portrait, .landscapeLeft]
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -144,20 +148,20 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
             }
             
             let indexPath = IndexPath(row: index, section: 0)
-            uSelf.tableView.scrollToRow(at: indexPath, at: .middle, animated: false)
-            let cell = uSelf.tableView.cellForRow(at: IndexPath(row: index, section: 0))
-            let imageView = cell?.contentView.viewWithTag(666) as? FLAnimatedImageView
+            guard let cell = uSelf.tableView.cellForRow(at: indexPath) else {
+                return nil
+            }
             
             // adjusting the reference view attached to our transition info to allow for contextual animation
-            return imageView
+            return cell.contentView.viewWithTag(666) as? FLAnimatedImageView
         }
         
         let dataSource = PhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row, prefetchBehavior: .regular)
-        let pagingConfig = PagingConfig(navigationOrientation: .horizontal)
+        let pagingConfig = PagingConfig()
         let photosViewController = PhotosViewController(dataSource: dataSource, pagingConfig: pagingConfig, transitionInfo: transitionInfo)
         photosViewController.delegate = self
         
-        self.present(photosViewController, animated: true, completion: nil)
+        self.present(photosViewController, animated: true)
     }
     
     // MARK: - Loading

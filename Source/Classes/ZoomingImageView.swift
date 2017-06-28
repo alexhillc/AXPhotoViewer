@@ -112,7 +112,7 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
     }
     
     public func scrollViewWillBeginZooming(_ scrollView: UIScrollView, with view: UIView?) {
-        self.panGestureRecognizer.isEnabled = true
+        scrollView.isScrollEnabled = true
     }
     
     public func scrollViewDidZoom(_ scrollView: UIScrollView) {
@@ -128,7 +128,7 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
             return
         }
         
-        self.panGestureRecognizer.isEnabled = false
+        scrollView.isScrollEnabled = false
     }
     
     // MARK: - Zoom scale
@@ -144,7 +144,7 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
         
         self.zoomScale = self.minimumZoomScale
         
-        self.panGestureRecognizer.isEnabled = false
+        self.isScrollEnabled = false
     }
     
     // MARK: - UITapGestureRecognizer
