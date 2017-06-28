@@ -431,8 +431,8 @@ import MobileCoreServices
                 return
             }
             
-            if photo.loadingState == .notLoaded {
-                photo.loadingState = .loading
+            if photo.ax_loadingState == .notLoaded || photo.ax_loadingState == .loadingCancelled {
+                photo.ax_loadingState = .loading
                 self.networkIntegration.loadPhoto(photo)
             }
         }
@@ -445,12 +445,12 @@ import MobileCoreServices
         
         weak var weakSelf = self
         func cancelLoadIfNecessary(for photo: PhotoProtocol) {
-            guard let uSelf = weakSelf, photo.loadingState == .loading else {
+            guard let uSelf = weakSelf, photo.ax_loadingState == .loading else {
                 return
             }
             
             uSelf.networkIntegration.cancelLoad(for: photo)
-            photo.loadingState = .notLoaded
+            photo.ax_loadingState = .loadingCancelled
         }
         
         if lowerIndex != NSNotFound, let photo = self.dataSource.photo(at: lowerIndex) {
@@ -683,19 +683,19 @@ import MobileCoreServices
     
     // MARK: - PhotoViewControllerDelegate
     public func photoViewController(_ photoViewController: PhotoViewController, retryDownloadFor photo: PhotoProtocol) {
-        guard photo.loadingState != .loading && photo.loadingState != .loaded else {
+        guard photo.ax_loadingState != .loading && photo.ax_loadingState != .loaded else {
             return
         }
         
-        photo.error = nil
-        photo.loadingState = .loading
+        photo.ax_error = nil
+        photo.ax_loadingState = .loading
         self.networkIntegration.loadPhoto(photo)
     }
     
     // MARK: - NetworkIntegrationDelegate
     public func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFinishWith photo: PhotoProtocol) {
         if let imageData = photo.imageData {
-            photo.loadingState = .loaded
+            photo.ax_loadingState = .loaded
             DispatchQueue.main.async { [weak self] in
                 self?.notificationCenter.post(name: .photoImageUpdate,
                                               object: photo,
@@ -705,7 +705,7 @@ import MobileCoreServices
                                               ])
             }
         } else if let image = photo.image {
-            photo.loadingState = .loaded
+            photo.ax_loadingState = .loaded
             DispatchQueue.main.async { [weak self] in
                 self?.notificationCenter.post(name: .photoImageUpdate,
                                               object: photo,
@@ -718,8 +718,12 @@ import MobileCoreServices
     }
     
     public func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFailWith error: Error, for photo: PhotoProtocol) {
-        photo.loadingState = .loadingFailed
-        photo.error = error
+        guard photo.ax_loadingState != .loadingCancelled else {
+            return
+        }
+        
+        photo.ax_loadingState = .loadingFailed
+        photo.ax_error = error
         DispatchQueue.main.async { [weak self] in
             self?.notificationCenter.post(name: .photoImageUpdate,
                                           object: photo,
@@ -731,7 +735,7 @@ import MobileCoreServices
     }
     
     public func networkIntegration(_ networkIntegration: NetworkIntegration, didUpdateLoadingProgress progress: CGFloat, for photo: PhotoProtocol) {
-        photo.progress = progress
+        photo.ax_progress = progress
         DispatchQueue.main.async { [weak self] in
             self?.notificationCenter.post(name: .photoLoadingProgressUpdate,
                                           object: photo,

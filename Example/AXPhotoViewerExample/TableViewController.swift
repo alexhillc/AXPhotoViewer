@@ -95,6 +95,10 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
         imageView.image = nil
         imageView.animatedImage = nil
         
+        let emptyHeight: CGFloat = 200
+        let emptyWidth: CGFloat = 150
+        imageView.frame = CGRect(x: (cell.frame.size.width - emptyWidth) / 2, y: 0, width: emptyWidth, height: emptyHeight)
+        
         let maxSize = cell.frame.size.height
 
         self.loadContent(at: indexPath) { (uData) in

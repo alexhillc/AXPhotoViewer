@@ -7,7 +7,7 @@
 //
 
 enum PhotoLoadingState: Int {
-    case notLoaded, loading, loaded, loadingFailed
+    case notLoaded, loading, loaded, loadingCancelled, loadingFailed
 }
 
 var PhotoErrorAssociationKey: UInt8 = 0
@@ -17,7 +17,7 @@ var PhotoLoadingStateAssociationKey: UInt8 = 0
 // MARK: - Internal PhotoProtocol extension to be used by the framework.
 extension PhotoProtocol {
     
-    var progress: CGFloat {
+    var ax_progress: CGFloat {
         get {
             return objc_getAssociatedObject(self, &PhotoProgressAssociationKey) as? CGFloat ?? 0
         }
@@ -26,7 +26,7 @@ extension PhotoProtocol {
         }
     }
     
-    var error: Error? {
+    var ax_error: Error? {
         get {
             return objc_getAssociatedObject(self, &PhotoErrorAssociationKey) as? Error
         }
@@ -35,7 +35,7 @@ extension PhotoProtocol {
         }
     }
     
-    var loadingState: PhotoLoadingState {
+    var ax_loadingState: PhotoLoadingState {
         get {
             return objc_getAssociatedObject(self, &PhotoLoadingStateAssociationKey) as? PhotoLoadingState ?? .notLoaded
         }

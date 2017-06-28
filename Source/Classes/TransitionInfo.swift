@@ -27,11 +27,30 @@
     public init(interactiveDismissalEnabled: Bool, startingView: UIImageView?, endingView: ((_ photo: PhotoProtocol, _ index: Int) -> UIImageView?)?) {
         super.init()
         self.interactiveDismissalEnabled = interactiveDismissalEnabled
-        self.startingView = startingView
+        
+        if let startingView = startingView {
+            guard startingView.bounds != .zero else {
+                assertionFailure("'startingView' has invalid geometry: \(startingView)")
+                return
+            }
+
+            self.startingView = startingView
+        }
         
         if let endingView = endingView {
             self.resolveEndingView = { [weak self] (photo, index) in
-                self?.endingView = endingView(photo, index)
+                guard let uSelf = self else {
+                    return
+                }
+                
+                if let endingView = endingView(photo, index) {
+                    guard endingView.bounds != .zero else {
+                        assertionFailure("'endingView' has invalid geometry: \(endingView)")
+                        return
+                    }
+                    
+                    uSelf.endingView = endingView
+                }
             }
         }
     }

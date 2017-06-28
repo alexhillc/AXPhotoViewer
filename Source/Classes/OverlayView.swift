@@ -119,10 +119,18 @@ import UIKit
         self.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.white]
         self.navigationBar.items = [self.navigationItem]
         self.addSubview(self.navigationBar)
+        
+        NotificationCenter.default.addObserver(forName: .UIContentSizeCategoryDidChange, object: nil, queue: OperationQueue.main) { [weak self] (note) in
+            self?.setNeedsLayout()
+        }
     }
     
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     open override func layoutSubviews() {
@@ -149,7 +157,6 @@ import UIKit
             let captionViewSize = captionView.sizeThatFits(insetSize)
             let captionViewOrigin = CGPoint(x: self.contentInset.left, y: self.frame.size.height - self.contentInset.bottom - captionViewSize.height)
             captionView.frame = CGRect(origin: captionViewOrigin, size: captionViewSize)
-            captionView.setNeedsLayout()
         }
     }
     

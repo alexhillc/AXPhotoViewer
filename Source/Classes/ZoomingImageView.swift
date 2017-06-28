@@ -47,6 +47,7 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
         
         self.doubleTapGestureRecognizer.numberOfTapsRequired = 2
         self.doubleTapGestureRecognizer.addTarget(self, action: #selector(doubleTapAction(_:)))
+        self.doubleTapGestureRecognizer.isEnabled = false
         self.addGestureRecognizer(self.doubleTapGestureRecognizer)
         
         self.imageView.layer.masksToBounds = true
@@ -67,7 +68,6 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
     
     fileprivate func updateImageView(image: UIImage?, animatedImage: FLAnimatedImage?) {
         self.imageView.transform = .identity
-        
         var imageSize: CGSize = .zero
         
         if let image = image {
@@ -84,8 +84,9 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
         
         self.imageView.frame = CGRect(origin: .zero, size: imageSize)
         self.contentSize = imageSize
-        
         self.updateZoomScale()
+        
+        self.doubleTapGestureRecognizer.isEnabled = (image != nil || animatedImage != nil)
         
         self.needsUpdateImageView = false
     }

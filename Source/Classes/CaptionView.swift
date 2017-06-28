@@ -61,7 +61,7 @@ import UIKit
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
                 fontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body,
-                                                                              compatibleWith: self.traitCollection)
+                                                                          compatibleWith: self.traitCollection)
             } else {
                 fontDescriptor = UIFont.preferredFont(forTextStyle: .body).fontDescriptor
             }
@@ -119,10 +119,18 @@ import UIKit
         self.creditLabel.textColor = .white
         self.creditLabel.numberOfLines = 0
         self.addSubview(self.creditLabel)
+        
+        NotificationCenter.default.addObserver(forName: .UIContentSizeCategoryDidChange, object: nil, queue: OperationQueue.main) { [weak self] (note) in
+            self?.setNeedsLayout()
+        }
     }
     
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     public func applyCaptionInfo(attributedTitle: NSAttributedString?,

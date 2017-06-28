@@ -72,7 +72,6 @@ import FLAnimatedImage
         (self.loadingView as? UIView)?.frame = CGRect(origin: CGPoint(x: (self.view.bounds.size.width - loadingViewSize.width) / 2,
                                                                       y: (self.view.bounds.size.height - loadingViewSize.height) / 2),
                                                       size: loadingViewSize)
-        (self.loadingView as? UIView)?.setNeedsLayout()
     }
     
     public func applyPhoto(_ photo: PhotoProtocol) {
@@ -84,14 +83,15 @@ import FLAnimatedImage
             weakSelf?.zoomingImageView.animatedImage = nil
         }
         
-        switch photo.loadingState {
-        case .loading, .notLoaded:
+        self.loadingView?.removeError()
+        
+        switch photo.ax_loadingState {
+        case .loading, .notLoaded, .loadingCancelled:
             resetImageView()
-            self.loadingView?.removeError()
-            self.loadingView?.startLoading(initialProgress: photo.progress)
+            self.loadingView?.startLoading(initialProgress: photo.ax_progress)
         case .loadingFailed:
             resetImageView()
-            let error = photo.error ?? NSError()
+            let error = photo.ax_error ?? NSError()
             self.loadingView?.showError(error, retryHandler: { [weak self] in
                 guard let uSelf = self else {
                     return
@@ -99,7 +99,7 @@ import FLAnimatedImage
                 
                 self?.delegate?.photoViewController(uSelf, retryDownloadFor: photo)
                 self?.loadingView?.removeError()
-                self?.loadingView?.startLoading(initialProgress: photo.progress)
+                self?.loadingView?.startLoading(initialProgress: photo.ax_progress)
             })
         case .loaded:
             guard photo.image != nil || photo.imageData != nil else {
@@ -107,7 +107,6 @@ import FLAnimatedImage
                 return
             }
             
-            self.loadingView?.removeError()
             self.loadingView?.stopLoading()
             
             if let imageData = photo.imageData {
@@ -162,7 +161,7 @@ import FLAnimatedImage
                 
                 self?.delegate?.photoViewController(uSelf, retryDownloadFor: photo)
                 self?.loadingView?.removeError()
-                self?.loadingView?.startLoading(initialProgress: photo.progress)
+                self?.loadingView?.startLoading(initialProgress: photo.ax_progress)
                 self?.view.setNeedsLayout()
             })
             
