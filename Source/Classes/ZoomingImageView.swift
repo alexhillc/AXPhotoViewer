@@ -57,6 +57,7 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
         self.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         self.showsVerticalScrollIndicator = false
         self.showsHorizontalScrollIndicator = false
+        self.isScrollEnabled = false
         self.bouncesZoom = true
         self.decelerationRate = UIScrollViewDecelerationRateFast;
         self.delegate = self
@@ -70,16 +71,19 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
         self.imageView.transform = .identity
         var imageSize: CGSize = .zero
         
-        if let image = image {
-            if self.imageView.image != image {
-                self.imageView.image = image
-            }
-            imageSize = image.size
-        } else if let animatedImage = animatedImage {
+        if let animatedImage = animatedImage {
             if self.imageView.animatedImage != animatedImage {
                 self.imageView.animatedImage = animatedImage
             }
             imageSize = animatedImage.size
+        } else if let image = image {
+            if self.imageView.image != image {
+                self.imageView.image = image
+            }
+            imageSize = image.size
+        } else {
+            self.imageView.animatedImage = nil
+            self.imageView.image = nil
         }
         
         self.imageView.frame = CGRect(origin: .zero, size: imageSize)
