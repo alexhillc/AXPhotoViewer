@@ -1,4 +1,7 @@
 # AXPhotoViewer
+
+[![Build Status](https://travis-ci.org/alexhillc/AXPhotoViewer.svg?branch=master)](https://travis-ci.org/alexhillc/AXPhotoViewer)
+
 <p align="center">
   <img src="http://i.imgur.com/Y3ovA03.gif" alt="Demo GIF #1"/>
   <img src="http://i.imgur.com/CCs0TzM.gif" alt="Demo GIF #2"/>
