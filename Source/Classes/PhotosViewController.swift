@@ -232,7 +232,7 @@ import MobileCoreServices
             return nil
         }
         
-        self.transitionInfo.resolveEndingView?(photo, self.currentPhotoIndex)
+        self.transitionInfo.resolveEndingViewClosure?(photo, self.currentPhotoIndex)
         guard let transitionController = self.transitionController, !self.isForcingNonInteractiveDismissal ||
                                                                     (self.isForcingNonInteractiveDismissal &&
                                                                         transitionController.supportsContextualDismissal) else {

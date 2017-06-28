@@ -16,13 +16,13 @@
     /// If the reference view that is provided is not currently visible, contextual animation will not occur.
     fileprivate(set) weak var endingView: UIImageView?
     
-    var resolveEndingView: ((_ photo: PhotoProtocol, _ index: Int) -> Void)?
-    
     /// The duration of the transition.
     public var duration: TimeInterval = 0.35
     
     /// This value determines whether or not the user can dismiss the `PhotosViewController` by panning vertically.
     fileprivate(set) var interactiveDismissalEnabled: Bool = true
+    
+    var resolveEndingViewClosure: ((_ photo: PhotoProtocol, _ index: Int) -> Void)?
     
     public init(interactiveDismissalEnabled: Bool, startingView: UIImageView?, endingView: ((_ photo: PhotoProtocol, _ index: Int) -> UIImageView?)?) {
         super.init()
@@ -38,7 +38,7 @@
         }
         
         if let endingView = endingView {
-            self.resolveEndingView = { [weak self] (photo, index) in
+            self.resolveEndingViewClosure = { [weak self] (photo, index) in
                 guard let uSelf = self else {
                     return
                 }
