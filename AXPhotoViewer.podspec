@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name            = "AXPhotoViewer"
-  s.version         = "1.0-beta.5"
+  s.version         = "1.0-beta.7"
   s.license         = { :type  => 'MIT', :file => 'LICENSE.md' }
   s.summary         = "An iPhone/iPad photo gallery viewer, useful for viewing a large number of photos."
   s.homepage        = "https://github.com/alexhillc/AXPhotoViewer"
@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   s.platform        = :ios, '9.0'
   s.requires_arc    = true
 
-  s.default_subspec = 'Core'
+  s.default_subspec = 'Lite'
 
   s.subspec 'Core' do |cs|
     cs.dependency      'FLAnimatedImage', '>= 1.0.0'
