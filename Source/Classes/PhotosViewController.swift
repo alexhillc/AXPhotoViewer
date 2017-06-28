@@ -13,10 +13,6 @@ import MobileCoreServices
                                                                UIViewControllerTransitioningDelegate, PhotoViewControllerDelegate, NetworkIntegrationDelegate,
                                                                PhotosTransitionControllerDelegate {
     
-    @objc(AXViewControllerType) public enum ViewControllerType: Int {
-        case photo, video
-    }
-    
     public weak var delegate: PhotosViewControllerDelegate?
     
     /// The underlying `OverlayView` that is used for displaying photo captions, titles, and actions.
@@ -99,9 +95,6 @@ import MobileCoreServices
     
     fileprivate var orderedViewControllers = [PhotoViewController]()
     fileprivate var recycledViewControllers = [PhotoViewController]()
-    fileprivate var mappedLoadingViewTypes: [String: LoadingViewProtocol.Type] = [
-        String(describing: PhotoViewController.self): LoadingView.self
-    ]
     
     fileprivate var transitionController: PhotosTransitionController?
     fileprivate let notificationCenter = NotificationCenter()
@@ -301,44 +294,6 @@ import MobileCoreServices
         self.loadPhotos(at: self.dataSource.initialPhotoIndex)
     }
     
-    /// Change the loading view class that will be instantiated for each `PhotoViewController`. This method can be used to replace
-    /// the default implementation of `LoadingView`.
-    ///
-    /// - Parameters:
-    ///   - loadingViewType: The desired loading view class.
-    ///   - viewControllerType: The view controller type that will replace its loading view type. (Only `PhotoViewController` for the moment)
-    @objc(replaceLoadingViewForViewControllerType:withLoadingViewType:)
-    public func replaceLoadingView(for viewControllerType: ViewControllerType, with loadingViewType: LoadingViewProtocol.Type) {
-        guard loadingViewType is UIView.Type else {
-            assertionFailure("`loadingViewType` must be a `UIView` that conforms to `LoadingViewProtocol`.")
-            return
-        }
-        
-        var key: String?
-        
-        switch viewControllerType {
-        case .photo:
-            key = String(describing: PhotoViewController.self)
-        case .video:
-            break
-        }
-        
-        guard let uKey = key else {
-            assertionFailure("Unsupported VC type.")
-            return
-        }
-        
-        self.mappedLoadingViewTypes[uKey] = loadingViewType
-        
-        for viewController in self.orderedViewControllers {
-            viewController.loadingView = self.makeLoadingView(for: viewController.pageIndex)
-        }
-        
-        for viewController in self.recycledViewControllers {
-            viewController.loadingView = self.makeLoadingView(for: viewController.pageIndex)
-        }
-    }
-    
     // MARK: - Overlay
     fileprivate func updateOverlay(for photoIndex: Int) {
         guard let photo = self.dataSource.photo(at: photoIndex) else {
@@ -497,11 +452,12 @@ import MobileCoreServices
     }
     
     fileprivate func makeLoadingView(for pageIndex: Int) -> LoadingViewProtocol? {
-        guard let loadingViewType = self.mappedLoadingViewTypes[String(describing: PhotoViewController.self)] else {
+        guard let loadingViewType = self.pagingConfig.loadingViewClass as? UIView.Type else {
+            assertionFailure("`loadingViewType` must be a UIView.")
             return nil
         }
         
-        return (loadingViewType as? UIView.Type)?.init() as? LoadingViewProtocol
+        return loadingViewType.init() as? LoadingViewProtocol
     }
     
     // MARK: - Recycling

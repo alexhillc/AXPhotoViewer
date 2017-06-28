@@ -14,6 +14,12 @@ import UIKit
     public var captionView: CaptionViewProtocol = CaptionView() {
         didSet {
             (oldValue as? UIView)?.removeFromSuperview()
+            
+            guard self.captionView is UIView.Type else {
+                assertionFailure("`captionView` must be a UIView.")
+                return
+            }
+            
             self.captionView.delegate = self
             self.setNeedsLayout()
         }
@@ -23,7 +29,17 @@ import UIKit
     /// This is prioritized over `title`.
     public var titleView: OverlayTitleViewProtocol? {
         set(value) {
-            self.navigationItem.titleView = value as? UIView
+            if let uValue = value {
+                guard let view = uValue as? UIView else {
+                    assertionFailure("`titleView` must be a UIView.")
+                    self.navigationItem.titleView = nil
+                    return
+                }
+                
+                self.navigationItem.titleView = view
+            } else {
+                self.navigationItem.titleView = nil
+            }
         }
         get {
             return self.navigationItem.titleView as? OverlayTitleViewProtocol
