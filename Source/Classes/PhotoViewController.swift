@@ -69,8 +69,8 @@ import FLAnimatedImage
         }
         
         let loadingViewSize = self.loadingView?.sizeThatFits(self.view.bounds.size) ?? .zero
-        (self.loadingView as? UIView)?.frame = CGRect(origin: CGPoint(x: (self.view.bounds.size.width - loadingViewSize.width) / 2,
-                                                                      y: (self.view.bounds.size.height - loadingViewSize.height) / 2),
+        (self.loadingView as? UIView)?.frame = CGRect(origin: CGPoint(x: floor((self.view.bounds.size.width - loadingViewSize.width) / 2),
+                                                                      y: floor((self.view.bounds.size.height - loadingViewSize.height) / 2)),
                                                       size: loadingViewSize)
     }
     

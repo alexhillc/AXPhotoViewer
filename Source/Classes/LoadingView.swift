@@ -53,8 +53,8 @@
         super.layoutSubviews()
         
         let indicatorViewSize = self.indicatorView.sizeThatFits(self.frame.size)
-        self.indicatorView.frame = CGRect(origin: CGPoint(x: (self.frame.size.width - indicatorViewSize.width) / 2,
-                                                          y: (self.frame.size.height - indicatorViewSize.height) / 2),
+        self.indicatorView.frame = CGRect(origin: CGPoint(x: floor((self.frame.size.width - indicatorViewSize.width) / 2),
+                                                          y: floor((self.frame.size.height - indicatorViewSize.height) / 2)),
                                           size: indicatorViewSize)
         
         if let errorLabel = self.errorLabel, let attributedText = errorLabel.attributedText?.mutableCopy() as? NSMutableAttributedString {
@@ -82,8 +82,8 @@
             errorLabel.attributedText = newAttributedText
             
             let errorLabelSize = errorLabel.sizeThatFits(self.frame.size)
-            errorLabel.frame = CGRect(origin: CGPoint(x: (self.frame.size.width - errorLabelSize.width) / 2,
-                                                      y: (self.frame.size.height - errorLabelSize.height) / 2),
+            errorLabel.frame = CGRect(origin: CGPoint(x: floor((self.frame.size.width - errorLabelSize.width) / 2),
+                                                      y: floor((self.frame.size.height - errorLabelSize.height) / 2)),
                                       size: errorLabelSize)
         }
     }

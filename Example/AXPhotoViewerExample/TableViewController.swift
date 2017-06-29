@@ -97,7 +97,7 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
         
         let emptyHeight: CGFloat = 200
         let emptyWidth: CGFloat = 150
-        imageView.frame = CGRect(x: (cell.frame.size.width - emptyWidth) / 2, y: 0, width: emptyWidth, height: emptyHeight)
+        imageView.frame = CGRect(x: floor((cell.frame.size.width - emptyWidth)) / 2, y: 0, width: emptyWidth, height: emptyHeight)
         
         let maxSize = cell.frame.size.height
 

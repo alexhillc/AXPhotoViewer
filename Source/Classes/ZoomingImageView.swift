@@ -147,6 +147,11 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
         self.minimumZoomScale = min(scaleWidth, scaleHeight)
         self.maximumZoomScale = self.minimumZoomScale * 3.5
         
+        // if the zoom scale is the same, change it to force the UIScrollView to
+        // recompute the scroll view's content frame
+        if abs(self.zoomScale - self.minimumZoomScale) <= .ulpOfOne {
+            self.zoomScale = self.minimumZoomScale + 0.1
+        }
         self.zoomScale = self.minimumZoomScale
         
         self.isScrollEnabled = false
