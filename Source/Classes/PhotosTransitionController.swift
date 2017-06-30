@@ -147,14 +147,25 @@ import FLAnimatedImage
         referenceView.frame = referenceViewFrame
         
         let referenceViewCenter = referenceView.center
-        referenceViewCopy.transform = UIApplication.shared.statusBarOrientation.transform(from: self.presentationOrientation)
+        referenceViewCopy.transform = from.view.transform
         referenceViewCopy.center = transitionContext.containerView.convert(referenceViewCenter, from: referenceView.superview)
         transitionContext.containerView.addSubview(referenceViewCopy)
         
         referenceView.alpha = 0
 
-        let scale = min(to.view.frame.size.width / referenceViewCopy.bounds.size.width, to.view.frame.size.height / referenceViewCopy.bounds.size.height)
-        let scaledSize = CGSize(width: referenceViewCopy.bounds.size.width * scale, height: referenceViewCopy.bounds.size.height * scale)
+        var imageAspectRatio: CGFloat = 1
+        if let image = referenceViewCopy.image {
+            imageAspectRatio = image.size.width / image.size.height
+        }
+        
+        let referenceViewAspectRatio = referenceViewCopy.bounds.size.width / referenceViewCopy.bounds.size.height
+        var aspectRatioAdjustedSize = referenceViewCopy.bounds.size
+        if abs(referenceViewAspectRatio - imageAspectRatio) > .ulpOfOne {
+            aspectRatioAdjustedSize.width = aspectRatioAdjustedSize.height * imageAspectRatio
+        }
+        
+        let scale = min(to.view.frame.size.width / aspectRatioAdjustedSize.width, to.view.frame.size.height / aspectRatioAdjustedSize.height)
+        let scaledSize = CGSize(width: aspectRatioAdjustedSize.width * scale, height: aspectRatioAdjustedSize.height * scale)
         let scaleAnimations = { () in
             referenceViewCopy.transform = .identity
             referenceViewCopy.frame.size = scaledSize
@@ -222,7 +233,7 @@ import FLAnimatedImage
         
         if imageView.superview != transitionContext.containerView {
             let imageViewCenter = imageView.center
-            imageView.transform = UIApplication.shared.statusBarOrientation.transform(from: self.dismissalOrientation)
+            imageView.transform = from.view.transform
             imageView.center = transitionContext.containerView.convert(imageViewCenter, from: imageView.superview)
             transitionContext.containerView.addSubview(imageView)
         }
