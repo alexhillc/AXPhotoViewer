@@ -233,9 +233,8 @@ import MobileCoreServices
         }
         
         self.transitionInfo.resolveEndingViewClosure?(photo, self.currentPhotoIndex)
-        guard let transitionController = self.transitionController, !self.isForcingNonInteractiveDismissal ||
-                                                                    (self.isForcingNonInteractiveDismissal &&
-                                                                        transitionController.supportsContextualDismissal) else {
+        guard let transitionController = self.transitionController, transitionController.supportsContextualDismissal ||
+                                                                    transitionController.supportsInteractiveDismissal else {
             return nil
         }
         
@@ -253,8 +252,8 @@ import MobileCoreServices
     }
     
     public func interactionControllerForDismissal(using animator: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? {
-        guard let transitionController = self.transitionController, !self.isForcingNonInteractiveDismissal &&
-                                                                    transitionController.supportsInteractiveDismissal else {
+        guard let transitionController = self.transitionController, transitionController.supportsInteractiveDismissal &&
+                                                                    !self.isForcingNonInteractiveDismissal else {
             return nil
         }
         

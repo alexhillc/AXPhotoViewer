@@ -35,9 +35,6 @@ import FLAnimatedImage
     /// but our pan gesture recognizer is receiving touch events. Processed as soon as the interactive dismissal has been set up.
     fileprivate var pendingAnimations = [() -> Void]()
     
-    /// The underlying pan gesture recognizer that is responsible for interactive dismissal.
-    weak fileprivate(set) var panGestureRecognizer: UIPanGestureRecognizer?
-    
     // Interactive dismissal transition tracking
     fileprivate var dismissalPercent: CGFloat = 0
     fileprivate var directionalDismissalPercent: CGFloat = 0
@@ -92,7 +89,6 @@ import FLAnimatedImage
             panGestureRecognizer.maximumNumberOfTouches = 1
             panGestureRecognizer.delegate = self
             photosViewController.view.addGestureRecognizer(panGestureRecognizer)
-            self.panGestureRecognizer = panGestureRecognizer
         }
         
         NotificationCenter.default.addObserver(forName: .UIApplicationDidChangeStatusBarOrientation,
@@ -143,6 +139,7 @@ import FLAnimatedImage
         to.view.alpha = 0
         to.view.frame = transitionContext.finalFrame(for: to)
         transitionContext.containerView.addSubview(to.view)
+        
         transitionContext.containerView.layoutIfNeeded()
         
         let referenceViewFrame = referenceView.frame
