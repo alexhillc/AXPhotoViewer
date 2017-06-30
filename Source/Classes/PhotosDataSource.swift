@@ -54,5 +54,17 @@
         
         return nil
     }
+    
+    func purge(excluding range: CountableClosedRange<Int>?) {
+        for (index, photo) in self.photos.enumerated() {
+            if range?.contains(index) ?? false {
+                continue
+            }
+            
+            photo.imageData = nil
+            photo.image = nil
+            photo.ax_loadingState = .notLoaded
+        }
+    }
 
 }

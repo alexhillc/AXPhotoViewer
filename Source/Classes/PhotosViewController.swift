@@ -153,8 +153,14 @@ import MobileCoreServices
     
     open override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
+        
         self.recycledViewControllers.removeLifeycleObserver(self)
         self.recycledViewControllers.removeAll()
+        
+        let numberOfPhotosToExclude = self.dataSource.prefetchBehavior.rawValue
+        let startIndex = (((self.currentPhotoIndex - (numberOfPhotosToExclude / 2)) >= 0) ? (self.currentPhotoIndex - (numberOfPhotosToExclude / 2)) : 0)
+        let exclusionRange = startIndex...(startIndex + numberOfPhotosToExclude)
+        self.dataSource.purge(excluding: exclusionRange)
     }
 
     open override func viewDidLoad() {
@@ -378,7 +384,7 @@ import MobileCoreServices
     fileprivate func loadPhotos(at index: Int) {
         let numberOfPhotosToLoad = self.dataSource.prefetchBehavior.rawValue
         let startIndex = (((index - (numberOfPhotosToLoad / 2)) >= 0) ? (index - (numberOfPhotosToLoad / 2)) : 0)
-        let indexes = startIndex..<(startIndex + numberOfPhotosToLoad + 1)
+        let indexes = startIndex...(startIndex + numberOfPhotosToLoad)
         
         for index in indexes {
             guard let photo = self.dataSource.photo(at: index) else {
