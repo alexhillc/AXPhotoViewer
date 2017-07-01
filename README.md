@@ -14,12 +14,7 @@ While AXPhotoViewer has many configurable properties on each of its modules, it 
 
 ```swift
 let dataSource = PhotosDataSource(photos: self.photos)
-let pagingConfig = PagingConfig()
-let transitionInfo = TransitionInfo(startingView: self.startingImageView) { [weak self] (photo, index) -> UIImageView? in
-    return self?.endingImageView
-}
-
-let photosViewController = PhotosViewController(dataSource: dataSource, pagingConfig: pagingConfig, transitionInfo: transitionInfo)
+let photosViewController = PhotosViewController(dataSource: dataSource)
 self.present(photosViewController, animated: true, completion: nil)
 ```
 
