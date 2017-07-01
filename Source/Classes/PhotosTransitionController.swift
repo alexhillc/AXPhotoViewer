@@ -770,7 +770,7 @@ import FLAnimatedImage
             }
             
             if pagingConfig.navigationOrientation == .horizontal {
-                return isVertical
+                return true
             } else {
                 if currentPhotoIndex == 0 {
                     return velocity.y > 0
@@ -780,7 +780,7 @@ import FLAnimatedImage
             }
         }
         
-        return true
+        return false
     }
     
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer) -> Bool {
