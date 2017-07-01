@@ -136,7 +136,7 @@ import MobileCoreServices
     public init(dataSource: PhotosDataSource,
                 pagingConfig: PagingConfig? = nil,
                 transitionInfo: TransitionInfo? = nil,
-                networkIntegration: NetworkIntegration) {
+                networkIntegration: NetworkIntegrationProtocol) {
     
         let uPagingConfig = pagingConfig ?? PagingConfig()
         let uTransitionInfo = transitionInfo ?? TransitionInfo()

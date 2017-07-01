@@ -1,9 +1,9 @@
 PODS:
-  - AXPhotoViewer (1.0-beta.11):
-    - AXPhotoViewer/Lite (= 1.0-beta.11)
-  - AXPhotoViewer/Core (1.0-beta.11):
+  - AXPhotoViewer (1.0-beta.12):
+    - AXPhotoViewer/Lite (= 1.0-beta.12)
+  - AXPhotoViewer/Core (1.0-beta.12):
     - FLAnimatedImage (>= 1.0.0)
-  - AXPhotoViewer/Lite (1.0-beta.11):
+  - AXPhotoViewer/Lite (1.0-beta.12):
     - AXPhotoViewer/Core
   - DRPLoadingSpinner (1.3.0):
     - DRPLoadingSpinner/core (= 1.3.0)
@@ -21,7 +21,7 @@ EXTERNAL SOURCES:
     :path: "../AXPhotoViewer.podspec"
 
 SPEC CHECKSUMS:
-  AXPhotoViewer: 5256a95a819509796de9ce340333c67d4117b5de
+  AXPhotoViewer: d896210af9160ee76e22c10d9727ed614df788b5
   DRPLoadingSpinner: ea8edd542a61da6fae3ec868676a5c8b3072dcf7
   FLAnimatedImage: 4a0b56255d9b05f18b6dd7ee06871be5d3b89e31
   Reveal-SDK: 43be4e662864e937960d0d04d005135e29c4e53b
