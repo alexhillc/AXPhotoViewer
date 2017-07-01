@@ -160,8 +160,8 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
             return cell.contentView.viewWithTag(666) as? FLAnimatedImageView
         }
         
-        let dataSource = PhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row, prefetchBehavior: .regular)
-        let pagingConfig = PagingConfig()
+        let dataSource = PhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row)
+        let pagingConfig = PagingConfig(navigationOrientation: .vertical)
         let photosViewController = PhotosViewController(dataSource: dataSource, pagingConfig: pagingConfig, transitionInfo: transitionInfo)
         photosViewController.delegate = self
         

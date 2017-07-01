@@ -117,24 +117,35 @@ import MobileCoreServices
     
     // MARK: - Initialization
     #if AX_SDWEBIMAGE_SUPPORT || AX_PINREMOTEIMAGE_SUPPORT || AX_AFNETWORKING_SUPPORT || AX_LITE_SUPPORT
-    public init(dataSource: PhotosDataSource, pagingConfig: PagingConfig = PagingConfig(), transitionInfo: TransitionInfo = TransitionInfo()) {
+    public init(dataSource: PhotosDataSource,
+                pagingConfig: PagingConfig? = nil,
+                transitionInfo: TransitionInfo? = nil) {
+        
+        let uPagingConfig = pagingConfig ?? PagingConfig()
+        let uTransitionInfo = transitionInfo ?? TransitionInfo()
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
-                                                       navigationOrientation: pagingConfig.navigationOrientation,
-                                                       options: [UIPageViewControllerOptionInterPageSpacingKey: pagingConfig.interPhotoSpacing])
+                                                       navigationOrientation: uPagingConfig.navigationOrientation,
+                                                       options: [UIPageViewControllerOptionInterPageSpacingKey: uPagingConfig.interPhotoSpacing])
         self.dataSource = dataSource
-        self.pagingConfig = pagingConfig
-        self.transitionInfo = transitionInfo
+        self.pagingConfig = uPagingConfig
+        self.transitionInfo = uTransitionInfo
         super.init(nibName: nil, bundle: nil)
         self.networkIntegration.delegate = self
     }
     #else
-    public init(dataSource: PhotosDataSource, pagingConfig: PagingConfig = PagingConfig(), transitionInfo: TransitionInfo = TransitionInfo(), networkIntegration: NetworkIntegration) {
+    public init(dataSource: PhotosDataSource,
+                pagingConfig: PagingConfig? = nil,
+                transitionInfo: TransitionInfo? = nil,
+                networkIntegration: NetworkIntegration) {
+    
+        let uPagingConfig = pagingConfig ?? PagingConfig()
+        let uTransitionInfo = transitionInfo ?? TransitionInfo()
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
-                                                       navigationOrientation: pagingConfig.navigationOrientation,
-                                                       options: [UIPageViewControllerOptionInterPageSpacingKey: pagingConfig.interPhotoSpacing])
+                                                       navigationOrientation: uPagingConfig.navigationOrientation,
+                                                       options: [UIPageViewControllerOptionInterPageSpacingKey: uPagingConfig.interPhotoSpacing])
         self.dataSource = dataSource
-        self.pagingConfig = pagingConfig
-        self.transitionInfo = transitionInfo
+        self.pagingConfig = uPagingConfig
+        self.transitionInfo = uTransitionInfo
         self.networkIntegration = networkIntegration
         super.init(nibName: nil, bundle: nil)
         self.networkIntegration.delegate = self

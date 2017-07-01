@@ -59,4 +59,8 @@
         self.init(interactiveDismissalEnabled: true, startingView: nil, endingView: nil)
     }
 
+    public convenience init(startingView: UIImageView?, endingView: ((_ photo: PhotoProtocol, _ index: Int) -> UIImageView?)?) {
+        self.init(interactiveDismissalEnabled: true, startingView: startingView, endingView: endingView)
+    }
+    
 }

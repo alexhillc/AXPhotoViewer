@@ -18,16 +18,10 @@ fileprivate let DefaultHorizontalSpacing: CGFloat = 20
     
     /// The loading view class which will be instantiated instead of the default `AXLoadingView`.
     fileprivate(set) var loadingViewClass: LoadingViewProtocol.Type = LoadingView.self
-
-    public init(navigationOrientation: UIPageViewControllerNavigationOrientation, interPhotoSpacing: CGFloat) {
-        self.navigationOrientation = navigationOrientation
-        self.interPhotoSpacing = interPhotoSpacing
-        super.init()
-    }
     
     public init(navigationOrientation: UIPageViewControllerNavigationOrientation,
                 interPhotoSpacing: CGFloat, 
-                loadingViewClass: LoadingViewProtocol.Type?) {
+                loadingViewClass: LoadingViewProtocol.Type? = nil) {
         
         self.navigationOrientation = navigationOrientation
         self.interPhotoSpacing = interPhotoSpacing
@@ -45,20 +39,19 @@ fileprivate let DefaultHorizontalSpacing: CGFloat = 20
     }
     
     public convenience override init() {
-        self.init(navigationOrientation: .horizontal, interPhotoSpacing: DefaultHorizontalSpacing)
+        self.init(navigationOrientation: .horizontal, interPhotoSpacing: DefaultHorizontalSpacing, loadingViewClass: nil)
+    }
+    
+    public convenience init(navigationOrientation: UIPageViewControllerNavigationOrientation) {
+        self.init(navigationOrientation: navigationOrientation, interPhotoSpacing: DefaultHorizontalSpacing, loadingViewClass: nil)
+    }
+    
+    public convenience init(interPhotoSpacing: CGFloat) {
+        self.init(navigationOrientation: .horizontal, interPhotoSpacing: interPhotoSpacing, loadingViewClass: nil)
     }
     
     public convenience init(loadingViewClass: LoadingViewProtocol.Type?) {
-        self.init()
-        
-        if let loadingViewClass = loadingViewClass {
-            guard loadingViewClass is UIView.Type else {
-                assertionFailure("`loadingViewClass` must be a UIView.")
-                return
-            }
-            
-            self.loadingViewClass = loadingViewClass
-        }
+        self.init(navigationOrientation: .horizontal, interPhotoSpacing: DefaultHorizontalSpacing, loadingViewClass: loadingViewClass)
     }
     
 }

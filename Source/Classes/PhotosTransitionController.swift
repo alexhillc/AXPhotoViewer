@@ -244,6 +244,7 @@ import FLAnimatedImage
                 return
             }
             
+            imageView.contentMode = referenceView.contentMode
             referenceView.alpha = 0
         }
         
@@ -744,13 +745,39 @@ import FLAnimatedImage
     
     // MARK: - UIGestureRecognizerDelegate
     func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        guard !(self.photosViewController?.currentPhotoViewController?.zoomingImageView.isScrollEnabled ?? true) else {
+        guard let photosViewController = self.photosViewController else {
+            return false
+        }
+        
+        let currentPhotoIndex = photosViewController.currentPhotoIndex
+        let dataSource = photosViewController.dataSource
+        let zoomingImageView = photosViewController.currentPhotoViewController?.zoomingImageView
+        let pagingConfig = photosViewController.pagingConfig
+        
+        guard !(zoomingImageView?.isScrollEnabled ?? true) &&
+            (pagingConfig.navigationOrientation == .horizontal ||
+            (pagingConfig.navigationOrientation == .vertical &&
+            (currentPhotoIndex == 0 || currentPhotoIndex == dataSource.numberOfPhotos - 1))) else {
             return false
         }
         
         if let panGestureRecognizer = gestureRecognizer as? UIPanGestureRecognizer {
             let velocity = panGestureRecognizer.velocity(in: gestureRecognizer.view)
-            return abs(velocity.y) > abs(velocity.x)
+            
+            let isVertical = abs(velocity.y) > abs(velocity.x)
+            guard isVertical else {
+                return false
+            }
+            
+            if pagingConfig.navigationOrientation == .horizontal {
+                return isVertical
+            } else {
+                if currentPhotoIndex == 0 {
+                    return velocity.y > 0
+                } else {
+                    return velocity.y < 0
+                }
+            }
         }
         
         return true

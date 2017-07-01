@@ -41,6 +41,10 @@
         self.init(photos: photos, initialPhotoIndex: 0, prefetchBehavior: .regular)
     }
     
+    public convenience init(photos: [PhotoProtocol], initialPhotoIndex: Int) {
+        self.init(photos: photos, initialPhotoIndex: initialPhotoIndex, prefetchBehavior: .regular)
+    }
+    
     // MARK: - DataSource
     public var numberOfPhotos: Int {
         return self.photos.count
