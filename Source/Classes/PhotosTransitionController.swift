@@ -1,9 +1,9 @@
 //
 //  PhotosTransitionController.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 6/4/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 import UIKit

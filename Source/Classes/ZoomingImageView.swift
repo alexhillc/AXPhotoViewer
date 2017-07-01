@@ -1,9 +1,9 @@
 //
 //  ZoomingImageView.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/21/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 import UIKit

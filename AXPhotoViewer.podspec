@@ -16,8 +16,7 @@ Pod::Spec.new do |s|
     cs.dependency      'FLAnimatedImage', '>= 1.0.0'
     cs.source_files  = 'Source/Classes/*.{swift,h,m}',
                        'Source/Protocols/*.{swift,h,m}',
-                       'Source/Extensions/*.{swift,h,m}',
-                       'Source/Integrations/NetworkIntegration.swift'
+                       'Source/Extensions/*.{swift,h,m}'
     cs.frameworks    = 'UIKit', 'MobileCoreServices'
   end
 

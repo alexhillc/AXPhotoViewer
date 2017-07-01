@@ -1,9 +1,9 @@
 //
 //  PhotosViewController.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/7/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 import UIKit
@@ -61,15 +61,15 @@ import MobileCoreServices
     fileprivate(set) var transitionInfo: TransitionInfo
         
     #if AX_SDWEBIMAGE_SUPPORT
-    public let networkIntegration: NetworkIntegration = SDWebImageIntegration()
+    public let networkIntegration: NetworkIntegrationProtocol = SDWebImageIntegration()
     #elseif AX_PINREMOTEIMAGE_SUPPORT
-    public let networkIntegration: NetworkIntegration = PINRemoteImageIntegration()
+    public let networkIntegration: NetworkIntegrationProtocol = PINRemoteImageIntegration()
     #elseif AX_AFNETWORKING_SUPPORT
-    public let networkIntegration: NetworkIntegration = AFNetworkingIntegration()
+    public let networkIntegration: NetworkIntegrationProtocol = AFNetworkingIntegration()
     #elseif AX_LITE_SUPPORT
-    public let networkIntegration: NetworkIntegration = SimpleNetworkIntegration()
+    public let networkIntegration: NetworkIntegrationProtocol = SimpleNetworkIntegration()
     #else
-    public let networkIntegration: NetworkIntegration
+    public let networkIntegration: NetworkIntegrationProtocol
     #endif
     
     // MARK: - Private/internal variables
@@ -296,14 +296,11 @@ import MobileCoreServices
     
     // MARK: - Page VC Configuration
     fileprivate func configurePageViewController() {
-        guard let photo = self.dataSource.photo(at: self.dataSource.initialPhotoIndex),
-              let photoViewController = self.makePhotoViewController(for: self.dataSource.initialPhotoIndex) else {
+        guard let photoViewController = self.makePhotoViewController(for: self.dataSource.initialPhotoIndex) else {
             self.pageViewController.setViewControllers(nil, direction: .forward, animated: false, completion: nil)
             return
         }
         
-        photoViewController.applyPhoto(photo)
-        photoViewController.pageIndex = self.dataSource.initialPhotoIndex
         self.pageViewController.setViewControllers([photoViewController], direction: .forward, animated: false, completion: nil)
         self.currentPhotoIndex = self.dataSource.initialPhotoIndex
         self.overlayView.titleView?.tweenBetweenLowIndex?(self.dataSource.initialPhotoIndex, highIndex: self.dataSource.initialPhotoIndex + 1, percent: 0)
@@ -665,7 +662,7 @@ import MobileCoreServices
     }
     
     // MARK: - NetworkIntegrationDelegate
-    public func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFinishWith photo: PhotoProtocol) {
+    public func networkIntegration(_ networkIntegration: NetworkIntegrationProtocol, loadDidFinishWith photo: PhotoProtocol) {
         if let imageData = photo.imageData {
             photo.ax_loadingState = .loaded
             DispatchQueue.main.async { [weak self] in
@@ -689,7 +686,7 @@ import MobileCoreServices
         }
     }
     
-    public func networkIntegration(_ networkIntegration: NetworkIntegration, loadDidFailWith error: Error, for photo: PhotoProtocol) {
+    public func networkIntegration(_ networkIntegration: NetworkIntegrationProtocol, loadDidFailWith error: Error, for photo: PhotoProtocol) {
         guard photo.ax_loadingState != .loadingCancelled else {
             return
         }
@@ -706,7 +703,7 @@ import MobileCoreServices
         }
     }
     
-    public func networkIntegration(_ networkIntegration: NetworkIntegration, didUpdateLoadingProgress progress: CGFloat, for photo: PhotoProtocol) {
+    public func networkIntegration(_ networkIntegration: NetworkIntegrationProtocol, didUpdateLoadingProgress progress: CGFloat, for photo: PhotoProtocol) {
         photo.ax_progress = progress
         DispatchQueue.main.async { [weak self] in
             self?.notificationCenter.post(name: .photoLoadingProgressUpdate,

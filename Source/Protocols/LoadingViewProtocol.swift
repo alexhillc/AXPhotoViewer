@@ -1,9 +1,9 @@
 //
 //  LoadingViewProtocol.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/28/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 @objc(AXLoadingViewProtocol) public protocol LoadingViewProtocol: NSObjectProtocol {

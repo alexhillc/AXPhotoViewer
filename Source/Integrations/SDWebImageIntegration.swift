@@ -1,14 +1,14 @@
 //
 //  SDWebImageIntegration.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/20/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 import SDWebImage
 
-class SDWebImageIntegration: NSObject, NetworkIntegration {
+class SDWebImageIntegration: NSObject, NetworkIntegrationProtocol {
     
     weak var delegate: NetworkIntegrationDelegate?
     

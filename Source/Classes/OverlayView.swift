@@ -1,9 +1,9 @@
 //
 //  OverlayView.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/28/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 import UIKit
@@ -123,6 +123,9 @@ import UIKit
         super.init(frame: .zero)
         
         self.captionView.delegate = self
+        if let captionView = self.captionView as? UIView {
+            self.addSubview(captionView)
+        }
         
         self.navigationBarUnderlay.backgroundColor = (self.captionView as? UIView)?.backgroundColor
         self.addSubview(self.navigationBarUnderlay)
@@ -166,10 +169,6 @@ import UIKit
                                                                height: self.navigationBar.frame.origin.y + self.navigationBar.frame.size.height))
         
         if let captionView = self.captionView as? UIView {
-            if captionView.superview == nil {
-                self.addSubview(captionView)
-            }
-            
             let captionViewSize = captionView.sizeThatFits(insetSize)
             let captionViewOrigin = CGPoint(x: self.contentInset.left, y: self.frame.size.height - self.contentInset.bottom - captionViewSize.height)
             captionView.frame = CGRect(origin: captionViewOrigin, size: captionViewSize)

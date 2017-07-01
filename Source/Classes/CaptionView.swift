@@ -1,9 +1,9 @@
 //
 //  CaptionView.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/28/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 import UIKit
@@ -12,9 +12,9 @@ import UIKit
     
     public weak var delegate: CaptionViewDelegate?
     
-    var titleLabel = UILabel()
-    var descriptionLabel = UILabel()
-    var creditLabel = UILabel()
+    open var titleLabel = UILabel()
+    open var descriptionLabel = UILabel()
+    open var creditLabel = UILabel()
     
     fileprivate var needsUpdateContentSize = false
 
@@ -36,7 +36,7 @@ import UIKit
     
     fileprivate var isFirstLayout: Bool = true
     
-    var defaultTitleAttributes: [String: Any] {
+    open var defaultTitleAttributes: [String: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -56,7 +56,7 @@ import UIKit
         }
     }
     
-    var defaultDescriptionAttributes: [String: Any] {
+    open var defaultDescriptionAttributes: [String: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -76,7 +76,7 @@ import UIKit
         }
     }
     
-    var defaultCreditAttributes: [String: Any] {
+    open var defaultCreditAttributes: [String: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -133,9 +133,9 @@ import UIKit
         NotificationCenter.default.removeObserver(self)
     }
 
-    public func applyCaptionInfo(attributedTitle: NSAttributedString?,
-                          attributedDescription: NSAttributedString?,
-                          attributedCredit: NSAttributedString?) {
+    open func applyCaptionInfo(attributedTitle: NSAttributedString?,
+                               attributedDescription: NSAttributedString?,
+                               attributedCredit: NSAttributedString?) {
         
         func makeAttributedStringWithDefaults(_ defaults: [String: Any], for attributedString: NSAttributedString?) -> NSAttributedString? {
             guard let defaultAttributedString = attributedString?.mutableCopy() as? NSMutableAttributedString else {

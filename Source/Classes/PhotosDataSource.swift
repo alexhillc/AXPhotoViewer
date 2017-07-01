@@ -1,9 +1,9 @@
 //
 //  PhotosConfiguration.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 6/1/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 @objc(AXPhotosDataSource) open class PhotosDataSource: NSObject {

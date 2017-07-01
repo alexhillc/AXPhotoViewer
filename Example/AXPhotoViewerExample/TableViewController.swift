@@ -161,7 +161,7 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
         }
         
         let dataSource = PhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row)
-        let pagingConfig = PagingConfig(navigationOrientation: .vertical)
+        let pagingConfig = PagingConfig(loadingViewClass: CustomLoadingView.self)
         let photosViewController = PhotosViewController(dataSource: dataSource, pagingConfig: pagingConfig, transitionInfo: transitionInfo)
         photosViewController.delegate = self
         

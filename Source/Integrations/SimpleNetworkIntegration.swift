@@ -1,12 +1,12 @@
 //
 //  SimpleNetworkIntegration.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 6/11/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
-open class SimpleNetworkIntegration: NSObject, NetworkIntegration, URLSessionDataDelegate, URLSessionTaskDelegate {
+open class SimpleNetworkIntegration: NSObject, NetworkIntegrationProtocol, URLSessionDataDelegate, URLSessionTaskDelegate {
     
     fileprivate var urlSession: URLSession!
     public weak var delegate: NetworkIntegrationDelegate?

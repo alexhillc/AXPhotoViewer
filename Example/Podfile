@@ -6,7 +6,10 @@ target 'AXPhotoViewerExample' do
 
   pod 'Reveal-SDK'
 
+  # Loading spinner
+  pod 'DRPLoadingSpinner'
+
   # AXPhotoViewer
-  pod 'AXPhotoViewer/Lite’, :path => '../AXPhotoViewer.podspec'
+  pod 'AXPhotoViewer', :path => '../AXPhotoViewer.podspec'
 
 end

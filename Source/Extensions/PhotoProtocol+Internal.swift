@@ -1,9 +1,9 @@
 //
 //  Photo+Internal.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/27/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 enum PhotoLoadingState: Int {

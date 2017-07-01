@@ -1,10 +1,10 @@
 
 //
 //  UIImageView+NSCopying.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 6/10/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 extension UIImageView: NSCopying {

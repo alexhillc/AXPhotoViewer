@@ -1,9 +1,9 @@
 //
 //  TransitionInfo.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 6/1/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 @objc(AXTransitionInfo) open class TransitionInfo: NSObject {

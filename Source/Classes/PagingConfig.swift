@@ -1,9 +1,9 @@
 //
 //  PagingConfiguration.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 6/1/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 fileprivate let DefaultHorizontalSpacing: CGFloat = 20

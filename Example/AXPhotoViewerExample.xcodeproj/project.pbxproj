@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		641D1F6CEDA0BCFE033D38E5 /* Pods_AXPhotoViewerExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69F803311BCB37B767554EE6 /* Pods_AXPhotoViewerExample.framework */; };
+		FA4AFA031F081F6B0043E539 /* CustomLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA4AFA021F081F6B0043E539 /* CustomLoadingView.swift */; };
 		FA8359DA1EC01BD500B256C2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA8359D91EC01BD500B256C2 /* AppDelegate.swift */; };
 		FA8359E11EC01BD500B256C2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FA8359E01EC01BD500B256C2 /* Assets.xcassets */; };
 		FA8359E41EC01BD500B256C2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FA8359E21EC01BD500B256C2 /* LaunchScreen.storyboard */; };
@@ -18,6 +19,7 @@
 		25A1135C14AA99ABF7FA2FBB /* Pods-AXPhotoViewerExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AXPhotoViewerExample.release.xcconfig"; path = "Pods/Target Support Files/Pods-AXPhotoViewerExample/Pods-AXPhotoViewerExample.release.xcconfig"; sourceTree = "<group>"; };
 		69F803311BCB37B767554EE6 /* Pods_AXPhotoViewerExample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AXPhotoViewerExample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		90EFD1F60380FB7B07BFC521 /* Pods-AXPhotoViewerExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AXPhotoViewerExample.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AXPhotoViewerExample/Pods-AXPhotoViewerExample.debug.xcconfig"; sourceTree = "<group>"; };
+		FA4AFA021F081F6B0043E539 /* CustomLoadingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomLoadingView.swift; sourceTree = "<group>"; };
 		FA8359D61EC01BD500B256C2 /* AXPhotoViewerExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AXPhotoViewerExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA8359D91EC01BD500B256C2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FA8359E01EC01BD500B256C2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -78,6 +80,7 @@
 			children = (
 				FA8359D91EC01BD500B256C2 /* AppDelegate.swift */,
 				FA9CF9461EE48F80007CFDF9 /* TableViewController.swift */,
+				FA4AFA021F081F6B0043E539 /* CustomLoadingView.swift */,
 				FA8359E01EC01BD500B256C2 /* Assets.xcassets */,
 				FA8359E21EC01BD500B256C2 /* LaunchScreen.storyboard */,
 				FA8359E51EC01BD500B256C2 /* Info.plist */,
@@ -208,6 +211,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA9CF9471EE48F80007CFDF9 /* TableViewController.swift in Sources */,
+				FA4AFA031F081F6B0043E539 /* CustomLoadingView.swift in Sources */,
 				FA8359DA1EC01BD500B256C2 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -327,6 +331,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = "$(SRCROOT)/AXPhotoViewerExample/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.bawkbawk.AXPhotoViewerExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -340,6 +345,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = "$(SRCROOT)/AXPhotoViewerExample/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.bawkbawk.AXPhotoViewerExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";

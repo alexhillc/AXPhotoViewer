@@ -1,9 +1,9 @@
 //
 //  PhotoViewController.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/7/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 import UIKit
@@ -14,12 +14,7 @@ import FLAnimatedImage
     public weak var delegate: PhotoViewControllerDelegate?
     public var pageIndex: Int = 0
     
-    public var loadingView: LoadingViewProtocol? {
-        didSet {
-            (oldValue as? UIView)?.removeFromSuperview()
-            self.view.setNeedsLayout()
-        }
-    }
+    fileprivate(set) var loadingView: LoadingViewProtocol?
 
     var zoomingImageView: ZoomingImageView {
         get {
@@ -59,14 +54,16 @@ import FLAnimatedImage
         self.view = ZoomingImageView()
     }
     
-    open override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
+    open override func viewDidLoad() {
+        super.viewDidLoad()
         
         if let loadingView = self.loadingView as? UIView {
-            if loadingView.superview == nil {
-                self.view.addSubview(loadingView)
-            }
+            self.view.addSubview(loadingView)
         }
+    }
+    
+    open override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
         
         let loadingViewSize = self.loadingView?.sizeThatFits(self.view.bounds.size) ?? .zero
         (self.loadingView as? UIView)?.frame = CGRect(origin: CGPoint(x: floor((self.view.bounds.size.width - loadingViewSize.width) / 2),

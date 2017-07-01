@@ -1,9 +1,9 @@
 //
 //  Array+Sorted.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/30/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 extension Array {

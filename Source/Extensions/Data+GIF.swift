@@ -1,9 +1,9 @@
 //
 //  Data+GIF.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 6/11/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 import ImageIO

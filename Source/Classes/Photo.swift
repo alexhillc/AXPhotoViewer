@@ -1,9 +1,9 @@
 //
 //  Photo.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 6/3/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 /// A simple wrapper class for `PhotoProtocol`.

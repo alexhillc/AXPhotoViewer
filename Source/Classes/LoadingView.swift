@@ -1,14 +1,15 @@
 //
 //  LoadingView.swift
-//  Pods
+//  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/7/17.
-//
+//  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
 @objc(AXLoadingView) open class LoadingView: UIView, LoadingViewProtocol {
     
-    fileprivate(set) var indicatorView = UIActivityIndicatorView(activityIndicatorStyle: .white)
+    open fileprivate(set) lazy var indicatorView: UIView = UIActivityIndicatorView(activityIndicatorStyle: .white)
+    
     fileprivate var errorLabel: UILabel?
     fileprivate var tapGestureRecognizer: UITapGestureRecognizer?
     fileprivate var retryHandler: (() -> Void)?
@@ -95,24 +96,28 @@
                       height: max(indicatorViewSize.height, errorLabelSize.height))
     }
     
-    public func startLoading(initialProgress: CGFloat) {
+    open func startLoading(initialProgress: CGFloat) {
         if self.indicatorView.superview == nil {
             self.addSubview(self.indicatorView)
             self.setNeedsLayout()
         }
         
-        self.indicatorView.startAnimating()
+        if let indicatorView = self.indicatorView as? UIActivityIndicatorView, !indicatorView.isAnimating {
+            indicatorView.startAnimating()
+        }
     }
     
-    public func stopLoading() {
-        self.indicatorView.stopAnimating()
+    open func stopLoading() {
+        if let indicatorView = self.indicatorView as? UIActivityIndicatorView, indicatorView.isAnimating {
+            indicatorView.stopAnimating()
+        }
     }
     
-    public func updateProgress(_ progress: CGFloat) {
+    open func updateProgress(_ progress: CGFloat) {
         // empty for now, need to create a progressive loading indicator
     }
     
-    public func showError(_ error: Error, retryHandler: @escaping () -> Void) {
+    open func showError(_ error: Error, retryHandler: @escaping () -> Void) {
         self.stopLoading()
         
         self.retryHandler = retryHandler
@@ -131,7 +136,7 @@
         self.setNeedsLayout()
     }
     
-    public func removeError() {
+    open func removeError() {
         if let tapGestureRecognizer = self.tapGestureRecognizer {
             self.removeGestureRecognizer(tapGestureRecognizer)
             self.tapGestureRecognizer = nil
