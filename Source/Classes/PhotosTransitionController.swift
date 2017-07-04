@@ -419,7 +419,7 @@ import FLAnimatedImage
             uSelf.dismissalTransitionContext = nil
         }
         
-        UIView.animate(withDuration: (1 - Double(self.dismissalPercent)) * self.transitionDuration(using: transitionContext),
+        UIView.animate(withDuration: self.transitionDuration(using: transitionContext),
                        delay: 0,
                        usingSpringWithDamping: 1.0,
                        initialSpringVelocity: 0,
@@ -529,7 +529,7 @@ import FLAnimatedImage
                 uSelf.completeInteractiveDismissal = (uSelf.dismissalPercent >= uSelf.DismissalPercentThreshold)
                 
                 // this feels right-ish
-                let dismissalRatio = (1.5 * uSelf.dismissalPercent / uSelf.DismissalPercentThreshold)
+                let dismissalRatio = (1.2 * uSelf.dismissalPercent / uSelf.DismissalPercentThreshold)
                 
                 let navigationBarOriginY = max(uSelf.navigationBarInitialOriginY - navigationBarUnderlay.frame.size.height,
                                                uSelf.navigationBarInitialOriginY - (navigationBarUnderlay.frame.size.height * dismissalRatio))

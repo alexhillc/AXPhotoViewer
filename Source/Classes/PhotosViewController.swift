@@ -171,7 +171,7 @@ import MobileCoreServices
         let numberOfPhotosToExclude = self.dataSource.prefetchBehavior.rawValue
         let startIndex = (((self.currentPhotoIndex - (numberOfPhotosToExclude / 2)) >= 0) ? (self.currentPhotoIndex - (numberOfPhotosToExclude / 2)) : 0)
         let exclusionRange = startIndex...(startIndex + numberOfPhotosToExclude)
-        self.dataSource.purge(excluding: exclusionRange)
+        self.purgePhotos(excluding: exclusionRange)
     }
 
     open override func viewDidLoad() {
@@ -237,7 +237,7 @@ import MobileCoreServices
         super.viewWillLayoutSubviews()
         self.pageViewController.view.frame = self.view.bounds
         self.overlayView.frame = self.view.bounds
-        self.overlayView.contentInset = UIEdgeInsets(top: UIApplication.shared.statusBarFrame.size.height,
+        self.overlayView.contentInset = UIEdgeInsets(top: (UIApplication.shared.statusBarFrame.size.height > .ulpOfOne) ? 20 : 0,
                                                      left: 0,
                                                      bottom: 0, 
                                                      right: 0)
@@ -333,7 +333,7 @@ import MobileCoreServices
         self.setNeedsStatusBarAppearanceUpdate()
         if show {
             UIView.performWithoutAnimation { [weak self] in
-                self?.overlayView.contentInset = UIEdgeInsets(top: UIApplication.shared.statusBarFrame.size.height,
+                self?.overlayView.contentInset = UIEdgeInsets(top: (UIApplication.shared.statusBarFrame.size.height > .ulpOfOne) ? 20 : 0,
                                                               left: 0,
                                                               bottom: 0,
                                                               right: 0)
@@ -427,6 +427,18 @@ import MobileCoreServices
         
         if upperIndex != NSNotFound, let photo = self.dataSource.photo(at: upperIndex) {
             cancelLoadIfNecessary(for: photo)
+        }
+    }
+    
+    fileprivate func purgePhotos(excluding range: CountableClosedRange<Int>?) {
+        for index in 0..<self.dataSource.numberOfPhotos {
+            guard let photo = self.dataSource.photo(at: index), range?.contains(index) ?? false else {
+                continue
+            }
+            
+            photo.imageData = nil
+            photo.image = nil
+            photo.ax_loadingState = .notLoaded
         }
     }
     

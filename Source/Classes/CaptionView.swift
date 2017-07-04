@@ -16,25 +16,38 @@ import UIKit
     open var descriptionLabel = UILabel()
     open var creditLabel = UILabel()
     
-    fileprivate var needsUpdateContentSize = false
-
-    fileprivate let CaptionAnimDuration: TimeInterval = 0.2
+    fileprivate var titleSizingLabel = UILabel()
+    fileprivate var descriptionSizingLabel = UILabel()
+    fileprivate var creditSizingLabel = UILabel()
+    
+    fileprivate var visibleLabels: [UILabel]
+    fileprivate var visibleSizingLabels: [UILabel]
+    
+    fileprivate var needsCaptionLayoutAnim = false
+    fileprivate var isCaptionAnimatingIn = false
+    fileprivate var isCaptionAnimatingOut = false
+    
+    fileprivate var isFirstLayout: Bool = true
+    
+    fileprivate let CaptionAnimDuration: TimeInterval = 0.25
     open override var frame: CGRect {
         set(value) {
+            guard self.frame != value else {
+                return
+            }
+            
             let animation: () -> Void = { super.frame = value }
             
             if self.isFirstLayout {
                 animation()
             } else {
-                UIView.animate(withDuration: CaptionAnimDuration, delay: 0, options: [.curveEaseOut], animations: animation, completion: nil)
+                UIView.animate(withDuration: CaptionAnimDuration, delay: 0, options: [.beginFromCurrentState, .curveEaseInOut], animations: animation, completion: nil)
             }
         }
         get {
             return super.frame
         }
     }
-    
-    fileprivate var isFirstLayout: Bool = true
     
     open var defaultTitleAttributes: [String: Any] {
         get {
@@ -96,17 +109,25 @@ import UIKit
         }
     }
     
-    fileprivate var visibleLabels: [UILabel]
-    
     init() {
         self.visibleLabels = [
             self.titleLabel,
             self.descriptionLabel,
             self.creditLabel
         ]
+        self.visibleSizingLabels = [
+            self.titleSizingLabel,
+            self.descriptionSizingLabel,
+            self.creditSizingLabel
+        ]
 
         super.init(frame: .zero)
+        
         self.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        
+        self.titleSizingLabel.numberOfLines = 0
+        self.descriptionSizingLabel.numberOfLines = 0
+        self.creditSizingLabel.numberOfLines = 0
         
         self.titleLabel.textColor = .white
         self.titleLabel.numberOfLines = 0
@@ -160,93 +181,121 @@ import UIKit
             return defaultAttributedString
         }
         
-        self.visibleLabels = []
-        
         let title = makeAttributedStringWithDefaults(self.defaultTitleAttributes, for: attributedTitle)
         let description = makeAttributedStringWithDefaults(self.defaultDescriptionAttributes, for: attributedDescription)
         let credit = makeAttributedStringWithDefaults(self.defaultCreditAttributes, for: attributedCredit)
+        
+        self.visibleSizingLabels = []
+        self.visibleLabels = []
 
-        self.titleLabel.alpha = 1
-        self.descriptionLabel.alpha = 1
-        self.creditLabel.alpha = 1
-        
-        let animateOut: () -> Void = { [weak self] in
-            self?.titleLabel.alpha = 0
-            self?.descriptionLabel.alpha = 0
-            self?.creditLabel.alpha = 0
+        self.titleSizingLabel.attributedText = title
+        if !(title?.string.isEmpty ?? true) {
+            self.visibleSizingLabels.append(self.titleSizingLabel)
+            self.visibleLabels.append(self.titleLabel)
         }
         
-        let animateOutCompletion: (_ finished: Bool) -> Void = { [weak self] (finished) in
-            guard let uSelf = self, finished else {
-                return
-            }
-            
-            uSelf.titleLabel.attributedText = title
-            uSelf.descriptionLabel.attributedText = description
-            uSelf.creditLabel.attributedText = credit
-            
-            if uSelf.titleLabel.attributedText?.string.isEmpty ?? true {
-                uSelf.titleLabel.isHidden = true
-            } else {
-                uSelf.titleLabel.isHidden = false
-                uSelf.visibleLabels.append(uSelf.titleLabel)
-            }
-            
-            if uSelf.descriptionLabel.attributedText?.string.isEmpty ?? true {
-                uSelf.descriptionLabel.isHidden = true
-            } else {
-                uSelf.descriptionLabel.isHidden = false
-                uSelf.visibleLabels.append(uSelf.descriptionLabel)
-            }
-            
-            if uSelf.creditLabel.attributedText?.string.isEmpty ?? true {
-                uSelf.creditLabel.isHidden = true
-            } else {
-                uSelf.creditLabel.isHidden = false
-                uSelf.visibleLabels.append(uSelf.creditLabel)
-            }
-            
-            uSelf.setNeedsUpdateContentSize()
+        self.descriptionSizingLabel.attributedText = description
+        if !(description?.string.isEmpty ?? true) {
+            self.visibleSizingLabels.append(self.descriptionSizingLabel)
+            self.visibleLabels.append(self.descriptionLabel)
         }
         
-        let animateIn: () -> Void = { [weak self] in
-            self?.titleLabel.alpha = 1
-            self?.descriptionLabel.alpha = 1
-            self?.creditLabel.alpha = 1
+        self.creditSizingLabel.attributedText = credit
+        if !(credit?.string.isEmpty ?? true) {
+            self.visibleSizingLabels.append(self.creditSizingLabel)
+            self.visibleLabels.append(self.creditLabel)
         }
         
-        if self.isFirstLayout {
-            animateOut()
-            animateOutCompletion(true)
-            animateIn()
-        } else {
-            UIView.animate(withDuration: CaptionAnimDuration / 2, delay: 0, options: [.curveEaseOut], animations: animateOut) { [weak self] (finished) in
-                guard let uSelf = self else {
-                    return
-                }
-                
-                animateOutCompletion(finished)
-                UIView.animate(withDuration: uSelf.CaptionAnimDuration / 2, delay: 0, options: [.curveEaseIn], animations: animateIn)
-            }
-        }
-    }
-    
-    fileprivate func setNeedsUpdateContentSize() {
-        self.needsUpdateContentSize = true
+        self.needsCaptionLayoutAnim = !self.isFirstLayout
+        
+        let newSize = self.computeSize(for: self.frame.size, applySizingLayout: false)
+        self.delegate?.captionView(self, contentSizeDidChange: newSize)
+        
         self.setNeedsLayout()
     }
     
     open override func layoutSubviews() {
         super.layoutSubviews()
-        self.computeSize(for: self.frame.size, applyLayout: true)
+        
+        self.computeSize(for: self.frame.size, applySizingLayout: true)
+        
+        weak var weakSelf = self
+        func applySizingAttributes() {
+            guard let uSelf = weakSelf else {
+                return
+            }
+            
+            uSelf.titleLabel.attributedText = uSelf.titleSizingLabel.attributedText
+            uSelf.titleLabel.frame = uSelf.titleSizingLabel.frame
+            uSelf.titleLabel.isHidden = (uSelf.titleSizingLabel.attributedText?.string.isEmpty ?? true)
+            
+            uSelf.descriptionLabel.attributedText = uSelf.descriptionSizingLabel.attributedText
+            uSelf.descriptionLabel.frame = uSelf.descriptionSizingLabel.frame
+            uSelf.descriptionLabel.isHidden = (uSelf.descriptionSizingLabel.attributedText?.string.isEmpty ?? true)
+            
+            uSelf.creditLabel.attributedText = uSelf.creditSizingLabel.attributedText
+            uSelf.creditLabel.frame = uSelf.creditSizingLabel.frame
+            uSelf.creditLabel.isHidden = (uSelf.creditSizingLabel.attributedText?.string.isEmpty ?? true)
+        }
+        
+        if self.needsCaptionLayoutAnim {
+            let animateOut: () -> Void = { [weak self] in
+                self?.titleLabel.alpha = 0
+                self?.descriptionLabel.alpha = 0
+                self?.creditLabel.alpha = 0
+            }
+            
+            let animateOutCompletion: (_ finished: Bool) -> Void = { [weak self] (finished) in
+                guard let uSelf = self, finished else {
+                    return
+                }
+                
+                applySizingAttributes()
+                uSelf.isCaptionAnimatingOut = false
+            }
+            
+            let animateIn: () -> Void = { [weak self] in
+                self?.titleLabel.alpha = 1
+                self?.descriptionLabel.alpha = 1
+                self?.creditLabel.alpha = 1
+            }
+            
+            let animateInCompletion: (_ finished: Bool) -> Void = { [weak self] (finished) in
+                guard let uSelf = self, finished else {
+                    return
+                }
+                
+                uSelf.isCaptionAnimatingIn = false
+            }
+            
+            guard !self.isCaptionAnimatingOut else {
+                return
+            }
+            
+            self.isCaptionAnimatingOut = true
+            UIView.animate(withDuration: CaptionAnimDuration / 2, delay: 0, options: [.beginFromCurrentState, .curveEaseOut], animations: animateOut) { [weak self] (finished) in
+                guard let uSelf = self, !uSelf.isCaptionAnimatingIn else {
+                    return
+                }
+                
+                animateOutCompletion(finished)
+                UIView.animate(withDuration: uSelf.CaptionAnimDuration / 2, delay: 0, options: [.beginFromCurrentState, .curveEaseIn], animations: animateIn, completion: animateInCompletion)
+            }
+            
+            self.needsCaptionLayoutAnim = false
+            
+        } else {
+            applySizingAttributes()
+        }
+        
         self.isFirstLayout = false
     }
 
     open override func sizeThatFits(_ size: CGSize) -> CGSize {
-        return self.computeSize(for: size, applyLayout: false)
+        return self.computeSize(for: size, applySizingLayout: false)
     }
     
-    @discardableResult fileprivate func computeSize(for constrainedSize: CGSize, applyLayout: Bool) -> CGSize {
+    @discardableResult fileprivate func computeSize(for constrainedSize: CGSize, applySizingLayout: Bool) -> CGSize {
         func makeFontAdjustedAttributedString(for attributedString: NSAttributedString?, fontTextStyle: UIFontTextStyle) -> NSAttributedString? {
             guard let fontAdjustedAttributedString = attributedString?.mutableCopy() as? NSMutableAttributedString else {
                 return attributedString
@@ -274,16 +323,16 @@ import UIKit
             return fontAdjustedAttributedString.copy() as? NSAttributedString
         }
 
-        self.titleLabel.attributedText = makeFontAdjustedAttributedString(for: self.titleLabel.attributedText, fontTextStyle: .body)
-        self.descriptionLabel.attributedText = makeFontAdjustedAttributedString(for: self.descriptionLabel.attributedText, fontTextStyle: .body)
-        self.creditLabel.attributedText = makeFontAdjustedAttributedString(for: self.creditLabel.attributedText, fontTextStyle: .caption1)
+        self.titleSizingLabel.attributedText = makeFontAdjustedAttributedString(for: self.titleSizingLabel.attributedText, fontTextStyle: .body)
+        self.descriptionSizingLabel.attributedText = makeFontAdjustedAttributedString(for: self.descriptionSizingLabel.attributedText, fontTextStyle: .body)
+        self.creditSizingLabel.attributedText = makeFontAdjustedAttributedString(for: self.creditSizingLabel.attributedText, fontTextStyle: .caption1)
         
         let VerticalPadding: CGFloat = 10
         let HorizontalPadding: CGFloat = 15
         let InterLabelSpacing: CGFloat = 2
         var yOffset: CGFloat = 0
 
-        for (index, label) in self.visibleLabels.enumerated() {
+        for (index, label) in self.visibleSizingLabels.enumerated() {
             var constrainedLabelSize = constrainedSize
             constrainedLabelSize.width -= (2 * HorizontalPadding)
             
@@ -300,23 +349,16 @@ import UIKit
                                     size: labelSize)
             
             yOffset += labelFrame.size.height
-            if index == (self.visibleLabels.count - 1) {
+            if index == (self.visibleSizingLabels.count - 1) {
                 yOffset += VerticalPadding
             }
             
-            if applyLayout {
+            if applySizingLayout {
                 label.frame = labelFrame
             }
         }
         
-        let sizeThatFits = CGSize(width: constrainedSize.width, height: yOffset)
-        
-        if self.needsUpdateContentSize {
-            self.delegate?.captionView(self, contentSizeDidChange: sizeThatFits)
-            self.needsUpdateContentSize = false
-        }
-        
-        return sizeThatFits
+        return CGSize(width: constrainedSize.width, height: yOffset)
     }
 
 }
