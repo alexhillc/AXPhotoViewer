@@ -117,33 +117,35 @@ import MobileCoreServices
     
     // MARK: - Initialization
     #if AX_SDWEBIMAGE_SUPPORT || AX_PINREMOTEIMAGE_SUPPORT || AX_AFNETWORKING_SUPPORT || AX_LITE_SUPPORT
-    public init(dataSource: PhotosDataSource,
+    public init(dataSource: PhotosDataSource? = nil,
                 pagingConfig: PagingConfig? = nil,
                 transitionInfo: TransitionInfo? = nil) {
-        
+    
+        let uDataSource = dataSource ?? PhotosDataSource(photos: [])
         let uPagingConfig = pagingConfig ?? PagingConfig()
         let uTransitionInfo = transitionInfo ?? TransitionInfo()
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
                                                        navigationOrientation: uPagingConfig.navigationOrientation,
                                                        options: [UIPageViewControllerOptionInterPageSpacingKey: uPagingConfig.interPhotoSpacing])
-        self.dataSource = dataSource
+        self.dataSource = uDataSource
         self.pagingConfig = uPagingConfig
         self.transitionInfo = uTransitionInfo
         super.init(nibName: nil, bundle: nil)
         self.networkIntegration.delegate = self
     }
     #else
-    public init(dataSource: PhotosDataSource,
+    public init(dataSource: PhotosDataSource? = nil,
                 pagingConfig: PagingConfig? = nil,
                 transitionInfo: TransitionInfo? = nil,
                 networkIntegration: NetworkIntegrationProtocol) {
-    
+        
+        let uDataSource = dataSource ?? PhotosDataSource(photos: [])
         let uPagingConfig = pagingConfig ?? PagingConfig()
         let uTransitionInfo = transitionInfo ?? TransitionInfo()
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
                                                        navigationOrientation: uPagingConfig.navigationOrientation,
                                                        options: [UIPageViewControllerOptionInterPageSpacingKey: uPagingConfig.interPhotoSpacing])
-        self.dataSource = dataSource
+        self.dataSource = uDataSource
         self.pagingConfig = uPagingConfig
         self.transitionInfo = uTransitionInfo
         self.networkIntegration = networkIntegration
@@ -297,7 +299,9 @@ import MobileCoreServices
     // MARK: - Page VC Configuration
     fileprivate func configurePageViewController() {
         guard let photoViewController = self.makePhotoViewController(for: self.dataSource.initialPhotoIndex) else {
-            self.pageViewController.setViewControllers(nil, direction: .forward, animated: false, completion: nil)
+            self.pageViewController.setViewControllers([UIViewController()], direction: .forward, animated: false, completion: nil)
+            self.currentPhotoIndex = 0
+            self.overlayView.titleView?.tweenBetweenLowIndex?(0, highIndex: 1, percent: 0)
             return
         }
         

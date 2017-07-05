@@ -31,8 +31,10 @@
         self.photos = photos
         self.prefetchBehavior = prefetchBehavior
         
-        assert(photos.count > initialPhotoIndex, "Invalid initial photo index provided.")
-        self.initialPhotoIndex = initialPhotoIndex
+        if photos.count > 0 {
+            assert(photos.count > initialPhotoIndex, "Invalid initial photo index provided.")
+            self.initialPhotoIndex = initialPhotoIndex
+        }
         
         super.init()
     }
