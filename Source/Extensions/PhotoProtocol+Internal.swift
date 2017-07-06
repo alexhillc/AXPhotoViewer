@@ -44,4 +44,10 @@ extension PhotoProtocol {
         }
     }
     
+    var ax_isReducible: Bool {
+        get {
+            return self.url != nil
+        }
+    }
+    
 }

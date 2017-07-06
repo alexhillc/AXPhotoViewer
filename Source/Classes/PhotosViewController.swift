@@ -170,10 +170,7 @@ import MobileCoreServices
         self.recycledViewControllers.removeLifeycleObserver(self)
         self.recycledViewControllers.removeAll()
         
-        let numberOfPhotosToExclude = self.dataSource.prefetchBehavior.rawValue
-        let startIndex = (((self.currentPhotoIndex - (numberOfPhotosToExclude / 2)) >= 0) ? (self.currentPhotoIndex - (numberOfPhotosToExclude / 2)) : 0)
-        let exclusionRange = startIndex...(startIndex + numberOfPhotosToExclude)
-        self.purgePhotos(excluding: exclusionRange)
+        self.reduceMemoryForPhotos(at: self.currentPhotoIndex)
     }
 
     open override func viewDidLoad() {
@@ -410,39 +407,33 @@ import MobileCoreServices
         }
     }
     
-    fileprivate func cancelLoadForPhotos(at index: Int) {
+    fileprivate func reduceMemoryForPhotos(at index: Int) {
         let numberOfPhotosToLoad = self.dataSource.prefetchBehavior.rawValue
         let lowerIndex = (index - (numberOfPhotosToLoad / 2) - 1 >= 0) ? index - (numberOfPhotosToLoad / 2) - 1: NSNotFound
         let upperIndex = (index + (numberOfPhotosToLoad / 2) + 1 < self.dataSource.numberOfPhotos) ? index + (numberOfPhotosToLoad / 2) + 1 : NSNotFound
         
         weak var weakSelf = self
-        func cancelLoadIfNecessary(for photo: PhotoProtocol) {
-            guard let uSelf = weakSelf, photo.ax_loadingState == .loading else {
+        func reduceMemory(for photo: PhotoProtocol) {
+            guard let uSelf = weakSelf else {
                 return
             }
             
-            uSelf.networkIntegration.cancelLoad(for: photo)
-            photo.ax_loadingState = .loadingCancelled
+            if photo.ax_loadingState == .loading {
+                uSelf.networkIntegration.cancelLoad(for: photo)
+                photo.ax_loadingState = .loadingCancelled
+            } else if photo.ax_loadingState == .loaded && photo.ax_isReducible {
+                photo.imageData = nil
+                photo.image = nil
+                photo.ax_loadingState = .notLoaded
+            }
         }
         
         if lowerIndex != NSNotFound, let photo = self.dataSource.photo(at: lowerIndex) {
-            cancelLoadIfNecessary(for: photo)
+            reduceMemory(for: photo)
         }
         
         if upperIndex != NSNotFound, let photo = self.dataSource.photo(at: upperIndex) {
-            cancelLoadIfNecessary(for: photo)
-        }
-    }
-    
-    fileprivate func purgePhotos(excluding range: CountableClosedRange<Int>?) {
-        for index in 0..<self.dataSource.numberOfPhotos {
-            guard let photo = self.dataSource.photo(at: index), range?.contains(index) ?? false else {
-                continue
-            }
-            
-            photo.imageData = nil
-            photo.image = nil
-            photo.ax_loadingState = .notLoaded
+            reduceMemory(for: photo)
         }
     }
     
@@ -637,7 +628,7 @@ import MobileCoreServices
             return
         }
         
-        self.cancelLoadForPhotos(at: viewController.pageIndex)
+        self.reduceMemoryForPhotos(at: viewController.pageIndex)
     }
     
     public func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
