@@ -47,14 +47,34 @@ import UIKit
     }
     
     /// The title displayed in the navigation bar. This string is centered between the `leftBarButtonItems` and `rightBarButtonItems`.
+    /// Overwrites `internalTitle`.
     public var title: String? {
         set(value) {
+            self.ignoresInternalTitle = true
             self.navigationItem.title = value
         }
         get {
-            return self.navigationItem.title
+            return self.ignoresInternalTitle ? self.navigationItem.title : nil
         }
     }
+    
+    /// The title displayed in the navigation bar. This string is centered between the `leftBarButtonItems` and `rightBarButtonItems`.
+    /// This is used internally by the library to set a default title. Overwritten by `title`.
+    var internalTitle: String? {
+        set(value) {
+            if self.ignoresInternalTitle {
+                return
+            }
+            
+            self.navigationItem.title = value
+        }
+        get {
+            return self.ignoresInternalTitle ? nil : self.navigationItem.title
+        }
+    }
+    
+    /// Flag that is set when `title` is set. Used by the setter/getter of `internalTitle` to determine whether or not to take action.
+    var ignoresInternalTitle: Bool = false
     
     /// The title text attributes inherited by the `title`.
     public var titleTextAttributes: [String: Any]? {

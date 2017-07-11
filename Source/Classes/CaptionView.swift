@@ -173,7 +173,7 @@ import UIKit
                 stop.pointee = true
             }
             
-            guard !containsAttributes else {
+            if containsAttributes {
                 return attributedString
             }
             
@@ -268,7 +268,7 @@ import UIKit
                 uSelf.isCaptionAnimatingIn = false
             }
             
-            guard !self.isCaptionAnimatingOut else {
+            if self.isCaptionAnimatingOut {
                 return
             }
             

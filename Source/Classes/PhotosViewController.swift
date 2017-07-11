@@ -295,16 +295,19 @@ import MobileCoreServices
     
     // MARK: - Page VC Configuration
     fileprivate func configurePageViewController() {
+        func configure(with viewController: UIViewController, pageIndex: Int) {
+            self.pageViewController.setViewControllers([viewController], direction: .forward, animated: false, completion: nil)
+            self.overlayView.ignoresInternalTitle = false
+            self.currentPhotoIndex = pageIndex
+            self.overlayView.titleView?.tweenBetweenLowIndex?(pageIndex, highIndex: pageIndex + 1, percent: 0)
+        }
+        
         guard let photoViewController = self.makePhotoViewController(for: self.dataSource.initialPhotoIndex) else {
-            self.pageViewController.setViewControllers([UIViewController()], direction: .forward, animated: false, completion: nil)
-            self.currentPhotoIndex = 0
-            self.overlayView.titleView?.tweenBetweenLowIndex?(0, highIndex: 1, percent: 0)
+            configure(with: UIViewController(), pageIndex: 0)
             return
         }
         
-        self.pageViewController.setViewControllers([photoViewController], direction: .forward, animated: false, completion: nil)
-        self.currentPhotoIndex = self.dataSource.initialPhotoIndex
-        self.overlayView.titleView?.tweenBetweenLowIndex?(self.dataSource.initialPhotoIndex, highIndex: self.dataSource.initialPhotoIndex + 1, percent: 0)
+        configure(with: photoViewController, pageIndex: photoViewController.pageIndex)
         self.loadPhotos(at: self.dataSource.initialPhotoIndex)
     }
     
@@ -314,9 +317,18 @@ import MobileCoreServices
             return
         }
         
+        self.delegate?.photosViewController?(self,
+                                             willUpdate: self.overlayView,
+                                             for: photo,
+                                             at: photoIndex,
+                                             totalNumberOfPhotos: self.dataSource.numberOfPhotos)
+        
         if self.dataSource.numberOfPhotos > 1 {
-            self.overlayView.title = NSLocalizedString("\(photoIndex + 1) of \(self.dataSource.numberOfPhotos)", comment: "")
+            self.overlayView.internalTitle = NSLocalizedString("\(photoIndex + 1) of \(self.dataSource.numberOfPhotos)", comment: "")
+        } else {
+            self.overlayView.internalTitle = nil
         }
+        
         self.overlayView.captionView.applyCaptionInfo(attributedTitle: photo.attributedTitle ?? nil,
                                                       attributedDescription: photo.attributedDescription ?? nil,
                                                       attributedCredit: photo.attributedCredit ?? nil)
@@ -482,7 +494,7 @@ import MobileCoreServices
     
     // MARK: - Recycling
     fileprivate func recyclePhotoViewController(_ photoViewController: PhotoViewController) {
-        guard !self.recycledViewControllers.contains(photoViewController) else {
+        if self.recycledViewControllers.contains(photoViewController) {
             return
         }
         
@@ -592,7 +604,7 @@ import MobileCoreServices
         var visibleViewControllers = [PhotoViewController]()
         
         for viewController in self.orderedViewControllers {
-            guard !viewController.view.frame.equalTo(.zero) else {
+            if viewController.view.frame.equalTo(.zero) {
                 continue
             }
             
@@ -771,7 +783,7 @@ fileprivate extension UIScrollView {
 }
 
 // MARK: - PhotosViewControllerDelegate
-@objc(AXPhotosViewControllerDelegate) public protocol PhotosViewControllerDelegate {
+@objc(AXPhotosViewControllerDelegate) public protocol PhotosViewControllerDelegate: AnyObject, NSObjectProtocol {
     
     /// Called when the `PhotosViewController` navigates to a new photo. This is defined as when the swipe percent between pages
     /// is greater than the threshold (>0.5).
@@ -784,6 +796,22 @@ fileprivate extension UIScrollView {
     optional func photosViewController(_ photosViewController: PhotosViewController,
                                        didNavigateTo photo: PhotoProtocol,
                                        at index: Int)
+    
+    /// Called when the `PhotosViewController` is configuring its `OverlayView` for a new photo. This should be used to update the
+    /// the overlay's title or any other overlay-specific properties.
+    ///
+    /// - Parameters:
+    ///   - photosViewController: The `PhotosViewController` that is updating the overlay.
+    ///   - overlayView: The `OverlayView` that is being updated.
+    ///   - photo: The `Photo` the overlay is being configured for.
+    ///   - index: The index of the `Photo` that the overlay is being configured for.
+    ///   - totalNumberOfPhotos: The total number of photos in the current `dataSource`.
+    @objc(photosViewController:willUpdateOverlayView:forPhoto:atIndex:totalNumberOfPhotos:)
+    optional func photosViewController(_ photosViewController: PhotosViewController,
+                                       willUpdate overlayView: OverlayView,
+                                       for photo: PhotoProtocol,
+                                       at index: Int,
+                                       totalNumberOfPhotos: Int)
     
     /// Called when the action button is tapped for a photo. If no implementation is provided, will fall back to default action.
     ///
