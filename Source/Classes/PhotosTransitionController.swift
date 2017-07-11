@@ -25,9 +25,6 @@ import FLAnimatedImage
     
     weak var photosViewController: PhotosViewController?
     
-    fileprivate var presentationOrientation: UIInterfaceOrientation
-    fileprivate var dismissalOrientation: UIInterfaceOrientation
-    
     /// The threshold at which the interactive controller will dismiss upon end touches.
     fileprivate var DismissalPercentThreshold: CGFloat = 0.14
     
@@ -78,10 +75,6 @@ import FLAnimatedImage
         self.photosViewController = photosViewController
         self.transitionInfo = transitionInfo
         
-        let statusBarOrientation = UIApplication.shared.statusBarOrientation
-        self.presentationOrientation = statusBarOrientation
-        self.dismissalOrientation = statusBarOrientation
-        
         super.init()
         
         if transitionInfo.interactiveDismissalEnabled {
@@ -89,24 +82,6 @@ import FLAnimatedImage
             panGestureRecognizer.maximumNumberOfTouches = 1
             panGestureRecognizer.delegate = self
             photosViewController.view.addGestureRecognizer(panGestureRecognizer)
-        }
-        
-        NotificationCenter.default.addObserver(forName: .UIApplicationDidChangeStatusBarOrientation,
-                                               object: nil,
-                                               queue: nil) { [weak self] (note) in
-            guard let uSelf = self else {
-                return
-            }
-                                                
-            let statusBarOrientation = UIApplication.shared.statusBarOrientation
-                                                
-            if !photosViewController.isBeingPresented && !photosViewController.isBeingDismissed && photosViewController.presentingViewController == nil {
-                uSelf.presentationOrientation = statusBarOrientation
-            }
-            
-            if !photosViewController.isBeingDismissed && photosViewController.presentingViewController != nil {
-                uSelf.dismissalOrientation = statusBarOrientation
-            }
         }
     }
     
@@ -315,23 +290,16 @@ import FLAnimatedImage
             scaleAnimationOptions = [.curveEaseInOut, .beginFromCurrentState, .allowAnimatedContent]
             scaleInitialSpringVelocity = 0
         } else {
-            let dismissBottom = (self.directionalDismissalPercent >= 0)
-            let statusBarOrientation = UIApplication.shared.statusBarOrientation
-            let tuple = self.computeOffscreenCenter(for: imageView,
-                                                    in: transitionContext.containerView, 
-                                                    startingOrientation: self.dismissalOrientation, 
-                                                    endingOrientation: statusBarOrientation, 
-                                                    dismissBottom: dismissBottom)
-            
-            offscreenImageViewCenter = tuple.center
+            let extrapolated = self.extrapolateFinalCenter(for: imageView, in: transitionContext.containerView)
+            offscreenImageViewCenter = extrapolated.center
             
             if self.forceImmediateInteractiveDismissal {
                 scaleAnimationOptions = [.curveEaseInOut, .beginFromCurrentState, .allowAnimatedContent]
                 scaleInitialSpringVelocity = 0
             } else {
                 var divisor: CGFloat = 1
-                let changed = tuple.changed
-                if .ulpOfOne >= abs(changed - tuple.center.x) {
+                let changed = extrapolated.changed
+                if .ulpOfOne >= abs(changed - extrapolated.center.x) {
                     divisor = abs(changed - imageView.frame.origin.x)
                 } else {
                     divisor = abs(changed - imageView.frame.origin.y)
@@ -411,6 +379,20 @@ import FLAnimatedImage
             overlayView.frame = transitionContext.containerView.convert(overlayView.frame, to: uSelf.overlayViewOriginalSuperview)
             uSelf.overlayViewOriginalSuperview?.addSubview(overlayView)
             
+            uSelf.imageViewInitialOriginY = .greatestFiniteMagnitude
+            uSelf.imageViewOriginalFrame = .zero
+            uSelf.imageViewOriginalSuperview = nil
+            
+            uSelf.navigationBarInitialOriginY = .greatestFiniteMagnitude
+            uSelf.navigationBarUnderlayInitialOriginY = .greatestFiniteMagnitude
+            uSelf.captionViewInitialOriginY = .greatestFiniteMagnitude
+            uSelf.overlayViewOriginalFrame = .zero
+            uSelf.overlayViewOriginalSuperview = nil
+            
+            uSelf.dismissalPercent = 0
+            uSelf.directionalDismissalPercent = 0
+            uSelf.dismissalVelocityY = 1
+            
             if transitionContext.isInteractive {
                 transitionContext.cancelInteractiveTransition()
             }
@@ -444,7 +426,7 @@ import FLAnimatedImage
         
         // if we're going to force an immediate dismissal, we can just return here
         // this setup will be done in `animateDismissal(_:)`
-        guard !self.forceImmediateInteractiveDismissal else {
+        if self.forceImmediateInteractiveDismissal {
             self.processPendingAnimations()
             return
         }
@@ -495,12 +477,19 @@ import FLAnimatedImage
         
         switch sender.state {
         case .began:
+            guard let photosViewController = self.photosViewController else {
+                return
+            }
+            
             self.overlayView = nil
-            self.photosViewController?.presentingViewController?.dismiss(animated: true, completion: {
+            photosViewController.presentingViewController?.dismiss(animated: true, completion: {
                 sender.isEnabled = true
             })
             
-            let shouldForceImmediateInteractiveDismissal = (UIApplication.shared.statusBarOrientation != self.dismissalOrientation)
+            let endingOrientation = UIApplication.shared.statusBarOrientation
+            let startingOrientation = endingOrientation.by(transforming: photosViewController.view.transform)
+            
+            let shouldForceImmediateInteractiveDismissal = (startingOrientation != endingOrientation)
             if shouldForceImmediateInteractiveDismissal {
                 // arbitrary dismissal percentages
                 self.directionalDismissalPercent = self.dismissalVelocityY > 0 ? 1 : -1
@@ -604,24 +593,20 @@ import FLAnimatedImage
         
         return UIScreen.main.bounds.intersects(endingViewSuperview.convert(endingView.frame, to: nil))
     }
-    
-    // come back to this later, maybe
-    
-    /// Retrieve the "final" offscreen center value for an image view in a view given the starting and ending orientations.
+        
+    /// Extrapolate the "final" offscreen center value for an image view in a view given the starting and ending orientations.
     ///
     /// - Parameters:
     ///   - imageView: The image view to retrieve the final offscreen center value for.
     ///   - view: The view that is containing the imageView. Most likely the superview.
-    ///   - startingOrientation: The starting orientation for the image view. This can be the same as the endingOrientation.
-    ///   - endingOrientation: The ending orientation for the image view. This can be the same as the startingOrientation.
-    ///   - dismissBottom: Whether or not the center value should dismiss to the bottom of the view or not. If not, the center value
-    ///                    will be calculated to dismiss at the top of the view.
     /// - Returns: A tuple containing the final center of the imageView, as well as the value that was adjusted from the original `center` value.
-    fileprivate func computeOffscreenCenter(for imageView: UIImageView,
-                                            in view: UIView, startingOrientation: UIInterfaceOrientation,
-                                            endingOrientation: UIInterfaceOrientation,
-                                            dismissBottom: Bool) -> (center: CGPoint, changed: CGFloat) {
+    fileprivate func extrapolateFinalCenter(for imageView: UIImageView,
+                                            in view: UIView) -> (center: CGPoint, changed: CGFloat) {
         
+        let endingOrientation = UIApplication.shared.statusBarOrientation
+        let startingOrientation = endingOrientation.by(transforming: imageView.transform)
+        
+        let dismissFromBottom = (self.directionalDismissalPercent >= 0)
         let imageViewRect = imageView.convert(imageView.bounds, to: view)
         var imageViewCenter = imageView.center
         
@@ -629,25 +614,25 @@ import FLAnimatedImage
         case .landscapeLeft:
             switch endingOrientation {
             case .landscapeLeft:
-                if dismissBottom {
+                if dismissFromBottom {
                     imageViewCenter.y = view.frame.size.height + (imageViewRect.size.height / 2)
                 } else {
                     imageViewCenter.y = -(imageViewRect.size.height / 2)
                 }
             case .landscapeRight:
-                if dismissBottom {
+                if dismissFromBottom {
                     imageViewCenter.y = -(imageViewRect.size.height / 2)
                 } else {
                     imageViewCenter.y = view.frame.size.height + (imageViewRect.size.height / 2)
                 }
             case .portraitUpsideDown:
-                if dismissBottom {
+                if dismissFromBottom {
                     imageViewCenter.x = -(imageViewRect.size.width / 2)
                 } else {
                     imageViewCenter.x = view.frame.size.width + (imageViewRect.size.width / 2)
                 }
             default:
-                if dismissBottom {
+                if dismissFromBottom {
                     imageViewCenter.x = view.frame.size.width + (imageViewRect.size.width / 2)
                 } else {
                     imageViewCenter.x = -(imageViewRect.size.width / 2)
@@ -656,25 +641,25 @@ import FLAnimatedImage
         case .landscapeRight:
             switch endingOrientation {
             case .landscapeLeft:
-                if dismissBottom {
+                if dismissFromBottom {
                     imageViewCenter.y = -(imageViewRect.size.height / 2)
                 } else {
                     imageViewCenter.y = view.frame.size.height + (imageViewRect.size.height / 2)
                 }
             case .landscapeRight:
-                if dismissBottom {
+                if dismissFromBottom {
                     imageViewCenter.y = view.frame.size.height + (imageViewRect.size.height / 2)
                 } else {
                     imageViewCenter.y = -(imageViewRect.size.height / 2)
                 }
             case .portraitUpsideDown:
-                if dismissBottom {
+                if dismissFromBottom {
                     imageViewCenter.x = view.frame.size.width + (imageViewRect.size.width / 2)
                 } else {
                     imageViewCenter.x = -(imageViewRect.size.width / 2)
                 }
             default:
-                if dismissBottom {
+                if dismissFromBottom {
                     imageViewCenter.x = -(imageViewRect.size.width / 2)
                 } else {
                     imageViewCenter.x = view.frame.size.width + (imageViewRect.size.width / 2)
@@ -683,25 +668,25 @@ import FLAnimatedImage
         case .portraitUpsideDown:
             switch endingOrientation {
             case .landscapeLeft:
-                if dismissBottom {
+                if dismissFromBottom {
                     imageViewCenter.x = view.frame.size.width + (imageViewRect.size.width / 2)
                 } else {
                     imageViewCenter.x = -(imageViewRect.size.width / 2)
                 }
             case .landscapeRight:
-                if dismissBottom {
+                if dismissFromBottom {
                     imageViewCenter.x = -(imageViewRect.size.width / 2)
                 } else {
                     imageViewCenter.x = view.frame.size.width + (imageViewRect.size.width / 2)
                 }
             case .portraitUpsideDown:
-                if dismissBottom {
+                if dismissFromBottom {
                     imageViewCenter.y = view.frame.size.height + (imageViewRect.size.height / 2)
                 } else {
                     imageViewCenter.y = -(imageViewRect.size.height / 2)
                 }
             default:
-                if dismissBottom {
+                if dismissFromBottom {
                     imageViewCenter.y = -(imageViewRect.size.height / 2)
                 } else {
                     imageViewCenter.y = view.frame.size.height + (imageViewRect.size.height / 2)
@@ -710,25 +695,25 @@ import FLAnimatedImage
         default:
             switch endingOrientation {
             case .landscapeLeft:
-                if dismissBottom {
+                if dismissFromBottom {
                     imageViewCenter.x = -(imageViewRect.size.width / 2)
                 } else {
                     imageViewCenter.x = view.frame.size.width + (imageViewRect.size.width / 2)
                 }
             case .landscapeRight:
-                if dismissBottom {
+                if dismissFromBottom {
                     imageViewCenter.x = view.frame.size.width + (imageViewRect.size.width / 2)
                 } else {
                     imageViewCenter.x = -(imageViewRect.size.width / 2)
                 }
             case .portraitUpsideDown:
-                if dismissBottom {
+                if dismissFromBottom {
                     imageViewCenter.y = -(imageViewRect.size.height / 2)
                 } else {
                     imageViewCenter.y = view.frame.size.height + (imageViewRect.size.height / 2)
                 }
             default:
-                if dismissBottom {
+                if dismissFromBottom {
                     imageViewCenter.y = view.frame.size.height + (imageViewRect.size.height / 2)
                 } else {
                     imageViewCenter.y = -(imageViewRect.size.height / 2)
