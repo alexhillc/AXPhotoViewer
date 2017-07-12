@@ -1,3 +1,7 @@
+# 1.0.0-beta.17
+- **[NEW]** Delegation methods: `-photosViewController:willUpdateOverlayView:forPhoto:atIndex:totalNumberOfPhotos:` and `-photosViewController:maximumZoomScaleForPhoto:minimumZoomScale:imageSize:`
+- **[FIXED]** Interactive dismissal without an image will now respond appropriately when an image loads in.
+
 # 1.0.0-beta.16
 - **[CHANGED]** Previously, the `PhotosViewController` would only release images/GIF data contained in photos if prompted by `-didReceiveMemoryWarning`.
                 Now, the `PhotosViewController` will release photos as they transition out of scope of the currently viewed photos. This will
