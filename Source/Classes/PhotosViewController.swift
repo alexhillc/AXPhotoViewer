@@ -236,7 +236,7 @@ import MobileCoreServices
         super.viewWillLayoutSubviews()
         self.pageViewController.view.frame = self.view.bounds
         self.overlayView.frame = self.view.bounds
-        self.overlayView.contentInset = UIEdgeInsets(top: (UIApplication.shared.statusBarFrame.size.height > .ulpOfOne) ? 20 : 0,
+        self.overlayView.contentInset = UIEdgeInsets(top: (UIApplication.shared.statusBarFrame.size.height > 0) ? 20 : 0,
                                                      left: 0,
                                                      bottom: 0, 
                                                      right: 0)
@@ -346,7 +346,7 @@ import MobileCoreServices
         self.setNeedsStatusBarAppearanceUpdate()
         if show {
             UIView.performWithoutAnimation { [weak self] in
-                self?.overlayView.contentInset = UIEdgeInsets(top: (UIApplication.shared.statusBarFrame.size.height > .ulpOfOne) ? 20 : 0,
+                self?.overlayView.contentInset = UIEdgeInsets(top: (UIApplication.shared.statusBarFrame.size.height > 0) ? 20 : 0,
                                                               left: 0,
                                                               bottom: 0,
                                                               right: 0)
@@ -540,9 +540,9 @@ import MobileCoreServices
         }
         
         var horizontalSwipeDirection: SwipeDirection = .none
-        if percent > .ulpOfOne {
+        if percent > 0 {
             horizontalSwipeDirection = .right
-        } else if percent < -.ulpOfOne {
+        } else if percent < 0 {
             horizontalSwipeDirection = .left
         }
         
@@ -680,6 +680,21 @@ import MobileCoreServices
         self.networkIntegration.loadPhoto(photo)
     }
     
+    public func photoViewController(_ photoViewController: PhotoViewController,
+                                    maximumZoomScaleForPhotoAt index: Int,
+                                    minimumZoomScale: CGFloat,
+                                    imageSize: CGSize) -> CGFloat {
+        
+        guard let photo = self.dataSource.photo(at: index) else {
+            return .leastNormalMagnitude
+        }
+        
+        return self.delegate?.photosViewController?(self,
+                                                    maximumZoomScaleFor: photo,
+                                                    minimumZoomScale: minimumZoomScale,
+                                                    imageSize: imageSize) ?? .leastNormalMagnitude
+    }
+    
     // MARK: - NetworkIntegrationDelegate
     public func networkIntegration(_ networkIntegration: NetworkIntegrationProtocol, loadDidFinishWith photo: PhotoProtocol) {
         if let imageData = photo.imageData {
@@ -812,6 +827,23 @@ fileprivate extension UIScrollView {
                                        for photo: PhotoProtocol,
                                        at index: Int,
                                        totalNumberOfPhotos: Int)
+    
+    /// If implemented and returns a valid zoom scale for the photo (valid meaning >= the photo's minimum zoom scale), the underlying
+    /// zooming image view will adopt the returned `maximumZoomScale` instead of the default calculated by the library. A good implementation
+    /// of this method will use a combination of the provided `minimumZoomScale` and `imageSize` to extrapolate a `maximumZoomScale` to return.
+    /// If the `minimumZoomScale` is returned (ie. `minimumZoomScale` == `maximumZoomScale`), zooming will be disabled for this image.
+    ///
+    /// - Parameters:
+    ///   - photosViewController: The `PhotosViewController` that is updating the photo's zoom scale.
+    ///   - photo: The `Photo` that the zoom scale will affect.
+    ///   - minimumZoomScale: The minimum zoom scale that is calculated by the library. This value cannot be changed.
+    ///   - imageSize: The size of the image that belongs to the `Photo`.
+    /// - Returns: A zoom scale that >= `minimumZoomScale`.
+    @objc(photosViewController:maximumZoomScaleForPhoto:minimumZoomScale:imageSize:)
+    optional func photosViewController(_ photosViewController: PhotosViewController,
+                                       maximumZoomScaleFor photo: PhotoProtocol,
+                                       minimumZoomScale: CGFloat,
+                                       imageSize: CGSize) -> CGFloat
     
     /// Called when the action button is tapped for a photo. If no implementation is provided, will fall back to default action.
     ///

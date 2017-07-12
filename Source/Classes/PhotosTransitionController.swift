@@ -42,15 +42,13 @@ import FLAnimatedImage
     weak var dismissalTransitionContext: UIViewControllerContextTransitioning?
     
     weak fileprivate var imageView: UIImageView?
-    fileprivate var imageViewInitialOriginY: CGFloat = .greatestFiniteMagnitude
-    fileprivate var imageViewOriginalFrame: CGRect = .zero
+    fileprivate var imageViewInitialCenter: CGPoint = .zero
     fileprivate var imageViewOriginalSuperview: UIView?
     
     weak fileprivate var overlayView: OverlayView?
     fileprivate var navigationBarInitialOriginY: CGFloat = .greatestFiniteMagnitude
     fileprivate var navigationBarUnderlayInitialOriginY: CGFloat = .greatestFiniteMagnitude
     fileprivate var captionViewInitialOriginY: CGFloat = .greatestFiniteMagnitude
-    fileprivate var overlayViewOriginalFrame: CGRect = .zero
     fileprivate var overlayViewOriginalSuperview: UIView?
     
     var supportsContextualPresentation: Bool {
@@ -349,7 +347,7 @@ import FLAnimatedImage
                 return
             }
             
-            imageView.frame.origin.y = uSelf.imageViewInitialOriginY
+            imageView.center.y = uSelf.imageViewInitialCenter.y
             overlayView.navigationBar.frame.origin.y = uSelf.navigationBarInitialOriginY
             overlayView.navigationBarUnderlay.frame.origin.y = uSelf.navigationBarUnderlayInitialOriginY
             (overlayView.captionView as? UIView)?.frame.origin.y = uSelf.captionViewInitialOriginY
@@ -379,14 +377,12 @@ import FLAnimatedImage
             overlayView.frame = transitionContext.containerView.convert(overlayView.frame, to: uSelf.overlayViewOriginalSuperview)
             uSelf.overlayViewOriginalSuperview?.addSubview(overlayView)
             
-            uSelf.imageViewInitialOriginY = .greatestFiniteMagnitude
-            uSelf.imageViewOriginalFrame = .zero
+            uSelf.imageViewInitialCenter = .zero
             uSelf.imageViewOriginalSuperview = nil
             
             uSelf.navigationBarInitialOriginY = .greatestFiniteMagnitude
             uSelf.navigationBarUnderlayInitialOriginY = .greatestFiniteMagnitude
             uSelf.captionViewInitialOriginY = .greatestFiniteMagnitude
-            uSelf.overlayViewOriginalFrame = .zero
             uSelf.overlayViewOriginalSuperview = nil
             
             uSelf.dismissalPercent = 0
@@ -440,14 +436,12 @@ import FLAnimatedImage
         
         transitionContext.containerView.layoutIfNeeded()
         
-        self.imageViewOriginalFrame = imageView.frame
         self.imageViewOriginalSuperview = imageView.superview
         imageView.center = transitionContext.containerView.convert(imageView.center, from: imageView.superview)
         transitionContext.containerView.addSubview(imageView)
-        self.imageViewInitialOriginY = imageView.frame.origin.y
+        self.imageViewInitialCenter = imageView.center
         
         let overlayView = from.overlayView
-        self.overlayViewOriginalFrame = overlayView.frame
         self.overlayViewOriginalSuperview = overlayView.superview
         overlayView.frame = transitionContext.containerView.convert(overlayView.frame, from: overlayView.superview)
         transitionContext.containerView.addSubview(overlayView)
@@ -526,13 +520,13 @@ import FLAnimatedImage
                                                        uSelf.navigationBarUnderlayInitialOriginY - (navigationBarUnderlay.frame.size.height * dismissalRatio))
                 let captionViewOriginY = min(uSelf.captionViewInitialOriginY + captionView.frame.size.height,
                                              uSelf.captionViewInitialOriginY + (captionView.frame.size.height * dismissalRatio))
-                let imageViewOriginY = uSelf.imageViewInitialOriginY + translation.y
+                let imageViewCenterY = uSelf.imageViewInitialCenter.y + translation.y
                 
                 UIView.performWithoutAnimation {
                     navigationBar.frame.origin.y = navigationBarOriginY
                     navigationBarUnderlay.frame.origin.y = navigationBarUnderlayOriginY
                     captionView.frame.origin.y = captionViewOriginY
-                    uSelf.imageView?.frame.origin.y = imageViewOriginY
+                    uSelf.imageView?.center.y = imageViewCenterY
                 }
                 
                 to.view.alpha = 1 * min(1, dismissalRatio)

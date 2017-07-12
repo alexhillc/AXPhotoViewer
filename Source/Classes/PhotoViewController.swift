@@ -9,7 +9,7 @@
 import UIKit
 import FLAnimatedImage
 
-@objc(AXPhotoViewController) open class PhotoViewController: UIViewController, PageableViewControllerProtocol {
+@objc(AXPhotoViewController) open class PhotoViewController: UIViewController, PageableViewControllerProtocol, ZoomingImageViewDelegate {
     
     public weak var delegate: PhotoViewControllerDelegate?
     public var pageIndex: Int = 0
@@ -56,6 +56,8 @@ import FLAnimatedImage
     
     open override func viewDidLoad() {
         super.viewDidLoad()
+        
+        self.zoomingImageView.zoomScaleDelegate = self
         
         if let loadingView = self.loadingView as? UIView {
             self.view.addSubview(loadingView)
@@ -122,6 +124,14 @@ import FLAnimatedImage
         self.zoomingImageView.animatedImage = nil
     }
     
+    // MARK: - ZoomingImageViewDelegate
+    func zoomingImageView(_ zoomingImageView: ZoomingImageView, maximumZoomScaleFor imageSize: CGSize) -> CGFloat {
+        return self.delegate?.photoViewController(self,
+                                                  maximumZoomScaleForPhotoAt: self.pageIndex,
+                                                  minimumZoomScale: zoomingImageView.minimumZoomScale,
+                                                  imageSize: imageSize) ?? .leastNormalMagnitude
+    }
+    
     // MARK: - Notifications
     @objc fileprivate func photoLoadingProgressDidUpdate(_ notification: Notification) {
         guard let photo = notification.object as? PhotoProtocol else {
@@ -172,5 +182,11 @@ import FLAnimatedImage
     
     @objc(photoViewController:retryDownloadForPhoto:)
     func photoViewController(_ photoViewController: PhotoViewController, retryDownloadFor photo: PhotoProtocol)
+    
+    @objc(photoViewController:maximumZoomScaleForPhotoAtIndex:minimumZoomScale:imageSize:)
+    func photoViewController(_ photoViewController: PhotoViewController,
+                             maximumZoomScaleForPhotoAt index: Int,
+                             minimumZoomScale: CGFloat,
+                             imageSize: CGSize) -> CGFloat
     
 }

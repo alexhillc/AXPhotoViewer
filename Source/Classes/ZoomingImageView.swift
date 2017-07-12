@@ -13,6 +13,8 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
 
 @objc(AXZoomingImageView) class ZoomingImageView: UIScrollView, UIScrollViewDelegate {
     
+    weak var zoomScaleDelegate: ZoomingImageViewDelegate?
+    
     var image: UIImage? {
         set(value) {
             self.updateImageView(image: value, animatedImage: nil)
@@ -138,14 +140,18 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
     
     // MARK: - Zoom scale
     fileprivate func updateZoomScale() {
-        guard let imageSize = self.imageView.image?.size ?? self.imageView.animatedImage?.size else {
-            return
-        }
+        let imageSize = self.imageView.image?.size ?? self.imageView.animatedImage?.size ?? CGSize(width: 1, height: 1)
         
         let scaleWidth = self.bounds.size.width / imageSize.width
         let scaleHeight = self.bounds.size.height / imageSize.height
         self.minimumZoomScale = min(scaleWidth, scaleHeight)
-        self.maximumZoomScale = self.minimumZoomScale * 3.5
+        
+        let delegatedMaxZoomScale = self.zoomScaleDelegate?.zoomingImageView(self, maximumZoomScaleFor: imageSize)
+        if let maximumZoomScale = delegatedMaxZoomScale, (maximumZoomScale - self.minimumZoomScale) >= 0 {
+            self.maximumZoomScale = maximumZoomScale
+        } else {
+            self.maximumZoomScale = self.minimumZoomScale * 3.5
+        }
         
         // if the zoom scale is the same, change it to force the UIScrollView to
         // recompute the scroll view's content frame
@@ -166,6 +172,10 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
             zoomScale = self.minimumZoomScale
         }
         
+        if abs(self.zoomScale - zoomScale) <= .ulpOfOne {
+            return
+        }
+        
         let width = self.bounds.size.width / zoomScale
         let height = self.bounds.size.height / zoomScale
         let originX = point.x - (width / 2)
@@ -175,4 +185,11 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
         self.zoom(to: zoomRect, animated: true)
     }
 
+}
+
+@objc(AXZoomingImageViewDelegate) protocol ZoomingImageViewDelegate: AnyObject, NSObjectProtocol {
+    
+    @objc(zoomingImageView:maximumZoomScaleForImageSize:)
+    func zoomingImageView(_ zoomingImageView: ZoomingImageView, maximumZoomScaleFor imageSize: CGSize) -> CGFloat
+    
 }
