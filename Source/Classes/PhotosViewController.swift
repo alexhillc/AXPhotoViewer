@@ -838,7 +838,7 @@ fileprivate extension UIScrollView {
     ///   - photo: The `Photo` that the zoom scale will affect.
     ///   - minimumZoomScale: The minimum zoom scale that is calculated by the library. This value cannot be changed.
     ///   - imageSize: The size of the image that belongs to the `Photo`.
-    /// - Returns: A zoom scale that >= `minimumZoomScale`.
+    /// - Returns: A "maximum" zoom scale that >= `minimumZoomScale`.
     @objc(photosViewController:maximumZoomScaleForPhoto:minimumZoomScale:imageSize:)
     optional func photosViewController(_ photosViewController: PhotosViewController,
                                        maximumZoomScaleFor photo: PhotoProtocol,
