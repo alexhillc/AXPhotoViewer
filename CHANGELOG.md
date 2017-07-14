@@ -1,3 +1,6 @@
+# 1.0.0
+- **[CHANGED]** Presentation animation style - no longer oscillates, faster
+
 # 1.0.0-beta.17
 - **[NEW]** Delegation methods: `-photosViewController:willUpdateOverlayView:forPhoto:atIndex:totalNumberOfPhotos:` and `-photosViewController:maximumZoomScaleForPhoto:minimumZoomScale:imageSize:`
 - **[FIXED]** Interactive dismissal without an image will now respond appropriately when an image loads in.
