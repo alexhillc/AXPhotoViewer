@@ -18,6 +18,7 @@ import FLAnimatedImage
                                                                        UIGestureRecognizerDelegate {
     
     fileprivate let FadeInOutTransitionRatio: Double = 1/3
+    fileprivate let TransitionAnimSpringDampening: CGFloat = 1
     
     weak var delegate: PhotosTransitionControllerDelegate?
     var mode: PhotosTransitionControllerMode = .presenting
@@ -165,7 +166,7 @@ import FLAnimatedImage
         
         UIView.animate(withDuration: self.transitionDuration(using: transitionContext),
                        delay: 0,
-                       usingSpringWithDamping: 0.8,
+                       usingSpringWithDamping: TransitionAnimSpringDampening,
                        initialSpringVelocity: 0,
                        options: [.curveEaseInOut, .beginFromCurrentState, .allowAnimatedContent],
                        animations: scaleAnimations,
@@ -310,7 +311,7 @@ import FLAnimatedImage
 
         UIView.animate(withDuration: self.transitionDuration(using: transitionContext),
                        delay: 0,
-                       usingSpringWithDamping: 1.0,
+                       usingSpringWithDamping: TransitionAnimSpringDampening,
                        initialSpringVelocity: scaleInitialSpringVelocity,
                        options: scaleAnimationOptions,
                        animations: scaleAnimations,
@@ -399,7 +400,7 @@ import FLAnimatedImage
         
         UIView.animate(withDuration: self.transitionDuration(using: transitionContext),
                        delay: 0,
-                       usingSpringWithDamping: 1.0,
+                       usingSpringWithDamping: TransitionAnimSpringDampening,
                        initialSpringVelocity: 0,
                        options: [.curveEaseInOut, .beginFromCurrentState, .allowAnimatedContent],
                        animations: animations,

@@ -17,7 +17,7 @@
     fileprivate(set) weak var endingView: UIImageView?
     
     /// The duration of the transition.
-    public var duration: TimeInterval = 0.35
+    public var duration: TimeInterval = 0.3
     
     /// This value determines whether or not the user can dismiss the `PhotosViewController` by panning vertically.
     fileprivate(set) var interactiveDismissalEnabled: Bool = true

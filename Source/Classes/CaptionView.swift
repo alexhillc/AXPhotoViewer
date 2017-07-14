@@ -41,7 +41,10 @@ import UIKit
             if self.isFirstLayout {
                 animation()
             } else {
-                UIView.animate(withDuration: CaptionAnimDuration, delay: 0, options: [.beginFromCurrentState, .curveEaseInOut], animations: animation, completion: nil)
+                UIView.animate(withDuration: CaptionAnimDuration,
+                               delay: 0,
+                               options: [.beginFromCurrentState, .curveEaseInOut],
+                               animations: animation)
             }
         }
         get {
@@ -141,7 +144,7 @@ import UIKit
         self.creditLabel.numberOfLines = 0
         self.addSubview(self.creditLabel)
         
-        NotificationCenter.default.addObserver(forName: .UIContentSizeCategoryDidChange, object: nil, queue: OperationQueue.main) { [weak self] (note) in
+        NotificationCenter.default.addObserver(forName: .UIContentSizeCategoryDidChange, object: nil, queue: .main) { [weak self] (note) in
             self?.setNeedsLayout()
         }
     }
@@ -273,13 +276,21 @@ import UIKit
             }
             
             self.isCaptionAnimatingOut = true
-            UIView.animate(withDuration: CaptionAnimDuration / 2, delay: 0, options: [.beginFromCurrentState, .curveEaseOut], animations: animateOut) { [weak self] (finished) in
+            UIView.animate(withDuration: CaptionAnimDuration / 2,
+                           delay: 0,
+                           options: [.beginFromCurrentState, .curveEaseOut], 
+                           animations: animateOut) { [weak self] (finished) in
+                            
                 guard let uSelf = self, !uSelf.isCaptionAnimatingIn else {
                     return
                 }
                 
                 animateOutCompletion(finished)
-                UIView.animate(withDuration: uSelf.CaptionAnimDuration / 2, delay: 0, options: [.beginFromCurrentState, .curveEaseIn], animations: animateIn, completion: animateInCompletion)
+                UIView.animate(withDuration: uSelf.CaptionAnimDuration / 2, 
+                               delay: 0, 
+                               options: [.beginFromCurrentState, .curveEaseIn], 
+                               animations: animateIn, 
+                               completion: animateInCompletion)
             }
             
             self.needsCaptionLayoutAnim = false
@@ -310,7 +321,8 @@ import UIKit
                 
                 var newFontDescriptor: UIFontDescriptor
                 if #available(iOS 10.0, *) {
-                    newFontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: fontTextStyle, compatibleWith: self?.traitCollection)
+                    newFontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: fontTextStyle,
+                                                                                 compatibleWith: self?.traitCollection)
                 } else {
                     newFontDescriptor = UIFont.preferredFont(forTextStyle: fontTextStyle).fontDescriptor
                 }
@@ -323,9 +335,12 @@ import UIKit
             return fontAdjustedAttributedString.copy() as? NSAttributedString
         }
 
-        self.titleSizingLabel.attributedText = makeFontAdjustedAttributedString(for: self.titleSizingLabel.attributedText, fontTextStyle: .body)
-        self.descriptionSizingLabel.attributedText = makeFontAdjustedAttributedString(for: self.descriptionSizingLabel.attributedText, fontTextStyle: .body)
-        self.creditSizingLabel.attributedText = makeFontAdjustedAttributedString(for: self.creditSizingLabel.attributedText, fontTextStyle: .caption1)
+        self.titleSizingLabel.attributedText = makeFontAdjustedAttributedString(for: self.titleSizingLabel.attributedText,
+                                                                                fontTextStyle: .body)
+        self.descriptionSizingLabel.attributedText = makeFontAdjustedAttributedString(for: self.descriptionSizingLabel.attributedText,
+                                                                                      fontTextStyle: .body)
+        self.creditSizingLabel.attributedText = makeFontAdjustedAttributedString(for: self.creditSizingLabel.attributedText, 
+                                                                                 fontTextStyle: .caption1)
         
         let VerticalPadding: CGFloat = 10
         let HorizontalPadding: CGFloat = 15

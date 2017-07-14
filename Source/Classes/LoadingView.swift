@@ -37,7 +37,7 @@
     public init() {
         super.init(frame: .zero)
         
-        NotificationCenter.default.addObserver(forName: .UIContentSizeCategoryDidChange, object: nil, queue: OperationQueue.main) { [weak self] (note) in
+        NotificationCenter.default.addObserver(forName: .UIContentSizeCategoryDidChange, object: nil, queue: .main) { [weak self] (note) in
             self?.setNeedsLayout()
         }
     }

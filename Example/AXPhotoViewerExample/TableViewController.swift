@@ -11,9 +11,11 @@ import AXPhotoViewer
 import FLAnimatedImage
 
 // This class contains some hacked together sample project code that I couldn't be arsed to make less ugly. ¯\_(ツ)_/¯
-class TableViewController: UITableViewController, PhotosViewControllerDelegate {
+class TableViewController: UITableViewController, PhotosViewControllerDelegate, UIViewControllerPreviewingDelegate {
     
     let ReuseIdentifier = "AXReuseIdentifier"
+    
+    var previewingContext: UIViewControllerPreviewing?
     
     var urlSession = URLSession(configuration: .default)
     var content = [Int: Data]()
@@ -43,6 +45,18 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
     
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return [.portrait, .landscapeLeft]
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        if self.traitCollection.forceTouchCapability == .available {
+            if self.previewingContext == nil {
+                self.previewingContext = self.registerForPreviewing(with: self, sourceView: self.tableView)
+            }
+        } else if let previewingContext = self.previewingContext {
+            self.unregisterForPreviewing(withContext: previewingContext)
+        }
     }
 
     override func viewDidLoad() {
@@ -126,7 +140,7 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
                 
             } else if let image = UIImage(data: uData) {
                 imageViewSize = (image.size.width > image.size.height) ?
-                    CGSize(width: maxSize,height: (maxSize * image.size.height / image.size.width)) :
+                    CGSize(width: maxSize, height: (maxSize * image.size.height / image.size.width)) :
                     CGSize(width: maxSize * image.size.width / image.size.height, height: maxSize)
                 
                 onMainQueue {
@@ -195,5 +209,26 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate {
         // ideally, _your_ URL cache will be large enough to the point where this isn't necessary 
         // (or, you're using a predefined integration that has a shared cache with your codebase)
         self.loadContent(at: indexPath, completion: nil)
+    }
+    
+    // MARK: - UIViewControllerPreviewingDelegate
+    func previewingContext(_ previewingContext: UIViewControllerPreviewing, viewControllerForLocation location: CGPoint) -> UIViewController? {
+        guard let indexPath = self.tableView.indexPathForRow(at: location),
+            let cell = self.tableView.cellForRow(at: indexPath),
+            let imageView = cell.contentView.viewWithTag(666) as? FLAnimatedImageView else {
+            return nil
+        }
+        
+        previewingContext.sourceRect = self.tableView.convert(imageView.frame, from: imageView.superview)
+        
+        let dataSource = PhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row)
+        let photosViewController = PhotosViewController(dataSource: dataSource)
+        photosViewController.delegate = self
+        
+        return photosViewController
+    }
+    
+    func previewingContext(_ previewingContext: UIViewControllerPreviewing, commit viewControllerToCommit: UIViewController) {
+        self.present(viewControllerToCommit, animated: false)
     }
 }

@@ -159,7 +159,7 @@ import UIKit
         self.navigationBar.items = [self.navigationItem]
         self.addSubview(self.navigationBar)
         
-        NotificationCenter.default.addObserver(forName: .UIContentSizeCategoryDidChange, object: nil, queue: OperationQueue.main) { [weak self] (note) in
+        NotificationCenter.default.addObserver(forName: .UIContentSizeCategoryDidChange, object: nil, queue: .main) { [weak self] (note) in
             self?.setNeedsLayout()
         }
     }
