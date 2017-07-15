@@ -20,6 +20,12 @@ import FLAnimatedImage
     fileprivate let FadeInOutTransitionRatio: Double = 1/3
     fileprivate let TransitionAnimSpringDampening: CGFloat = 1
     
+    fileprivate static let supportedModalPresentationStyles: [UIModalPresentationStyle] =  [.fullScreen,
+                                                                                            .currentContext,
+                                                                                            .custom,
+                                                                                            .overFullScreen,
+                                                                                            .overCurrentContext]
+    
     weak var delegate: PhotosTransitionControllerDelegate?
     var mode: PhotosTransitionControllerMode = .presenting
     var transitionInfo: TransitionInfo
@@ -40,7 +46,7 @@ import FLAnimatedImage
     fileprivate var forceImmediateInteractiveDismissal = false
     fileprivate var completeInteractiveDismissal = false
     
-    weak var dismissalTransitionContext: UIViewControllerContextTransitioning?
+    weak fileprivate var dismissalTransitionContext: UIViewControllerContextTransitioning?
     
     weak fileprivate var imageView: UIImageView?
     fileprivate var imageViewInitialCenter: CGPoint = .zero
@@ -68,6 +74,10 @@ import FLAnimatedImage
         get {
             return self.transitionInfo.interactiveDismissalEnabled
         }
+    }
+    
+    func supportsModalPresentationStyle(_ modalPresentationStyle: UIModalPresentationStyle) -> Bool {
+        return type(of: self).supportedModalPresentationStyles.contains(modalPresentationStyle)
     }
     
     init(photosViewController: PhotosViewController, transitionInfo: TransitionInfo) {
@@ -190,11 +200,17 @@ import FLAnimatedImage
                 return
         }
         
-        if to.view.superview != transitionContext.containerView || from.view.superview != transitionContext.containerView {
+        if !transitionContext.isInteractive {
             to.view.alpha = 0
+        }
+        
+        let presentersViewRemoved = from.presentationController?.shouldRemovePresentersView ?? false
+        if to.view.superview != transitionContext.containerView && presentersViewRemoved {
             to.view.frame = transitionContext.finalFrame(for: to)
             transitionContext.containerView.addSubview(to.view)
-            
+        }
+        
+        if from.view.superview != transitionContext.containerView {
             from.view.frame = transitionContext.finalFrame(for: from)
             transitionContext.containerView.addSubview(from.view)
         }
@@ -429,8 +445,12 @@ import FLAnimatedImage
         }
         
         to.view.alpha = 0
-        to.view.frame = transitionContext.finalFrame(for: to)
-        transitionContext.containerView.addSubview(to.view)
+        
+        let presentersViewRemoved = from.presentationController?.shouldRemovePresentersView ?? false
+        if presentersViewRemoved {
+            to.view.frame = transitionContext.finalFrame(for: to)
+            transitionContext.containerView.addSubview(to.view)
+        }
         
         from.view.frame = transitionContext.finalFrame(for: from)
         transitionContext.containerView.addSubview(from.view)
@@ -467,15 +487,16 @@ import FLAnimatedImage
     
     // MARK: - Interaction handling
     @objc fileprivate func panAction(_ sender: UIPanGestureRecognizer) {
+        guard let photosViewController = self.photosViewController,
+            self.supportsModalPresentationStyle(photosViewController.modalPresentationStyle) else {
+            return
+        }
+        
         self.dismissalVelocityY = sender.velocity(in: sender.view).y
         let translation = sender.translation(in: sender.view?.superview)
         
         switch sender.state {
         case .began:
-            guard let photosViewController = self.photosViewController else {
-                return
-            }
-            
             self.overlayView = nil
             photosViewController.presentingViewController?.dismiss(animated: true, completion: {
                 sender.isEnabled = true

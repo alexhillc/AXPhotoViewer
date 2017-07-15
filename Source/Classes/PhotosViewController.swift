@@ -249,8 +249,9 @@ import MobileCoreServices
         }
         
         self.transitionInfo.resolveEndingViewClosure?(photo, self.currentPhotoIndex)
-        guard let transitionController = self.transitionController, transitionController.supportsContextualDismissal ||
-                                                                    transitionController.supportsInteractiveDismissal else {
+        guard let transitionController = self.transitionController, transitionController.supportsModalPresentationStyle(self.modalPresentationStyle) &&
+                                                                    (transitionController.supportsContextualDismissal ||
+                                                                    transitionController.supportsInteractiveDismissal) else {
             return nil
         }
         
@@ -259,7 +260,8 @@ import MobileCoreServices
     }
     
     public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        guard let transitionController = self.transitionController, transitionController.supportsContextualPresentation else {
+        guard let transitionController = self.transitionController, transitionController.supportsModalPresentationStyle(self.modalPresentationStyle) &&
+                                                                    transitionController.supportsContextualPresentation else {
             return nil
         }
         
@@ -388,12 +390,8 @@ import MobileCoreServices
             }
         }
         
-        if self.traitCollection.horizontalSizeClass == .compact {
-            self.present(activityViewController, animated: true)
-        } else {
-            activityViewController.popoverPresentationController?.barButtonItem = barButtonItem
-            self.present(activityViewController, animated: true)
-        }
+        activityViewController.popoverPresentationController?.barButtonItem = barButtonItem
+        self.present(activityViewController, animated: true)
     }
     
     @objc public func closeAction(_ sender: UIBarButtonItem) {
