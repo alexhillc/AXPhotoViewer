@@ -1,3 +1,6 @@
+# 1.1.0
+- **[NEW]** Supports presenting with any `modalPresentationStyle` (previously only `UIModalPresentationStyleFullScreen`) - [Issue #3](https://github.com/alexhillc/AXPhotoViewer/issues/3)
+
 # 1.0.0
 - **[CHANGED]** Presentation animation style - no longer oscillates, faster
 
