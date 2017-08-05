@@ -1,3 +1,6 @@
+# 1.1.1
+- **[FIXED]** Retain cycle in `SimpleNetworkIntegration` - [Issue #4](https://github.com/alexhillc/AXPhotoViewer/issues/4)
+
 # 1.1.0
 - **[NEW]** Supports presenting with any `modalPresentationStyle` (previously only `UIModalPresentationStyleFullScreen`) - [Issue #3](https://github.com/alexhillc/AXPhotoViewer/issues/3)
 
