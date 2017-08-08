@@ -32,8 +32,14 @@ import FLAnimatedImage
     
     weak var photosViewController: PhotosViewController?
     
-    /// The threshold at which the interactive controller will dismiss upon end touches.
-    fileprivate var DismissalPercentThreshold: CGFloat = 0.14
+    /// The distance threshold at which the interactive controller will dismiss upon end touches.
+    fileprivate let DismissalPercentThreshold: CGFloat = 0.14
+    
+    /// The velocity threshold at which the interactive controller will dismiss upon end touches.
+    fileprivate let DismissalVelocityYThreshold: CGFloat = 400
+    
+    /// The velocity threshold at which the interactive controller will dismiss in any direction the user is swiping.
+    fileprivate let DismissalVelocityAnyDirectionThreshold: CGFloat = 1000
     
     /// Pending animations that can occur when interactive dismissal has not been triggered by the system, 
     /// but our pan gesture recognizer is receiving touch events. Processed as soon as the interactive dismissal has been set up.
@@ -531,7 +537,8 @@ import FLAnimatedImage
                 let height = UIScreen.main.bounds.size.height
                 uSelf.directionalDismissalPercent = translation.y > 0 ? min(1, translation.y / height) : max(-1, translation.y / height)
                 uSelf.dismissalPercent = min(1, abs(translation.y / height))
-                uSelf.completeInteractiveDismissal = (uSelf.dismissalPercent >= uSelf.DismissalPercentThreshold)
+                uSelf.completeInteractiveDismissal = (uSelf.dismissalPercent >= uSelf.DismissalPercentThreshold) ||
+                                                     (abs(uSelf.dismissalVelocityY) >= uSelf.DismissalVelocityYThreshold)
                 
                 // this feels right-ish
                 let dismissalRatio = (1.2 * uSelf.dismissalPercent / uSelf.DismissalPercentThreshold)
@@ -622,7 +629,9 @@ import FLAnimatedImage
         let endingOrientation = UIApplication.shared.statusBarOrientation
         let startingOrientation = endingOrientation.by(transforming: imageView.transform)
         
-        let dismissFromBottom = (self.directionalDismissalPercent >= 0)
+        let dismissFromBottom = abs(self.dismissalVelocityY) > self.DismissalVelocityAnyDirectionThreshold ?
+            self.dismissalVelocityY >= 0 :
+            self.directionalDismissalPercent >= 0
         let imageViewRect = imageView.convert(imageView.bounds, to: view)
         var imageViewCenter = imageView.center
         
