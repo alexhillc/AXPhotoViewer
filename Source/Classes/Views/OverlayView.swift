@@ -11,7 +11,7 @@ import UIKit
 @objc(AXOverlayView) open class OverlayView: UIView, CaptionViewDelegate {
     
     /// The caption view to be used in the overlay.
-    public var captionView: CaptionViewProtocol = CaptionView() {
+    open var captionView: CaptionViewProtocol = CaptionView() {
         didSet {
             (oldValue as? UIView)?.removeFromSuperview()
             
@@ -24,6 +24,9 @@ import UIKit
             self.setNeedsLayout()
         }
     }
+    
+    /// Whether or not to animate the `captionView` content size changes. Defaults to true.
+    public var animateCaptionViewContentSizeChanges: Bool = true
     
     /// The title view displayed in the navigation bar. This view is sized and centered between the `leftBarButtonItems` and `rightBarButtonItems`.
     /// This is prioritized over `title`.
@@ -137,7 +140,7 @@ import UIKit
     /// For internal use only.
     var contentInset: UIEdgeInsets = .zero
     
-    fileprivate let OverlayAnimDuration: TimeInterval = 0.25
+    fileprivate var isFirstLayout: Bool = true
     
     init() {
         super.init(frame: .zero)
@@ -164,8 +167,8 @@ import UIKit
         }
     }
     
-    required public init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    required public convenience init?(coder aDecoder: NSCoder) {
+        self.init()
     }
     
     deinit {
@@ -193,6 +196,8 @@ import UIKit
             let captionViewOrigin = CGPoint(x: self.contentInset.left, y: self.frame.size.height - self.contentInset.bottom - captionViewSize.height)
             captionView.frame = CGRect(origin: captionViewOrigin, size: captionViewSize)
         }
+        
+        self.isFirstLayout = false
     }
     
     open override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
@@ -231,7 +236,9 @@ import UIKit
         }
         
         if animated {
-            UIView.animate(withDuration: OverlayAnimDuration, animations: animations, completion: internalCompletion)
+            UIView.animate(withDuration: Constants.frameAnimDuration,
+                           animations: animations,
+                           completion: internalCompletion)
         } else {
             animations()
             internalCompletion(true)
@@ -240,7 +247,23 @@ import UIKit
     
     // MARK: - CaptionViewDelegate
     public func captionView(_ captionView: CaptionViewProtocol, contentSizeDidChange newSize: CGSize) {
-        (captionView as? UIView)?.frame = CGRect(origin: CGPoint(x: 0, y: self.frame.size.height - newSize.height), size: newSize)
+        guard let uCaptionView = captionView as? UIView else {
+            return
+        }
+        
+        let animations = { [weak self] in
+            guard let uSelf = self else {
+                return
+            }
+            
+            uCaptionView.frame = CGRect(origin: CGPoint(x: 0, y: uSelf.frame.size.height - newSize.height), size: newSize)
+        }
+        
+        if self.animateCaptionViewContentSizeChanges && !self.isFirstLayout {
+            UIView.animate(withDuration: Constants.frameAnimDuration, animations: animations)
+        } else {
+            animations()
+        }
     }
 }
 

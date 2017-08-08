@@ -10,7 +10,7 @@ import UIKit
 
 @objc(AXCaptionView) open class CaptionView: UIView, CaptionViewProtocol {
     
-    public weak var delegate: CaptionViewDelegate?
+    open weak var delegate: CaptionViewDelegate?
     
     open var titleLabel = UILabel()
     open var descriptionLabel = UILabel()
@@ -28,29 +28,6 @@ import UIKit
     fileprivate var isCaptionAnimatingOut = false
     
     fileprivate var isFirstLayout: Bool = true
-    
-    fileprivate let CaptionAnimDuration: TimeInterval = 0.25
-    open override var frame: CGRect {
-        set(value) {
-            guard self.frame != value else {
-                return
-            }
-            
-            let animation: () -> Void = { super.frame = value }
-            
-            if self.isFirstLayout {
-                animation()
-            } else {
-                UIView.animate(withDuration: CaptionAnimDuration,
-                               delay: 0,
-                               options: [.beginFromCurrentState, .curveEaseInOut],
-                               animations: animation)
-            }
-        }
-        get {
-            return super.frame
-        }
-    }
     
     open var defaultTitleAttributes: [String: Any] {
         get {
@@ -149,8 +126,8 @@ import UIKit
         }
     }
     
-    required public init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    required public convenience init?(coder aDecoder: NSCoder) {
+        self.init()
     }
     
     deinit {
@@ -276,7 +253,7 @@ import UIKit
             }
             
             self.isCaptionAnimatingOut = true
-            UIView.animate(withDuration: CaptionAnimDuration / 2,
+            UIView.animate(withDuration: Constants.frameAnimDuration / 2,
                            delay: 0,
                            options: [.beginFromCurrentState, .curveEaseOut], 
                            animations: animateOut) { [weak self] (finished) in
@@ -286,7 +263,7 @@ import UIKit
                 }
                 
                 animateOutCompletion(finished)
-                UIView.animate(withDuration: uSelf.CaptionAnimDuration / 2, 
+                UIView.animate(withDuration: Constants.frameAnimDuration / 2, 
                                delay: 0, 
                                options: [.beginFromCurrentState, .curveEaseIn], 
                                animations: animateIn, 
