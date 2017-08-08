@@ -32,7 +32,7 @@ open class SimpleNetworkIntegration: NSObject, NetworkIntegrationProtocol, Simpl
             return
         }
         
-        let dataTask = self.urlSessionWrapper.dataDask(with: url)
+        let dataTask = self.urlSessionWrapper.dataTask(with: url)
         self.dataTasks.setObject(dataTask, forKey: photo)
         self.photos[dataTask.taskIdentifier] = photo
         dataTask.resume()
@@ -82,8 +82,8 @@ open class SimpleNetworkIntegration: NSObject, NetworkIntegrationProtocol, Simpl
         
         weak var weakSelf = self
         func removeDataTask() {
-            self.photos.removeValue(forKey: task.taskIdentifier)
-            self.dataTasks.removeObject(forKey: photo)
+            weakSelf?.photos.removeValue(forKey: task.taskIdentifier)
+            weakSelf?.dataTasks.removeObject(forKey: photo)
         }
         
         if let error = error {
@@ -123,7 +123,7 @@ fileprivate class SimpleNetworkIntegrationURLSessionWrapper: NSObject, URLSessio
         self.urlSession = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
     }
     
-    func dataDask(with url: URL) -> URLSessionDataTask {
+    func dataTask(with url: URL) -> URLSessionDataTask {
         return self.urlSession.dataTask(with: url)
     }
     
