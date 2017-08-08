@@ -19,8 +19,14 @@ import MobileCoreServices
     public let overlayView = OverlayView()
     
     /// The photos to display in the PhotosViewController.
-    public var dataSource: PhotosDataSource {
+    public var dataSource = PhotosDataSource() {
         didSet {
+            // this can occur during `commonInit(dataSource:pagingConfig:transitionInfo:networkIntegration:)`
+            // if that's the case, this logic will be applied in `viewDidLoad()`
+            if self.pageViewController == nil || self.networkIntegration == nil {
+                return
+            }
+            
             self.pageViewController.dataSource = (self.dataSource.numberOfPhotos > 1) ? self : nil
             self.networkIntegration.cancelAllLoads()
             self.configurePageViewController()
@@ -28,12 +34,13 @@ import MobileCoreServices
     }
     
     /// The configuration object applied to the internal pager at initialization.
-    fileprivate(set) var pagingConfig: PagingConfig
+    fileprivate(set) var pagingConfig = PagingConfig()
     
     /// The underlying UIPageViewController that is used for swiping horizontally and vertically.
     /// - Important: `AXPhotosViewController` is this page view controller's `UIPageViewControllerDelegate`, `UIPageViewControllerDataSource`.
     ///              Changing these values will result in breakage.
-    public let pageViewController: UIPageViewController
+    /// - Note: Initialized by the end of `commonInit(dataSource:pagingConfig:transitionInfo:networkIntegration:)`.
+    public fileprivate(set) var pageViewController: UIPageViewController!
     
     /// The internal tap gesture recognizer that is used to hide/show the overlay interface.
     public let singleTapGestureRecognizer = UITapGestureRecognizer()
@@ -58,19 +65,11 @@ import MobileCoreServices
     
     /// The `TransitionInfo` passed in at initialization. This object is used to define functionality for the presentation and dismissal
     /// of the `PhotosViewController`.
-    fileprivate(set) var transitionInfo: TransitionInfo
-        
-    #if AX_SDWEBIMAGE_SUPPORT
-    public let networkIntegration: NetworkIntegrationProtocol = SDWebImageIntegration()
-    #elseif AX_PINREMOTEIMAGE_SUPPORT
-    public let networkIntegration: NetworkIntegrationProtocol = PINRemoteImageIntegration()
-    #elseif AX_AFNETWORKING_SUPPORT
-    public let networkIntegration: NetworkIntegrationProtocol = AFNetworkingIntegration()
-    #elseif AX_LITE_SUPPORT
-    public let networkIntegration: NetworkIntegrationProtocol = SimpleNetworkIntegration()
-    #else
-    public let networkIntegration: NetworkIntegrationProtocol
-    #endif
+    fileprivate(set) var transitionInfo = TransitionInfo()
+    
+    /// The `NetworkIntegration` passed in at initialization. This object is used to fetch images asynchronously from a cache or URL.
+    /// - Initialized by the end of `commonInit(dataSource:pagingConfig:transitionInfo:networkIntegration:)`.
+    public fileprivate(set) var networkIntegration: NetworkIntegrationProtocol!
     
     // MARK: - Private/internal variables
     fileprivate enum SwipeDirection {
@@ -117,45 +116,143 @@ import MobileCoreServices
     
     // MARK: - Initialization
     #if AX_SDWEBIMAGE_SUPPORT || AX_PINREMOTEIMAGE_SUPPORT || AX_AFNETWORKING_SUPPORT || AX_LITE_SUPPORT
-    public init(dataSource: PhotosDataSource? = nil,
-                pagingConfig: PagingConfig? = nil,
-                transitionInfo: TransitionInfo? = nil) {
-    
-        let uDataSource = dataSource ?? PhotosDataSource(photos: [])
-        let uPagingConfig = pagingConfig ?? PagingConfig()
-        let uTransitionInfo = transitionInfo ?? TransitionInfo()
-        self.pageViewController = UIPageViewController(transitionStyle: .scroll,
-                                                       navigationOrientation: uPagingConfig.navigationOrientation,
-                                                       options: [UIPageViewControllerOptionInterPageSpacingKey: uPagingConfig.interPhotoSpacing])
-        self.dataSource = uDataSource
-        self.pagingConfig = uPagingConfig
-        self.transitionInfo = uTransitionInfo
+    public init() {
         super.init(nibName: nil, bundle: nil)
-        self.networkIntegration.delegate = self
+        self.commonInit()
+    }
+    
+    public init(dataSource: PhotosDataSource?) {
+        super.init(nibName: nil, bundle: nil)
+        self.commonInit(dataSource: dataSource)
+    }
+    
+    public init(dataSource: PhotosDataSource?,
+                pagingConfig: PagingConfig?) {
+        
+        super.init(nibName: nil, bundle: nil)
+        self.commonInit(dataSource: dataSource,
+                        pagingConfig: pagingConfig)
+    }
+    
+    public init(pagingConfig: PagingConfig?,
+                transitionInfo: TransitionInfo?) {
+        
+        super.init(nibName: nil, bundle: nil)
+        self.commonInit(pagingConfig: pagingConfig,
+                        transitionInfo: transitionInfo)
+    }
+    
+    public init(dataSource: PhotosDataSource?,
+                pagingConfig: PagingConfig?,
+                transitionInfo: TransitionInfo?) {
+        
+        super.init(nibName: nil, bundle: nil)
+        self.commonInit(dataSource: dataSource,
+                        pagingConfig: pagingConfig,
+                        transitionInfo: transitionInfo)
     }
     #else
-    public init(dataSource: PhotosDataSource? = nil,
-                pagingConfig: PagingConfig? = nil,
-                transitionInfo: TransitionInfo? = nil,
-                networkIntegration: NetworkIntegrationProtocol) {
-        
-        let uDataSource = dataSource ?? PhotosDataSource(photos: [])
-        let uPagingConfig = pagingConfig ?? PagingConfig()
-        let uTransitionInfo = transitionInfo ?? TransitionInfo()
-        self.pageViewController = UIPageViewController(transitionStyle: .scroll,
-                                                       navigationOrientation: uPagingConfig.navigationOrientation,
-                                                       options: [UIPageViewControllerOptionInterPageSpacingKey: uPagingConfig.interPhotoSpacing])
-        self.dataSource = uDataSource
-        self.pagingConfig = uPagingConfig
-        self.transitionInfo = uTransitionInfo
-        self.networkIntegration = networkIntegration
+    public init(networkIntegration: NetworkIntegrationProtocol) {
         super.init(nibName: nil, bundle: nil)
-        self.networkIntegration.delegate = self
+        self.commonInit(networkIntegration: networkIntegration)
+    }
+    
+    public init(dataSource: PhotosDataSource?,
+                networkIntegration: NetworkIntegrationProtocol) {
+    
+        super.init(nibName: nil, bundle: nil)
+        self.commonInit(dataSource: dataSource,
+                        networkIntegration: networkIntegration)
+    }
+    
+    public init(dataSource: PhotosDataSource?,
+                pagingConfig: PagingConfig?,
+                networkIntegration: NetworkIntegrationProtocol) {
+    
+        super.init(nibName: nil, bundle: nil)
+        self.commonInit(dataSource: dataSource,
+                        pagingConfig: pagingConfig,
+                        networkIntegration: networkIntegration)
+    }
+    
+    public init(pagingConfig: PagingConfig?,
+                transitionInfo: TransitionInfo?,
+                networkIntegration: NetworkIntegrationProtocol) {
+    
+        super.init(nibName: nil, bundle: nil)
+        self.commonInit(pagingConfig: pagingConfig,
+                        transitionInfo: transitionInfo,
+                        networkIntegration: networkIntegration)
+    }
+    
+    public init(dataSource: PhotosDataSource?,
+                pagingConfig: PagingConfig?,
+                transitionInfo: TransitionInfo?,
+                networkIntegration: NetworkIntegrationProtocol) {
+
+        super.init(nibName: nil, bundle: nil)
+        self.commonInit(dataSource: dataSource,
+                        pagingConfig: pagingConfig,
+                        transitionInfo: transitionInfo,
+                        networkIntegration: networkIntegration)
     }
     #endif
     
-    required public init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    required public convenience init?(coder aDecoder: NSCoder) {
+        self.init()
+    }
+    
+    // init to be used internally by the library
+    init(dataSource: PhotosDataSource? = nil,
+         pagingConfig: PagingConfig? = nil,
+         transitionInfo: TransitionInfo? = nil,
+         networkIntegration: NetworkIntegrationProtocol? = nil) {
+        
+        super.init(nibName: nil, bundle: nil)
+        self.commonInit(dataSource: dataSource, 
+                        pagingConfig: pagingConfig, 
+                        transitionInfo: transitionInfo, 
+                        networkIntegration: networkIntegration)
+    }
+    
+    fileprivate func commonInit(dataSource: PhotosDataSource? = nil,
+                                pagingConfig: PagingConfig? = nil,
+                                transitionInfo: TransitionInfo? = nil,
+                                networkIntegration: NetworkIntegrationProtocol? = nil) {
+        
+        if let uDataSource = dataSource {
+            self.dataSource = uDataSource
+        }
+        
+        if let uPagingConfig = pagingConfig {
+            self.pagingConfig = uPagingConfig
+        }
+        
+        if let uTransitionInfo = transitionInfo {
+            self.transitionInfo = uTransitionInfo
+        }
+        
+        var uNetworkIntegration = networkIntegration
+        if networkIntegration == nil {
+            #if AX_SDWEBIMAGE_SUPPORT
+                uNetworkIntegration = SDWebImageIntegration()
+            #elseif AX_PINREMOTEIMAGE_SUPPORT
+                uNetworkIntegration = PINRemoteImageIntegration()
+            #elseif AX_AFNETWORKING_SUPPORT
+                uNetworkIntegration = AFNetworkingIntegration()
+            #elseif AX_LITE_SUPPORT
+                uNetworkIntegration = SimpleNetworkIntegration()
+            #else
+                fatalError("Must be using one of the network integration subspecs if no `NetworkIntegration` is going to be provided.")
+            #endif
+        }
+        
+        self.networkIntegration = uNetworkIntegration
+        self.networkIntegration.delegate = self
+        
+        self.pageViewController = UIPageViewController(transitionStyle: .scroll,
+                                                       navigationOrientation: self.pagingConfig.navigationOrientation,
+                                                       options: [UIPageViewControllerOptionInterPageSpacingKey: self.pagingConfig.interPhotoSpacing])
     }
     
     deinit {

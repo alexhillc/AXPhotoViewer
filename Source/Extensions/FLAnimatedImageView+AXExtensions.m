@@ -6,6 +6,8 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+@import FLAnimatedImage;
+
 #import "FLAnimatedImageView+AXExtensions.h"
 #import <AXPhotoViewer/AXPhotoViewer-Swift.h>
 

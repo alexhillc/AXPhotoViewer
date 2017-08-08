@@ -39,6 +39,10 @@
         super.init()
     }
     
+    public convenience override init() {
+        self.init(photos: [], initialPhotoIndex: 0, prefetchBehavior: .regular)
+    }
+    
     public convenience init(photos: [PhotoProtocol]) {
         self.init(photos: photos, initialPhotoIndex: 0, prefetchBehavior: .regular)
     }

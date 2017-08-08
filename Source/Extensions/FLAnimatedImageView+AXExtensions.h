@@ -6,8 +6,7 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
-@import Foundation;
-@import FLAnimatedImage;
+@import FLAnimatedImage.FLAnimatedImageView;
 
 @interface FLAnimatedImageView (AXExtensions)
 

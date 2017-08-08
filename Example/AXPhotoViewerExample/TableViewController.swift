@@ -176,7 +176,7 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate, 
         
         let dataSource = PhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row)
 //        let pagingConfig = PagingConfig(loadingViewClass: CustomLoadingView.self)
-        let photosViewController = PhotosViewController(dataSource: dataSource, transitionInfo: transitionInfo)
+        let photosViewController = PhotosViewController(dataSource: dataSource, pagingConfig: nil, transitionInfo: transitionInfo)
         photosViewController.delegate = self
         
         self.present(photosViewController, animated: true)
@@ -222,13 +222,14 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate, 
         previewingContext.sourceRect = self.tableView.convert(imageView.frame, from: imageView.superview)
         
         let dataSource = PhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row)
-        let photosViewController = PhotosViewController(dataSource: dataSource)
-        photosViewController.delegate = self
+        let photosPreviewingViewController = PhotosPreviewingViewController(dataSource: dataSource)
         
-        return photosViewController
+        return photosPreviewingViewController
     }
     
     func previewingContext(_ previewingContext: UIViewControllerPreviewing, commit viewControllerToCommit: UIViewController) {
-        self.present(viewControllerToCommit, animated: false)
+        if let photosPreviewingViewController = viewControllerToCommit as? PhotosPreviewingViewController {
+            self.present(photosPreviewingViewController.makePhotosViewController(), animated: false)
+        }
     }
 }
