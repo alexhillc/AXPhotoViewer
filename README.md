@@ -25,7 +25,7 @@ AXPhotosViewController *photosViewController = [[AXPhotosViewController alloc] i
 It's easy to implement force touch with this library by using `PreviewingPhotosViewController`:
 
 ```swift
-func previewingContext(_ previewingContext: UIViewControllerPreviewing, 
+func previewingContext(_ previewingContext: UIViewControllerPreviewing,
                       viewControllerForLocation location: CGPoint) -> UIViewController? {
                       
     guard let indexPath = self.tableView.indexPathForRow(at: location),
@@ -42,7 +42,7 @@ func previewingContext(_ previewingContext: UIViewControllerPreviewing,
     return previewingPhotosViewController
 }
 
-func previewingContext(_ previewingContext: UIViewControllerPreviewing, 
+func previewingContext(_ previewingContext: UIViewControllerPreviewing,
                       commit viewControllerToCommit: UIViewController) {
 
     if let previewingPhotosViewController = viewControllerToCommit as? PreviewingPhotosViewController {
@@ -52,7 +52,7 @@ func previewingContext(_ previewingContext: UIViewControllerPreviewing,
 ```
 
 ```objc
-- (UIViewController *)previewingContext:(id<UIViewControllerPreviewing>)previewingContext 
+- (UIViewController *)previewingContext:(id<UIViewControllerPreviewing>)previewingContext
               viewControllerForLocation:(CGPoint)location {
 
     NSIndexPath *indexPath = [self.tableView indexPathForRowAtPoint:location];
@@ -74,7 +74,7 @@ func previewingContext(_ previewingContext: UIViewControllerPreviewing,
     return previewingPhotosViewController;
 }
 
-- (void)previewingContext:(id<UIViewControllerPreviewing>)previewingContext 
+- (void)previewingContext:(id<UIViewControllerPreviewing>)previewingContext
      commitViewController:(UIViewController *)viewControllerToCommit {
     
     AXPreviewingPhotosViewController *previewingPhotosViewController = (AXPreviewingPhotosViewController *)viewControllerToCommit;
@@ -90,14 +90,14 @@ This library fully supports interop between Objective-C and Swift codebases. If 
 ### Installation
 Installation can easily be done through Cocoapods:
 ```ruby
-pod install 'AXPhotoViewer', '~> 1.0.0-beta.11'
+pod install 'AXPhotoViewer'
 ```
 If you prefer not to use Cocoapods, add the contents of the 'Source' directory to your project to get started.
 
 **Note:** If you don't use Cocoapods, you must add `MobileCoreServices.framework` and `ImageIO.framework` to your project.
 
 ### Configuration
-There are many configurable properties that can be set before presenting your `AXPhotosViewController`. 
+There are many configurable properties that can be set before presenting your `AXPhotosViewController`.
 
 For example, on the `AXPhotoDataSource` object, you may set up the data source with an initial page index, as well as being able to control the rate at which the library will download additional photos.
 
@@ -144,15 +144,15 @@ A network integration, in relation to this library, is a class conforming to the
 Some pre-defined `AXNetworkIntegrations` have already been made as Cocoapod subspecs (SDWebImage, PINRemoteImage, AFNetworking..., as well as a simple network integration using NSURLSession that will serve most people's purposes quite sufficiently). To use these pre-defined subspecs, simply change your `Podfile`:
 
 ```ruby
-pod install 'AXPhotoViewer/Lite', '~> 1.0.0-beta.11'
-pod install 'AXPhotoViewer/SDWebImage', '~> 1.0.0-beta.11'
-pod install 'AXPhotoViewer/PINRemoteImage', '~> 1.0.0-beta.11'
-pod install 'AXPhotoViewer/AFNetworking', '~> 1.0.0-beta.11'
+pod install 'AXPhotoViewer/Lite'
+pod install 'AXPhotoViewer/SDWebImage'
+pod install 'AXPhotoViewer/PINRemoteImage'
+pod install 'AXPhotoViewer/AFNetworking'
 ```
 
 To create your own `AXNetworkIntegration`:
 ```ruby
-pod install 'AXPhotoViewer/Core', '~> 1.0.0-beta.11'
+pod install 'AXPhotoViewer/Core'
 ```
 ```swift
 let customNetworkIntegration = CustomNetworkIntegration() // instantiate your custom network integration

@@ -1,3 +1,8 @@
+# 1.2.0
+- **[NEW]** More natural flick-to-dismiss behavior, enabling dismissals from strictly swipe velocity as well as dismissal percentage
+- **[NEW]** `PreviewingPhotosViewController`: a view controller designed to display an imageView via 3d-touch, see the README for usage details
+- **[FIXED]** Missing convenience inits in Obj-C land
+
 # 1.1.1
 - **[FIXED]** Retain cycle in `SimpleNetworkIntegration` - [Issue #4](https://github.com/alexhillc/AXPhotoViewer/issues/4)
 
