@@ -21,6 +21,68 @@ AXPhotosDataSource *dataSource = [[AXPhotosDataSource alloc] initWithPhotos:phot
 AXPhotosViewController *photosViewController = [[AXPhotosViewController alloc] initWithDataSource:dataSource];
 [self presentViewController:photosViewController animated:YES completion:nil];
 ```
+#### Force touch implementation?
+It's easy to implement force touch with this library by using `PreviewingPhotosViewController`:
+
+```swift
+func previewingContext(_ previewingContext: UIViewControllerPreviewing, 
+                      viewControllerForLocation location: CGPoint) -> UIViewController? {
+                      
+    guard let indexPath = self.tableView.indexPathForRow(at: location),
+        let cell = self.tableView.cellForRow(at: indexPath),
+        let imageView = cell.imageView else {
+        return nil
+    }
+
+    previewingContext.sourceRect = self.tableView.convert(imageView.frame, from: imageView.superview)
+
+    let dataSource = PhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row)
+    let previewingPhotosViewController = PreviewingPhotosViewController(dataSource: dataSource)
+
+    return previewingPhotosViewController
+}
+
+func previewingContext(_ previewingContext: UIViewControllerPreviewing, 
+                      commit viewControllerToCommit: UIViewController) {
+
+    if let previewingPhotosViewController = viewControllerToCommit as? PreviewingPhotosViewController {
+        self.present(previewingPhotosViewController.makePhotosViewController(), animated: false)
+    }
+}
+```
+
+```objc
+- (UIViewController *)previewingContext:(id<UIViewControllerPreviewing>)previewingContext 
+              viewControllerForLocation:(CGPoint)location {
+
+    NSIndexPath *indexPath = [self.tableView indexPathForRowAtPoint:location];
+    if (!indexPath) {
+        return nil;
+    }
+    
+    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+    UIImageView *imageView = cell.imageView;
+    if (!imageView) {
+        return nil;
+    }
+    
+    previewingContext.sourceRect = [self.tableView convertRect:imageView.frame fromView:imageView.superview];
+    
+    AXPhotosDataSource *dataSource = [[AXPhotosDataSource alloc] initWithPhotos:self.photos initialPhotoIndex:indexPath.row];
+    AXPreviewingPhotosViewController *previewingPhotosViewController = [[AXPreviewingPhotosViewController alloc] initWithDataSource:dataSource];
+    
+    return previewingPhotosViewController;
+}
+
+- (void)previewingContext:(id<UIViewControllerPreviewing>)previewingContext 
+     commitViewController:(UIViewController *)viewControllerToCommit {
+    
+    AXPreviewingPhotosViewController *previewingPhotosViewController = (AXPreviewingPhotosViewController *)viewControllerToCommit;
+    if ([previewingPhotosViewController isKindOfClass:[AXPreviewingPhotosViewController class]]) {
+        [self presentViewController:[previewingPhotosViewController photosViewController] animated:NO completion:nil];
+    }
+}
+```
 
 ### Objective-C interoperability
 This library fully supports interop between Objective-C and Swift codebases. If you run into any issues with this, please open a Github issue or submit a pull request with the suggested changes.
