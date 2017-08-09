@@ -1,3 +1,6 @@
+# 1.2.2
+- **[REMOVED]** Coder initializers
+
 # 1.2.1
 - **[FIXED]** Build error that was causing AXPhotoViewer/Core to fail spec lint
 
