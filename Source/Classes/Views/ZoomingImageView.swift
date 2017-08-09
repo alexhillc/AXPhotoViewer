@@ -65,8 +65,8 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
         self.delegate = self
     }
     
-    required public convenience init?(coder aDecoder: NSCoder) {
-        self.init()
+    public required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     fileprivate func updateImageView(image: UIImage?, animatedImage: FLAnimatedImage?) {

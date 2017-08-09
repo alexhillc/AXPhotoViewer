@@ -198,8 +198,8 @@ import MobileCoreServices
     }
     #endif
     
-    required public convenience init?(coder aDecoder: NSCoder) {
-        self.init()
+    public required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     // init to be used internally by the library
