@@ -203,15 +203,15 @@ import MobileCoreServices
     }
     
     // init to be used internally by the library
-    init(dataSource: PhotosDataSource? = nil,
-         pagingConfig: PagingConfig? = nil,
-         transitionInfo: TransitionInfo? = nil,
-         networkIntegration: NetworkIntegrationProtocol? = nil) {
+    @nonobjc init(dataSource: PhotosDataSource? = nil,
+                  pagingConfig: PagingConfig? = nil,
+                  transitionInfo: TransitionInfo? = nil,
+                  networkIntegration: NetworkIntegrationProtocol? = nil) {
         
         super.init(nibName: nil, bundle: nil)
-        self.commonInit(dataSource: dataSource, 
-                        pagingConfig: pagingConfig, 
-                        transitionInfo: transitionInfo, 
+        self.commonInit(dataSource: dataSource,
+                        pagingConfig: pagingConfig,
+                        transitionInfo: transitionInfo,
                         networkIntegration: networkIntegration)
     }
     

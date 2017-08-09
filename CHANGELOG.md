@@ -1,3 +1,6 @@
+# 1.2.1
+- **[FIXED]** Build error that was causing AXPhotoViewer/Core to fail spec lint
+
 # 1.2.0
 - **[NEW]** More natural flick-to-dismiss behavior, enabling dismissals from strictly swipe velocity as well as dismissal percentage
 - **[NEW]** `PreviewingPhotosViewController`: a view controller designed to display an imageView via 3d-touch, see the README for usage details
