@@ -21,7 +21,7 @@ EXTERNAL SOURCES:
     :path: "../AXPhotoViewer.podspec"
 
 SPEC CHECKSUMS:
-  AXPhotoViewer: 672c4f3422e11ac9cc90754fbe09a7d07d253fe3
+  AXPhotoViewer: 49e366f737d0aebd27317dd3a7aee1ff52755905
   DRPLoadingSpinner: ea8edd542a61da6fae3ec868676a5c8b3072dcf7
   FLAnimatedImage: 4a0b56255d9b05f18b6dd7ee06871be5d3b89e31
   Reveal-SDK: 43be4e662864e937960d0d04d005135e29c4e53b

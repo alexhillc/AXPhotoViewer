@@ -1,5 +1,5 @@
 //
-//  PhotosPreviewingViewController.swift
+//  PreviewingPhotosViewController.swift
 //  AXPhotoViewer
 //
 //  Created by Alex Hill on 7/16/17.
@@ -10,7 +10,8 @@ import UIKit
 import FLAnimatedImage
 import MobileCoreServices
 
-@objc(AXPhotosPreviewingViewController) open class PhotosPreviewingViewController: UIViewController, NetworkIntegrationDelegate {
+@objc(AXPreviewingPhotosViewController) open class PreviewingPhotosViewController: UIViewController,
+                                                                                   NetworkIntegrationDelegate {
     
     /// The photos to display in the `PhotosPreviewingViewController`.
     public var dataSource: PhotosDataSource = PhotosDataSource() {
@@ -141,7 +142,6 @@ import MobileCoreServices
             newSize = self.imageView.intrinsicContentSize
         }
         
-        self.imageView.frame.size = newSize
         self.preferredContentSize = newSize
     }
     

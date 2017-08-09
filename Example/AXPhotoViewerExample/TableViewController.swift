@@ -222,14 +222,14 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate, 
         previewingContext.sourceRect = self.tableView.convert(imageView.frame, from: imageView.superview)
         
         let dataSource = PhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row)
-        let photosPreviewingViewController = PhotosPreviewingViewController(dataSource: dataSource)
+        let previewingPhotosViewController = PreviewingPhotosViewController(dataSource: dataSource)
         
-        return photosPreviewingViewController
+        return previewingPhotosViewController
     }
     
     func previewingContext(_ previewingContext: UIViewControllerPreviewing, commit viewControllerToCommit: UIViewController) {
-        if let photosPreviewingViewController = viewControllerToCommit as? PhotosPreviewingViewController {
-            self.present(photosPreviewingViewController.makePhotosViewController(), animated: false)
+        if let previewingPhotosViewController = viewControllerToCommit as? PreviewingPhotosViewController {
+            self.present(previewingPhotosViewController.makePhotosViewController(), animated: false)
         }
     }
 }
