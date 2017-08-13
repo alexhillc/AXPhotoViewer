@@ -29,7 +29,7 @@ import UIKit
     
     fileprivate var isFirstLayout: Bool = true
     
-    open var defaultTitleAttributes: [String: Any] {
+    open var defaultTitleAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -39,17 +39,17 @@ import UIKit
                 fontDescriptor = UIFont.preferredFont(forTextStyle: .body).fontDescriptor
             }
             
-            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFontWeightBold)
+            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFont.Weight.bold)
             let textColor = UIColor.white
             
             return [
-                NSFontAttributeName: font,
-                NSForegroundColorAttributeName: textColor
+                NSAttributedStringKey.font: font,
+                NSAttributedStringKey.foregroundColor: textColor
             ]
         }
     }
     
-    open var defaultDescriptionAttributes: [String: Any] {
+    open var defaultDescriptionAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -59,17 +59,17 @@ import UIKit
                 fontDescriptor = UIFont.preferredFont(forTextStyle: .body).fontDescriptor
             }
             
-            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFontWeightLight)
+            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFont.Weight.light)
             let textColor = UIColor.lightGray
             
             return [
-                NSFontAttributeName: font,
-                NSForegroundColorAttributeName: textColor
+                NSAttributedStringKey.font: font,
+                NSAttributedStringKey.foregroundColor: textColor
             ]
         }
     }
     
-    open var defaultCreditAttributes: [String: Any] {
+    open var defaultCreditAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -79,12 +79,12 @@ import UIKit
                 fontDescriptor = UIFont.preferredFont(forTextStyle: .caption1).fontDescriptor
             }
             
-            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFontWeightLight)
+            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFont.Weight.light)
             let textColor = UIColor.gray
             
             return [
-                NSFontAttributeName: font,
-                NSForegroundColorAttributeName: textColor
+                NSAttributedStringKey.font: font,
+                NSAttributedStringKey.foregroundColor: textColor
             ]
         }
     }
@@ -138,7 +138,7 @@ import UIKit
                                attributedDescription: NSAttributedString?,
                                attributedCredit: NSAttributedString?) {
         
-        func makeAttributedStringWithDefaults(_ defaults: [String: Any], for attributedString: NSAttributedString?) -> NSAttributedString? {
+        func makeAttributedStringWithDefaults(_ defaults: [NSAttributedStringKey: Any], for attributedString: NSAttributedString?) -> NSAttributedString? {
             guard let defaultAttributedString = attributedString?.mutableCopy() as? NSMutableAttributedString else {
                 return attributedString
             }
@@ -289,7 +289,7 @@ import UIKit
                 return attributedString
             }
             
-            fontAdjustedAttributedString.enumerateAttribute(NSFontAttributeName,
+            fontAdjustedAttributedString.enumerateAttribute(NSAttributedStringKey.font,
                                                             in: NSMakeRange(0, fontAdjustedAttributedString.length),
                                                             options: [], using: { [weak self] (value, range, stop) in
                 guard let oldFont = value as? UIFont else {
@@ -305,8 +305,8 @@ import UIKit
                 }
                                                                 
                 let newFont = oldFont.withSize(newFontDescriptor.pointSize)
-                fontAdjustedAttributedString.removeAttribute(NSFontAttributeName, range: range)
-                fontAdjustedAttributedString.addAttribute(NSFontAttributeName, value: newFont, range: range)
+                fontAdjustedAttributedString.removeAttribute(NSAttributedStringKey.font, range: range)
+                fontAdjustedAttributedString.addAttribute(NSAttributedStringKey.font, value: newFont, range: range)
             })
             
             return fontAdjustedAttributedString.copy() as? NSAttributedString

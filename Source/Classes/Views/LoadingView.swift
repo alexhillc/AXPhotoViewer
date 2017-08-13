@@ -14,7 +14,7 @@
     fileprivate var tapGestureRecognizer: UITapGestureRecognizer?
     fileprivate var retryHandler: (() -> Void)?
     
-    fileprivate var errorAttributes: [String: Any] {
+    fileprivate var errorAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -24,12 +24,12 @@
                 fontDescriptor = UIFont.preferredFont(forTextStyle: .body).fontDescriptor
             }
             
-            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFontWeightLight)
+            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFont.Weight.light)
             let textColor = UIColor.white
             
             return [
-                NSFontAttributeName: font,
-                NSForegroundColorAttributeName: textColor
+                NSAttributedStringKey.font: font,
+                NSAttributedStringKey.foregroundColor: textColor
             ]
         }
     }
@@ -60,7 +60,7 @@
         
         if let errorLabel = self.errorLabel, let attributedText = errorLabel.attributedText?.mutableCopy() as? NSMutableAttributedString {
             var newAttributedText: NSAttributedString?
-            attributedText.enumerateAttribute(NSFontAttributeName,
+            attributedText.enumerateAttribute(NSAttributedStringKey.font,
                                               in: NSMakeRange(0, attributedText.length),
                                               options: [], using: { [weak self] (value, range, stop) in
                 guard let oldFont = value as? UIFont else {
@@ -75,8 +75,8 @@
                 }
                 
                 let newFont = oldFont.withSize(newFontDescriptor.pointSize)
-                attributedText.removeAttribute(NSFontAttributeName, range: range)
-                attributedText.addAttribute(NSFontAttributeName, value: newFont, range: range)
+                attributedText.removeAttribute(NSAttributedStringKey.font, range: range)
+                attributedText.addAttribute(NSAttributedStringKey.font, value: newFont, range: range)
                 newAttributedText = attributedText.copy() as? NSAttributedString
             })
             

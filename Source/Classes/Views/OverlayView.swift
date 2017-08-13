@@ -8,14 +8,14 @@
 
 import UIKit
 
-@objc(AXOverlayView) open class OverlayView: UIView, CaptionViewDelegate {
+@objc(AXOverlayView) open class OverlayView: UIView, CaptionViewDelegate, UINavigationBarDelegate {
     
     /// The caption view to be used in the overlay.
     open var captionView: CaptionViewProtocol = CaptionView() {
         didSet {
             (oldValue as? UIView)?.removeFromSuperview()
             
-            guard self.captionView is UIView.Type else {
+            guard self.captionView is UIView else {
                 assertionFailure("`captionView` must be a UIView.")
                 return
             }
@@ -80,7 +80,7 @@ import UIKit
     var ignoresInternalTitle: Bool = false
     
     /// The title text attributes inherited by the `title`.
-    public var titleTextAttributes: [String: Any]? {
+    public var titleTextAttributes: [NSAttributedStringKey: Any]? {
         set(value) {
             self.navigationBar.titleTextAttributes = value
         }
@@ -158,7 +158,7 @@ import UIKit
         self.navigationBar.isTranslucent = true
         self.navigationBar.shadowImage = UIImage()
         self.navigationBar.setBackgroundImage(UIImage(), for: .default)
-        self.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.white]
+        self.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.white]
         self.navigationBar.items = [self.navigationItem]
         self.addSubview(self.navigationBar)
         
@@ -201,7 +201,7 @@ import UIKit
     }
     
     open override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        if let view = super.hitTest(point, with: event) as? UIButton {
+        if let view = super.hitTest(point, with: event) as? UIControl {
             return view
         }
         

@@ -333,10 +333,6 @@ import MobileCoreServices
         super.viewWillLayoutSubviews()
         self.pageViewController.view.frame = self.view.bounds
         self.overlayView.frame = self.view.bounds
-        self.overlayView.contentInset = UIEdgeInsets(top: (UIApplication.shared.statusBarFrame.size.height > 0) ? 20 : 0,
-                                                     left: 0,
-                                                     bottom: 0, 
-                                                     right: 0)
     }
 
     // MARK: - UIViewControllerTransitioningDelegate, PhotosViewControllerTransitionAnimatorDelegate, PhotosViewControllerTransitionAnimatorDelegate
