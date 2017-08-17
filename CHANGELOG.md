@@ -1,3 +1,6 @@
+# 1.2.4
+- **[NEW]** Animation flag for CaptionView - `PhotosViewController.overlayView.animateCaptionViewChanges`
+
 # 1.2.3
 - **[FIXED]** public -> open for overridable variables
 - **[CHANGED]** Initialize `PhotosViewController` from `PreviewingPhotosViewController` with `PhotosViewController(from:)`
