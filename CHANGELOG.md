@@ -1,3 +1,7 @@
+# 1.2.3
+- **[FIXED]** public -> open for overridable variables
+- **[CHANGED]** Initialize `PhotosViewController` from `PreviewingPhotosViewController` with `PhotosViewController(from:)`
+
 # 1.2.2
 - **[REMOVED]** Coder initializers
 

@@ -27,7 +27,7 @@ It's easy to implement force touch with this library by using `PreviewingPhotosV
 ```swift
 func previewingContext(_ previewingContext: UIViewControllerPreviewing,
                       viewControllerForLocation location: CGPoint) -> UIViewController? {
-                      
+
     guard let indexPath = self.tableView.indexPathForRow(at: location),
         let cell = self.tableView.cellForRow(at: indexPath),
         let imageView = cell.imageView else {
@@ -46,7 +46,7 @@ func previewingContext(_ previewingContext: UIViewControllerPreviewing,
                       commit viewControllerToCommit: UIViewController) {
 
     if let previewingPhotosViewController = viewControllerToCommit as? PreviewingPhotosViewController {
-        self.present(previewingPhotosViewController.makePhotosViewController(), animated: false)
+        self.present(PhotosViewController(from: previewingPhotosViewController), animated: false)
     }
 }
 ```
@@ -59,27 +59,27 @@ func previewingContext(_ previewingContext: UIViewControllerPreviewing,
     if (!indexPath) {
         return nil;
     }
-    
+
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
     UIImageView *imageView = cell.imageView;
     if (!imageView) {
         return nil;
     }
-    
+
     previewingContext.sourceRect = [self.tableView convertRect:imageView.frame fromView:imageView.superview];
-    
+
     AXPhotosDataSource *dataSource = [[AXPhotosDataSource alloc] initWithPhotos:self.photos initialPhotoIndex:indexPath.row];
     AXPreviewingPhotosViewController *previewingPhotosViewController = [[AXPreviewingPhotosViewController alloc] initWithDataSource:dataSource];
-    
+
     return previewingPhotosViewController;
 }
 
 - (void)previewingContext:(id<UIViewControllerPreviewing>)previewingContext
      commitViewController:(UIViewController *)viewControllerToCommit {
-    
+
     AXPreviewingPhotosViewController *previewingPhotosViewController = (AXPreviewingPhotosViewController *)viewControllerToCommit;
     if ([previewingPhotosViewController isKindOfClass:[AXPreviewingPhotosViewController class]]) {
-        [self presentViewController:[previewingPhotosViewController photosViewController] animated:NO completion:nil];
+        [self presentViewController:[[AXPhotosViewController alloc] initFromPreviewingPhotosViewController:previewingPhotosViewController] animated:NO completion:nil];
     }
 }
 ```
