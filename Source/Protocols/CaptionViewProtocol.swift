@@ -11,6 +11,10 @@
     /// The delegate used by the framework to respond to content size changes.
     weak var delegate: CaptionViewDelegate? { get set }
     
+    /// Whether or not the `CaptionView` should animate caption info changes - using `AXConstants.frameAnimDuration` as
+    /// the animation duration.
+    var animateCaptionInfoChanges: Bool { get set }
+    
     /// The `PhotosViewController` will call this method when a new photo is ready to have its information displayed.
     /// The implementation should update the `captionView` with the attributed parameters. 
     ///

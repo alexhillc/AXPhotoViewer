@@ -25,8 +25,12 @@ import UIKit
         }
     }
     
-    /// Whether or not to animate the `captionView` content size changes. Defaults to true.
-    open var animateCaptionViewContentSizeChanges: Bool = true
+    /// Whether or not to animate `captionView` changes. Defaults to true.
+    public var animateCaptionViewChanges: Bool = true {
+        didSet {
+            self.captionView.animateCaptionInfoChanges = self.animateCaptionViewChanges
+        }
+    }
     
     /// The title view displayed in the navigation bar. This view is sized and centered between the `leftBarButtonItems` and `rightBarButtonItems`.
     /// This is prioritized over `title`.
@@ -146,6 +150,7 @@ import UIKit
         super.init(frame: .zero)
         
         self.captionView.delegate = self
+        self.captionView.animateCaptionInfoChanges = true
         if let captionView = self.captionView as? UIView {
             self.addSubview(captionView)
         }
@@ -236,7 +241,7 @@ import UIKit
         }
         
         if animated {
-            UIView.animate(withDuration: Constants.frameAnimDuration,
+            UIView.animate(withDuration: AXConstants.frameAnimDuration,
                            animations: animations,
                            completion: internalCompletion)
         } else {
@@ -259,8 +264,8 @@ import UIKit
             uCaptionView.frame = CGRect(origin: CGPoint(x: 0, y: uSelf.frame.size.height - newSize.height), size: newSize)
         }
         
-        if self.animateCaptionViewContentSizeChanges && !self.isFirstLayout {
-            UIView.animate(withDuration: Constants.frameAnimDuration, animations: animations)
+        if self.animateCaptionViewChanges && !self.isFirstLayout {
+            UIView.animate(withDuration: AXConstants.frameAnimDuration, animations: animations)
         } else {
             animations()
         }

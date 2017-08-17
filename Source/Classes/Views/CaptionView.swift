@@ -12,6 +12,8 @@ import UIKit
     
     open weak var delegate: CaptionViewDelegate?
     
+    public var animateCaptionInfoChanges: Bool = true
+    
     open var titleLabel = UILabel()
     open var descriptionLabel = UILabel()
     open var creditLabel = UILabel()
@@ -218,7 +220,7 @@ import UIKit
             uSelf.creditLabel.isHidden = (uSelf.creditSizingLabel.attributedText?.string.isEmpty ?? true)
         }
         
-        if self.needsCaptionLayoutAnim {
+        if self.animateCaptionInfoChanges && self.needsCaptionLayoutAnim {
             let animateOut: () -> Void = { [weak self] in
                 self?.titleLabel.alpha = 0
                 self?.descriptionLabel.alpha = 0
@@ -253,7 +255,7 @@ import UIKit
             }
             
             self.isCaptionAnimatingOut = true
-            UIView.animate(withDuration: Constants.frameAnimDuration / 2,
+            UIView.animate(withDuration: AXConstants.frameAnimDuration / 2,
                            delay: 0,
                            options: [.beginFromCurrentState, .curveEaseOut], 
                            animations: animateOut) { [weak self] (finished) in
@@ -263,7 +265,7 @@ import UIKit
                 }
                 
                 animateOutCompletion(finished)
-                UIView.animate(withDuration: Constants.frameAnimDuration / 2, 
+                UIView.animate(withDuration: AXConstants.frameAnimDuration / 2,
                                delay: 0, 
                                options: [.beginFromCurrentState, .curveEaseIn], 
                                animations: animateIn, 
