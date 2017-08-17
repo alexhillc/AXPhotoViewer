@@ -229,7 +229,7 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate, 
     
     func previewingContext(_ previewingContext: UIViewControllerPreviewing, commit viewControllerToCommit: UIViewController) {
         if let previewingPhotosViewController = viewControllerToCommit as? PreviewingPhotosViewController {
-            self.present(previewingPhotosViewController.makePhotosViewController(), animated: false)
+            self.present(PhotosViewController(from: previewingPhotosViewController), animated: false)
         }
     }
 }

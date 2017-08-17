@@ -13,13 +13,13 @@ import MobileCoreServices
                                                                UIViewControllerTransitioningDelegate, PhotoViewControllerDelegate, NetworkIntegrationDelegate,
                                                                PhotosTransitionControllerDelegate {
     
-    public weak var delegate: PhotosViewControllerDelegate?
+    open weak var delegate: PhotosViewControllerDelegate?
     
     /// The underlying `OverlayView` that is used for displaying photo captions, titles, and actions.
-    public let overlayView = OverlayView()
+    open let overlayView = OverlayView()
     
     /// The photos to display in the PhotosViewController.
-    public var dataSource = PhotosDataSource() {
+    open var dataSource = PhotosDataSource() {
         didSet {
             // this can occur during `commonInit(dataSource:pagingConfig:transitionInfo:networkIntegration:)`
             // if that's the case, this logic will be applied in `viewDidLoad()`
@@ -34,7 +34,7 @@ import MobileCoreServices
     }
     
     /// The configuration object applied to the internal pager at initialization.
-    fileprivate(set) var pagingConfig = PagingConfig()
+    open fileprivate(set) var pagingConfig = PagingConfig()
     
     /// The underlying UIPageViewController that is used for swiping horizontally and vertically.
     /// - Important: `AXPhotosViewController` is this page view controller's `UIPageViewControllerDelegate`, `UIPageViewControllerDataSource`.
@@ -48,7 +48,7 @@ import MobileCoreServices
     /// The close bar button item that is initially set in the overlay's navigation bar. Any 'target' or 'action' provided to this button will be overwritten.
     /// Overriding this is purely for customizing the look and feel of the button.
     /// Alternatively, you may create your own `UIBarButtonItem`s and directly set them _and_ their actions on the `overlayView` property.
-    public var closeBarButtonItem: UIBarButtonItem {
+    open var closeBarButtonItem: UIBarButtonItem {
         get {
             return UIBarButtonItem(barButtonSystemItem: .stop, target: nil, action: nil)
         }
@@ -57,7 +57,7 @@ import MobileCoreServices
     /// The action bar button item that is initially set in the overlay's navigation bar. Any 'target' or 'action' provided to this button will be overwritten.
     /// Overriding this is purely for customizing the look and feel of the button.
     /// Alternatively, you may create your own `UIBarButtonItem`s and directly set them _and_ their actions on the `overlayView` property.
-    public var actionBarButtonItem: UIBarButtonItem {
+    open var actionBarButtonItem: UIBarButtonItem {
         get {
             return UIBarButtonItem(barButtonSystemItem: .action, target: nil, action: nil)
         }
@@ -65,7 +65,7 @@ import MobileCoreServices
     
     /// The `TransitionInfo` passed in at initialization. This object is used to define functionality for the presentation and dismissal
     /// of the `PhotosViewController`.
-    fileprivate(set) var transitionInfo = TransitionInfo()
+    open fileprivate(set) var transitionInfo = TransitionInfo()
     
     /// The `NetworkIntegration` passed in at initialization. This object is used to fetch images asynchronously from a cache or URL.
     /// - Initialized by the end of `commonInit(dataSource:pagingConfig:transitionInfo:networkIntegration:)`.
@@ -197,6 +197,44 @@ import MobileCoreServices
                         networkIntegration: networkIntegration)
     }
     #endif
+    
+    @objc(initFromPreviewingPhotosViewController:)
+    public init(from previewingPhotosViewController: PreviewingPhotosViewController) {
+        super.init(nibName: nil, bundle: nil)
+        self.commonInit(dataSource: previewingPhotosViewController.dataSource,
+                        networkIntegration: previewingPhotosViewController.networkIntegration)
+        
+        self.loadViewIfNeeded()
+        self.currentPhotoViewController?.zoomingImageView.imageView.ax_syncFrames(with: previewingPhotosViewController.imageView)
+    }
+    
+    @objc(initFromPreviewingPhotosViewController:pagingConfig:)
+    public init(from previewingPhotosViewController: PreviewingPhotosViewController,
+                pagingConfig: PagingConfig?) {
+        
+        super.init(nibName: nil, bundle: nil)
+        self.commonInit(dataSource: previewingPhotosViewController.dataSource,
+                        pagingConfig: pagingConfig,
+                        networkIntegration: previewingPhotosViewController.networkIntegration)
+        
+        self.loadViewIfNeeded()
+        self.currentPhotoViewController?.zoomingImageView.imageView.ax_syncFrames(with: previewingPhotosViewController.imageView)
+    }
+    
+    @objc(initFromPreviewingPhotosViewController:pagingConfig:transitionInfo:)
+    public init(from previewingPhotosViewController: PreviewingPhotosViewController,
+                pagingConfig: PagingConfig?,
+                transitionInfo: TransitionInfo?) {
+        
+        super.init(nibName: nil, bundle: nil)
+        self.commonInit(dataSource: previewingPhotosViewController.dataSource,
+                        pagingConfig: pagingConfig,
+                        transitionInfo: transitionInfo,
+                        networkIntegration: previewingPhotosViewController.networkIntegration)
+        
+        self.loadViewIfNeeded()
+        self.currentPhotoViewController?.zoomingImageView.imageView.ax_syncFrames(with: previewingPhotosViewController.imageView)
+    }
     
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")

@@ -14,7 +14,7 @@ import MobileCoreServices
                                                                                    NetworkIntegrationDelegate {
     
     /// The photos to display in the `PhotosPreviewingViewController`.
-    public var dataSource: PhotosDataSource = PhotosDataSource() {
+    open var dataSource: PhotosDataSource = PhotosDataSource() {
         didSet {
             // this can occur during `commonInit(dataSource:networkIntegration:)`
             if self.networkIntegration == nil {
@@ -34,47 +34,6 @@ import MobileCoreServices
         get {
             return self.view as! FLAnimatedImageView
         }
-    }
-    
-    // MARK: - Factory
-    @objc(photosViewController)
-    public func makePhotosViewController() -> PhotosViewController {
-        return self.makePhotosViewController(dataSource: self.dataSource,
-                                             pagingConfig: nil,
-                                             transitionInfo: nil,
-                                             networkIntegration: self.networkIntegration)
-    }
-    
-    @objc(photosViewControllerWithPagingConfig:)
-    public func makePhotosViewController(pagingConfig: PagingConfig?) -> PhotosViewController {
-        return self.makePhotosViewController(dataSource: self.dataSource, 
-                                             pagingConfig: pagingConfig,
-                                             transitionInfo: nil,
-                                             networkIntegration: self.networkIntegration)
-    }
-    
-    @objc(photosViewControllerWithPagingConfig:transitionInfo:)
-    public func makePhotosViewController(pagingConfig: PagingConfig?,
-                                         transitionInfo: TransitionInfo?) -> PhotosViewController {
-        
-        return self.makePhotosViewController(dataSource: self.dataSource,
-                                             pagingConfig: pagingConfig, 
-                                             transitionInfo: transitionInfo, 
-                                             networkIntegration: self.networkIntegration)
-    }
-    
-    fileprivate func makePhotosViewController(dataSource: PhotosDataSource,
-                                              pagingConfig: PagingConfig?,
-                                              transitionInfo: TransitionInfo?,
-                                              networkIntegration: NetworkIntegrationProtocol) -> PhotosViewController {
-     
-        let photosViewController = PhotosViewController(dataSource: dataSource,
-                                                        pagingConfig: pagingConfig,
-                                                        transitionInfo: transitionInfo,
-                                                        networkIntegration: networkIntegration)
-        photosViewController.loadViewIfNeeded()
-        photosViewController.currentPhotoViewController?.zoomingImageView.imageView.ax_syncFrames(with: self.imageView)
-        return photosViewController
     }
     
     // MARK: - Initialization

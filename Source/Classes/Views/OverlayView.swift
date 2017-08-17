@@ -26,7 +26,7 @@ import UIKit
     }
     
     /// Whether or not to animate the `captionView` content size changes. Defaults to true.
-    public var animateCaptionViewContentSizeChanges: Bool = true
+    open var animateCaptionViewContentSizeChanges: Bool = true
     
     /// The title view displayed in the navigation bar. This view is sized and centered between the `leftBarButtonItems` and `rightBarButtonItems`.
     /// This is prioritized over `title`.
@@ -130,8 +130,8 @@ import UIKit
     }
     
     /// The navigation bar used to set the `titleView`, `leftBarButtonItems`, `rightBarButtonItems`
-    public let navigationBar = UINavigationBar()
-    public let navigationBarUnderlay = UIView()
+    open let navigationBar = UINavigationBar()
+    open let navigationBarUnderlay = UIView()
     
     /// The underlying `UINavigationItem` used for setting the `titleView`, `leftBarButtonItems`, `rightBarButtonItems`.
     fileprivate var navigationItem = UINavigationItem()
@@ -201,7 +201,7 @@ import UIKit
     }
     
     open override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        if let view = super.hitTest(point, with: event) as? UIButton {
+        if let view = super.hitTest(point, with: event) as? UIControl {
             return view
         }
         
