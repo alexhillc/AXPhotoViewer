@@ -1,3 +1,6 @@
+# 1.2.5
+- **[NEW]** Subclassability of PhotosViewControllerDelegate methods (contrib: @justindhill)
+
 # 1.2.4
 - **[NEW]** Animation flag for CaptionView - `PhotosViewController.overlayView.animateCaptionViewChanges`
 
