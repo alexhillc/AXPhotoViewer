@@ -454,7 +454,11 @@ import MobileCoreServices
             return
         }
         
-        self.willUpdate(overlayView: self.overlayView, for: photo, at: photoIndex, totalNumberOfPhotos: self.dataSource.numberOfPhotos)
+        self.delegate?.photosViewController?(self,
+                                             willUpdate: self.overlayView,
+                                             for: photo,
+                                             at: photoIndex,
+                                             totalNumberOfPhotos: self.dataSource.numberOfPhotos)
         
         if self.dataSource.numberOfPhotos > 1 {
             self.overlayView.internalTitle = NSLocalizedString("\(photoIndex + 1) of \(self.dataSource.numberOfPhotos)", comment: "")
@@ -495,7 +499,7 @@ import MobileCoreServices
             return
         }
         
-        if self.handleActionButtonTapped(photo: photo) {
+        if let _ = self.delegate?.photosViewController?(self, handleActionButtonTappedFor: photo) {
             return
         }
         
@@ -517,7 +521,7 @@ import MobileCoreServices
             }
             
             if completed, let activityType = activityType {
-                uSelf.actionCompleted(activityType: activityType, for: photo)
+                uSelf.delegate?.photosViewController?(uSelf, actionCompletedWith: activityType, for: photo)
             }
         }
         
@@ -716,13 +720,13 @@ import MobileCoreServices
             self.currentPhotoIndex = lowIndex
             
             if let photo = self.dataSource.photo(at: lowIndex) {
-                self.didNavigateTo(photo: photo, at: lowIndex)
+                self.delegate?.photosViewController?(self, didNavigateTo: photo, at: lowIndex)
             }
         } else if swipePercent > 0.5 && self.currentPhotoIndex != highIndex {
             self.currentPhotoIndex = highIndex
             
             if let photo = self.dataSource.photo(at: highIndex) {
-                self.didNavigateTo(photo: photo, at: highIndex)
+                self.delegate?.photosViewController?(self, didNavigateTo: photo, at: highIndex)
             }
         }
         
@@ -818,91 +822,10 @@ import MobileCoreServices
             return .leastNormalMagnitude
         }
         
-        return self.maximumZoomScale(for: photo, minimumZoomScale: minimumZoomScale, imageSize: imageSize)
-    }
-    
-    // MARK: - PhotosViewControllerDelegate calls
-    
-    /// Called when the `PhotosViewController` navigates to a new photo. This is defined as when the swipe percent between pages
-    /// is greater than the threshold (>0.5).
-    ///
-    /// If you override this and fail to call super, the corresponding delegate method **will not be called!**
-    ///
-    /// - Parameters:
-    ///   - photosViewController: The `PhotosViewController` that is navigating.
-    ///   - photo: The `Photo` that was navigated to.
-    ///   - index: The `index` in the dataSource of the `Photo` being transitioned to.
-    @objc(didNavigateToPhoto:atIndex:)
-    public func didNavigateTo(photo: PhotoProtocol, at index: Int) {
-        self.delegate?.photosViewController?(self, didNavigateTo: photo, at: index)
-    }
-    
-    /// Called when the `PhotosViewController` is configuring its `OverlayView` for a new photo. This should be used to update the
-    /// the overlay's title or any other overlay-specific properties.
-    ///
-    /// If you override this and fail to call super, the corresponding delegate method **will not be called!**
-    ///
-    /// - Parameters:
-    ///   - overlayView: The `OverlayView` that is being updated.
-    ///   - photo: The `Photo` the overlay is being configured for.
-    ///   - index: The index of the `Photo` that the overlay is being configured for.
-    ///   - totalNumberOfPhotos: The total number of photos in the current `dataSource`.
-    @objc(willUpdateOverlayView:forPhoto:atIndex:totalNumberOfPhotos:)
-    public func willUpdate(overlayView: OverlayView, for photo: PhotoProtocol, at index: Int, totalNumberOfPhotos: Int) {
-        self.delegate?.photosViewController?(self,
-                                             willUpdate: overlayView,
-                                             for: photo,
-                                             at: index,
-                                             totalNumberOfPhotos: totalNumberOfPhotos)
-    }
-    
-    /// If implemented and returns a valid zoom scale for the photo (valid meaning >= the photo's minimum zoom scale), the underlying
-    /// zooming image view will adopt the returned `maximumZoomScale` instead of the default calculated by the library. A good implementation
-    /// of this method will use a combination of the provided `minimumZoomScale` and `imageSize` to extrapolate a `maximumZoomScale` to return.
-    /// If the `minimumZoomScale` is returned (ie. `minimumZoomScale` == `maximumZoomScale`), zooming will be disabled for this image.
-    ///
-    /// If you override this and fail to call super, the corresponding delegate method **will not be called!**
-    ///
-    /// - Parameters:
-    ///   - photo: The `Photo` that the zoom scale will affect.
-    ///   - minimumZoomScale: The minimum zoom scale that is calculated by the library. This value cannot be changed.
-    ///   - imageSize: The size of the image that belongs to the `Photo`.
-    /// - Returns: A "maximum" zoom scale that >= `minimumZoomScale`.
-    @objc(maximumZoomScaleForPhoto:minimumZoomScale:imageSize:)
-    public func maximumZoomScale(for photo: PhotoProtocol, minimumZoomScale: CGFloat, imageSize: CGSize) -> CGFloat {
         return self.delegate?.photosViewController?(self,
                                                     maximumZoomScaleFor: photo,
                                                     minimumZoomScale: minimumZoomScale,
                                                     imageSize: imageSize) ?? .leastNormalMagnitude
-    }
-    
-    /// Called when the action button is tapped for a photo. If you override this and fail to call super, the corresponding
-    /// delegate method **will not be called!**
-    ///
-    /// - Parameters:
-    ///   - photo: The related `Photo`.
-    /// 
-    /// - Returns:
-    ///   true if the action button tap was handled, false if the default action button behavior
-    ///   should be invoked.
-    @objc(handleActionButtonTappedForPhoto:)
-    public func handleActionButtonTapped(photo: PhotoProtocol) -> Bool {
-        if let _ = self.delegate?.photosViewController?(self, handleActionButtonTappedFor: photo) {
-            return true
-        }
-        
-        return false
-    }
-    
-    /// Called when an action button action is completed. If you override this and fail to call super, the corresponding
-    /// delegate method **will not be called!**
-    ///
-    /// - Parameters:
-    ///   - photo: The related `Photo`.
-    /// - Note: This is only called for the default action.
-    @objc(actionCompletedWithActivityType:forPhoto:)
-    public func actionCompleted(activityType: UIActivityType, for photo: PhotoProtocol) {
-        self.delegate?.photosViewController?(self, actionCompletedWith: activityType, for: photo)
     }
     
     // MARK: - NetworkIntegrationDelegate
