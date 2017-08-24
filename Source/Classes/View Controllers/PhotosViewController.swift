@@ -833,7 +833,7 @@ import MobileCoreServices
     ///   - photo: The `Photo` that was navigated to.
     ///   - index: The `index` in the dataSource of the `Photo` being transitioned to.
     @objc(didNavigateToPhoto:atIndex:)
-    public func didNavigateTo(photo: PhotoProtocol, at index: Int) {
+    open func didNavigateTo(photo: PhotoProtocol, at index: Int) {
         self.delegate?.photosViewController?(self, didNavigateTo: photo, at: index)
     }
     
@@ -848,7 +848,7 @@ import MobileCoreServices
     ///   - index: The index of the `Photo` that the overlay is being configured for.
     ///   - totalNumberOfPhotos: The total number of photos in the current `dataSource`.
     @objc(willUpdateOverlayView:forPhoto:atIndex:totalNumberOfPhotos:)
-    public func willUpdate(overlayView: OverlayView, for photo: PhotoProtocol, at index: Int, totalNumberOfPhotos: Int) {
+    open func willUpdate(overlayView: OverlayView, for photo: PhotoProtocol, at index: Int, totalNumberOfPhotos: Int) {
         self.delegate?.photosViewController?(self,
                                              willUpdate: overlayView,
                                              for: photo,
@@ -869,7 +869,7 @@ import MobileCoreServices
     ///   - imageSize: The size of the image that belongs to the `Photo`.
     /// - Returns: A "maximum" zoom scale that >= `minimumZoomScale`.
     @objc(maximumZoomScaleForPhoto:minimumZoomScale:imageSize:)
-    public func maximumZoomScale(for photo: PhotoProtocol, minimumZoomScale: CGFloat, imageSize: CGSize) -> CGFloat {
+    open func maximumZoomScale(for photo: PhotoProtocol, minimumZoomScale: CGFloat, imageSize: CGSize) -> CGFloat {
         return self.delegate?.photosViewController?(self,
                                                     maximumZoomScaleFor: photo,
                                                     minimumZoomScale: minimumZoomScale,
@@ -886,7 +886,7 @@ import MobileCoreServices
     ///   true if the action button tap was handled, false if the default action button behavior
     ///   should be invoked.
     @objc(handleActionButtonTappedForPhoto:)
-    public func handleActionButtonTapped(photo: PhotoProtocol) -> Bool {
+    open func handleActionButtonTapped(photo: PhotoProtocol) -> Bool {
         if let _ = self.delegate?.photosViewController?(self, handleActionButtonTappedFor: photo) {
             return true
         }
@@ -901,7 +901,7 @@ import MobileCoreServices
     ///   - photo: The related `Photo`.
     /// - Note: This is only called for the default action.
     @objc(actionCompletedWithActivityType:forPhoto:)
-    public func actionCompleted(activityType: UIActivityType, for photo: PhotoProtocol) {
+    open func actionCompleted(activityType: UIActivityType, for photo: PhotoProtocol) {
         self.delegate?.photosViewController?(self, actionCompletedWith: activityType, for: photo)
     }
     
