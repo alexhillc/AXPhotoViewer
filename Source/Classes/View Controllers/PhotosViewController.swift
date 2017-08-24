@@ -722,7 +722,7 @@ import MobileCoreServices
             self.currentPhotoIndex = highIndex
             
             if let photo = self.dataSource.photo(at: highIndex) {
-                self.delegate?.photosViewController?(self, didNavigateTo: photo, at: highIndex)
+                self.didNavigateTo(photo: photo, at: highIndex)
             }
         }
         
@@ -871,9 +871,9 @@ import MobileCoreServices
     @objc(maximumZoomScaleForPhoto:minimumZoomScale:imageSize:)
     public func maximumZoomScale(for photo: PhotoProtocol, minimumZoomScale: CGFloat, imageSize: CGSize) -> CGFloat {
         return self.delegate?.photosViewController?(self,
-                                             maximumZoomScaleFor: photo,
-                                             minimumZoomScale: minimumZoomScale,
-                                             imageSize: imageSize) ?? .leastNormalMagnitude
+                                                    maximumZoomScaleFor: photo,
+                                                    minimumZoomScale: minimumZoomScale,
+                                                    imageSize: imageSize) ?? .leastNormalMagnitude
     }
     
     /// Called when the action button is tapped for a photo. If you override this and fail to call super, the corresponding
