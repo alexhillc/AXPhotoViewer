@@ -1,3 +1,6 @@
+# 1.2.6
+- Identical to v1.2.5, contains a documentation fix.
+
 # 1.2.5
 - **[NEW]** Subclassability of PhotosViewControllerDelegate methods (contrib: @justindhill)
 

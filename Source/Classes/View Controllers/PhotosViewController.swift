@@ -829,7 +829,6 @@ import MobileCoreServices
     /// If you override this and fail to call super, the corresponding delegate method **will not be called!**
     ///
     /// - Parameters:
-    ///   - photosViewController: The `PhotosViewController` that is navigating.
     ///   - photo: The `Photo` that was navigated to.
     ///   - index: The `index` in the dataSource of the `Photo` being transitioned to.
     @objc(didNavigateToPhoto:atIndex:)
