@@ -76,13 +76,13 @@ import MobileCoreServices
         case none, left, right
     }
     
-    var currentPhotoViewController: PhotoViewController? {
+    public var currentPhotoViewController: PhotoViewController? {
         get {
             return self.orderedViewControllers.filter({ $0.pageIndex == currentPhotoIndex }).first
         }
     }
     
-    fileprivate(set) var currentPhotoIndex: Int = 0 {
+    public fileprivate(set) var currentPhotoIndex: Int = 0 {
         didSet {
             self.updateOverlay(for: currentPhotoIndex)
         }
