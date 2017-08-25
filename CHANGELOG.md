@@ -1,3 +1,6 @@
+# 1.2.7
+- **[NEW]** Exposes `currentPhotoIndex` and `currentPhotoViewController` on the `PhotosViewController` (contrib: @justindhill)
+
 # 1.2.6
 - Identical to v1.2.5, contains a documentation fix.
 
