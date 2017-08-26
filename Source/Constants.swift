@@ -6,8 +6,8 @@
 //
 //
 
-struct Constants {
+public struct AXConstants {
     
-    static let frameAnimDuration: TimeInterval = 0.25
+    public static let frameAnimDuration: TimeInterval = 0.25
     
 }

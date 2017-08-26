@@ -1,3 +1,19 @@
+# 1.2.7
+- **[NEW]** Exposes `currentPhotoIndex` and `currentPhotoViewController` on the `PhotosViewController` (contrib: @justindhill)
+
+# 1.2.6
+- Identical to v1.2.5, contains a documentation fix.
+
+# 1.2.5
+- **[NEW]** Subclassability of PhotosViewControllerDelegate methods (contrib: @justindhill)
+
+# 1.2.4
+- **[NEW]** Animation flag for CaptionView - `PhotosViewController.overlayView.animateCaptionViewChanges`
+
+# 1.2.3
+- **[FIXED]** public -> open for overridable variables
+- **[CHANGED]** Initialize `PhotosViewController` from `PreviewingPhotosViewController` with `PhotosViewController(from:)`
+
 # 1.2.2
 - **[REMOVED]** Coder initializers
 

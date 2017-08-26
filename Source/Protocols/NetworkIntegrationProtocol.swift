@@ -15,7 +15,6 @@
     /// - Parameter photo: The photo to load.
     func loadPhoto(_ photo: PhotoProtocol)
     
-    
     /// This function should cancel the load (if possible) for the provided photo.
     ///
     /// - Parameter photo: The photo load to cancel.
