@@ -8,7 +8,7 @@
 
 import UIKit
 
-@objc(AXOverlayView) open class OverlayView: UIView, CaptionViewDelegate, UINavigationBarDelegate {
+@objc(AXOverlayView) open class OverlayView: UIView, CaptionViewDelegate {
     
     /// The caption view to be used in the overlay.
     open var captionView: CaptionViewProtocol = CaptionView() {
