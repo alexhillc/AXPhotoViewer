@@ -15,7 +15,7 @@ import UIKit
         didSet {
             (oldValue as? UIView)?.removeFromSuperview()
             
-            guard self.captionView is UIView.Type else {
+            guard self.captionView is UIView else {
                 assertionFailure("`captionView` must be a UIView.")
                 return
             }
