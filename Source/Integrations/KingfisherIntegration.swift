@@ -12,7 +12,7 @@ class KingfisherIntegration: NSObject, NetworkIntegrationProtocol {
 
     weak public var delegate: NetworkIntegrationDelegate?
 
-    fileprivate var downloadTasks = NSMapTable<PhotoProtocol, RetrieveImageTask>(keyOptions: .strongMemory, valueOptions: .strongMemory)
+    fileprivate var retrieveImageTasks = NSMapTable<PhotoProtocol, RetrieveImageTask>(keyOptions: .strongMemory, valueOptions: .strongMemory)
 
     public func loadPhoto(_ photo: PhotoProtocol) {
         if photo.imageData != nil || photo.image != nil {
@@ -28,7 +28,7 @@ class KingfisherIntegration: NSObject, NetworkIntegrationProtocol {
                 return
             }
 
-            uSelf.delegate?.networkIntegration?(uSelf, didUpdateLoadingProgress: CGFloat(totalSize / receivedSize), for: photo)
+            uSelf.delegate?.networkIntegration?(uSelf, didUpdateLoadingProgress: CGFloat(receivedSize) / CGFloat(totalSize), for: photo)
         }
 
         let completion: CompletionHandler = { [weak self] (image, error, cacheType, imageURL) in
@@ -36,12 +36,16 @@ class KingfisherIntegration: NSObject, NetworkIntegrationProtocol {
                 return
             }
 
-            self?.downloadTasks.removeObject(forKey: photo)
+            self?.retrieveImageTasks.removeObject(forKey: photo)
 
             if let error = error {
                 uSelf.delegate?.networkIntegration(uSelf, loadDidFailWith: error, for: photo)
             } else {
                 if let image = image {
+                    if let imageData = image.kf.gifRepresentation() {
+                        photo.imageData = imageData
+                    }
+                    
                     photo.image = image
                 }
 
@@ -50,26 +54,25 @@ class KingfisherIntegration: NSObject, NetworkIntegrationProtocol {
         }
 
         let task = KingfisherManager.shared.retrieveImage(with: url, options: nil, progressBlock: progress, completionHandler: completion)
-        self.downloadTasks.setObject(task, forKey: photo)
+        self.retrieveImageTasks.setObject(task, forKey: photo)
     }
 
     func cancelLoad(for photo: PhotoProtocol) {
-        guard let downloadTask = self.downloadTasks.object(forKey: photo) else {
+        guard let downloadTask = self.retrieveImageTasks.object(forKey: photo) else {
             return
         }
 
         downloadTask.cancel()
-
     }
 
     func cancelAllLoads() {
-        let enumerator = self.downloadTasks.objectEnumerator()
+        let enumerator = self.retrieveImageTasks.objectEnumerator()
 
         while let downloadTask = enumerator?.nextObject() as? RetrieveImageTask {
             downloadTask.cancel()
         }
 
-        self.downloadTasks.removeAllObjects()
+        self.retrieveImageTasks.removeAllObjects()
     }
     
 }
