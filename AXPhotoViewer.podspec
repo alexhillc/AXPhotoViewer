@@ -49,4 +49,11 @@ Pod::Spec.new do |s|
     as.dependency      'AFNetworking', '>= 3.1.0'
     as.source_files  = 'Source/Integrations/AFNetworkingIntegration.swift'
   end
+
+  s.subspec 'Kingfisher' do |as|
+    as.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_KINGFISHER_SUPPORT' }
+    as.dependency      'AXPhotoViewer/Core'
+    as.dependency      'Kingfisher', '>= 3.10.0'
+    as.source_files  = 'Source/Integrations/KingfisherIntegration.swift'
+  end
 end
