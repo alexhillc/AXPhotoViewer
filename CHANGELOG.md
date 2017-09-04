@@ -1,3 +1,5 @@
+# 1.2.9
+- Adds `.swift-version`
 # 1.2.8
 - **[NEW]** `AXLoadingView` extensibility, including text customization and image customization for error views
 - **[NEW]** `AXLoadingView` call-to-action retry button
