@@ -52,10 +52,10 @@ Pod::Spec.new do |s|
     as.source_files  = 'Source/Integrations/AFNetworkingIntegration.swift'
   end
 
-  s.subspec 'Kingfisher' do |as|
-    as.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_KINGFISHER_SUPPORT' }
-    as.dependency      'AXPhotoViewer/Core'
-    as.dependency      'Kingfisher', '>= 3.10.0'
-    as.source_files  = 'Source/Integrations/KingfisherIntegration.swift'
+  s.subspec 'Kingfisher' do |ks|
+    ks.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_KINGFISHER_SUPPORT' }
+    ks.dependency      'AXPhotoViewer/Core'
+    ks.dependency      'Kingfisher', '>= 3.10.0'
+    ks.source_files  = 'Source/Integrations/KingfisherIntegration.swift'
   end
 end
