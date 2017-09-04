@@ -37,7 +37,7 @@ import MobileCoreServices
     }
     
     // MARK: - Initialization
-    #if AX_SDWEBIMAGE_SUPPORT || AX_PINREMOTEIMAGE_SUPPORT || AX_AFNETWORKING_SUPPORT || AX_LITE_SUPPORT
+    #if AX_SDWEBIMAGE_SUPPORT || AX_PINREMOTEIMAGE_SUPPORT || AX_AFNETWORKING_SUPPORT || AX_KINGFISHER_SUPPORT || AX_LITE_SUPPORT
     public init(dataSource: PhotosDataSource) {
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource)
@@ -69,6 +69,8 @@ import MobileCoreServices
                 uNetworkIntegration = PINRemoteImageIntegration()
             #elseif AX_AFNETWORKING_SUPPORT
                 uNetworkIntegration = AFNetworkingIntegration()
+            #elseif AX_KINGFISHER_SUPPORT
+                uNetworkIntegration = KingfisherIntegration()
             #elseif AX_LITE_SUPPORT
                 uNetworkIntegration = SimpleNetworkIntegration()
             #else

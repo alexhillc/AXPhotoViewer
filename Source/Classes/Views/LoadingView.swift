@@ -6,15 +6,33 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+import AXStateButton
+
 @objc(AXLoadingView) open class LoadingView: UIView, LoadingViewProtocol {
     
     open fileprivate(set) lazy var indicatorView: UIView = UIActivityIndicatorView(activityIndicatorStyle: .white)
     
-    fileprivate var errorLabel: UILabel?
-    fileprivate var tapGestureRecognizer: UITapGestureRecognizer?
-    fileprivate var retryHandler: (() -> Void)?
+    open fileprivate(set) var errorImageView: UIImageView?
     
-    fileprivate var errorAttributes: [NSAttributedStringKey: Any] {
+    /// The image to show in the `errorImageView` when displaying an error.
+    open var errorImage: UIImage? {
+        get {
+            let bundle = Bundle(for: type(of: self))
+            return UIImage(named: "error", in: bundle, compatibleWith: nil)
+        }
+    }
+    
+    open fileprivate(set) var errorLabel: UILabel?
+    
+    /// The error text to show when displaying an error.
+    open var errorText: String {
+        get {
+            return NSLocalizedString("An error occurred while loading this image.", comment: "AXLoadingView - error text")
+        }
+    }
+    
+    /// The attributes that will get applied to the `errorText` when displaying an error.
+    open var errorAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -34,6 +52,36 @@
         }
     }
     
+    open fileprivate(set) var retryButton: StateButton?
+    
+    /// The error text to show inside of the `retryButton` when displaying an error.
+    open var retryText: String {
+        return NSLocalizedString("Try again", comment: "AXLoadingView - retry text")
+    }
+    
+    /// The attributes that will get applied to the `retryText` when displaying an error.
+    open var retryAttributes: [NSAttributedStringKey: Any] {
+        get {
+            var fontDescriptor: UIFontDescriptor
+            if #available(iOS 10.0, *) {
+                fontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body,
+                                                                          compatibleWith: self.traitCollection)
+            } else {
+                fontDescriptor = UIFont.preferredFont(forTextStyle: .caption1).fontDescriptor
+            }
+            
+            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFont.Weight.light)
+            let textColor = UIColor.white
+            
+            return [
+                NSAttributedStringKey.font: font,
+                NSAttributedStringKey.foregroundColor: textColor
+            ]
+        }
+    }
+    
+    public fileprivate(set) var retryHandler: (() -> Void)?
+    
     public init() {
         super.init(frame: .zero)
         
@@ -52,48 +100,91 @@
     
     open override func layoutSubviews() {
         super.layoutSubviews()
-        
-        let indicatorViewSize = self.indicatorView.sizeThatFits(self.frame.size)
-        self.indicatorView.frame = CGRect(origin: CGPoint(x: floor((self.frame.size.width - indicatorViewSize.width) / 2),
-                                                          y: floor((self.frame.size.height - indicatorViewSize.height) / 2)),
-                                          size: indicatorViewSize)
-        
-        if let errorLabel = self.errorLabel, let attributedText = errorLabel.attributedText?.mutableCopy() as? NSMutableAttributedString {
-            var newAttributedText: NSAttributedString?
-            attributedText.enumerateAttribute(NSAttributedStringKey.font,
-                                              in: NSMakeRange(0, attributedText.length),
-                                              options: [], using: { [weak self] (value, range, stop) in
-                guard let oldFont = value as? UIFont else {
-                    return
-                }
-                
-                var newFontDescriptor: UIFontDescriptor
-                if #available(iOS 10.0, *) {
-                    newFontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body, compatibleWith: self?.traitCollection)
-                } else {
-                    newFontDescriptor = UIFont.preferredFont(forTextStyle: .body).fontDescriptor
-                }
-                
-                let newFont = oldFont.withSize(newFontDescriptor.pointSize)
-                attributedText.removeAttribute(NSAttributedStringKey.font, range: range)
-                attributedText.addAttribute(NSAttributedStringKey.font, value: newFont, range: range)
-                newAttributedText = attributedText.copy() as? NSAttributedString
-            })
-            
-            errorLabel.attributedText = newAttributedText
-            
-            let errorLabelSize = errorLabel.sizeThatFits(self.frame.size)
-            errorLabel.frame = CGRect(origin: CGPoint(x: floor((self.frame.size.width - errorLabelSize.width) / 2),
-                                                      y: floor((self.frame.size.height - errorLabelSize.height) / 2)),
-                                      size: errorLabelSize)
-        }
+        self.computeSize(for: self.frame.size, applySizingLayout: true)
     }
     
     open override func sizeThatFits(_ size: CGSize) -> CGSize {
-        let indicatorViewSize = self.indicatorView.sizeThatFits(size)
-        let errorLabelSize = self.errorLabel?.sizeThatFits(size) ?? .zero
-        return CGSize(width: max(indicatorViewSize.width, errorLabelSize.width),
-                      height: max(indicatorViewSize.height, errorLabelSize.height))
+        return self.computeSize(for: size, applySizingLayout: false)
+    }
+    
+    @discardableResult fileprivate func computeSize(for constrainedSize: CGSize, applySizingLayout: Bool) -> CGSize {
+        func makeAttributedStringWithAttributes(_ attributes: [NSAttributedStringKey: Any], for attributedString: NSAttributedString?) -> NSAttributedString? {
+            guard let newAttributedString = attributedString?.mutableCopy() as? NSMutableAttributedString else {
+                return attributedString
+            }
+            
+            newAttributedString.setAttributes(nil, range: NSMakeRange(0, newAttributedString.length))
+            newAttributedString.addAttributes(attributes, range: NSMakeRange(0, newAttributedString.length))
+            
+            return newAttributedString.copy() as? NSAttributedString
+        }
+        
+        let ImageViewVerticalPadding: CGFloat = 20
+        let VerticalPadding: CGFloat = 10
+        var totalHeight: CGFloat = 0
+        
+        var indicatorViewSize: CGSize = .zero
+        var errorImageViewSize: CGSize = .zero
+        var errorLabelSize: CGSize = .zero
+        var retryButtonSize: CGSize = .zero
+        if let errorLabel = self.errorLabel, let retryButton = self.retryButton {
+            if let errorImageView = self.errorImageView {
+                errorImageViewSize = errorImageView.sizeThatFits(constrainedSize)
+                totalHeight += errorImageViewSize.height
+                totalHeight += ImageViewVerticalPadding
+            }
+            
+            errorLabel.attributedText = makeAttributedStringWithAttributes(self.errorAttributes, for: errorLabel.attributedText)
+            
+            errorLabelSize = errorLabel.sizeThatFits(constrainedSize)
+            totalHeight += errorLabelSize.height
+            
+            retryButton.setAttributedTitle(makeAttributedStringWithAttributes(self.retryAttributes,
+                                                                              for: retryButton.attributedTitle(for: .normal)),
+                                           for: .normal)
+            
+            let RetryButtonLabelPadding: CGFloat = 10.0
+            retryButtonSize = retryButton.titleLabel?.sizeThatFits(constrainedSize) ?? .zero
+            retryButtonSize.width += RetryButtonLabelPadding
+            retryButtonSize.height += RetryButtonLabelPadding
+            totalHeight += retryButtonSize.height
+            totalHeight += VerticalPadding
+        } else {
+            indicatorViewSize = self.indicatorView.sizeThatFits(constrainedSize)
+            totalHeight += totalHeight
+        }
+        
+        if applySizingLayout {
+            var yOffset: CGFloat = (constrainedSize.height - totalHeight) / 2.0
+            
+            if let errorLabel = self.errorLabel, let retryButton = self.retryButton {
+                if let errorImageView = self.errorImageView {
+                    errorImageView.frame = CGRect(origin: CGPoint(x: floor((constrainedSize.width - errorImageViewSize.width) / 2),
+                                                                  y: floor(yOffset)),
+                                                  size: errorImageViewSize)
+                    yOffset += errorImageViewSize.height
+                    yOffset += ImageViewVerticalPadding
+                }
+                
+                errorLabel.frame = CGRect(origin: CGPoint(x: floor((constrainedSize.width - errorLabelSize.width) / 2),
+                                                          y: floor(yOffset)),
+                                          size: errorLabelSize)
+                
+                yOffset += errorLabelSize.height
+                yOffset += VerticalPadding
+                
+                retryButton.frame = CGRect(origin: CGPoint(x: floor((constrainedSize.width - retryButtonSize.width) / 2),
+                                                           y: floor(yOffset)),
+                                           size: retryButtonSize)
+                retryButton.setCornerRadius(retryButtonSize.height / 4.0, for: .normal)
+            } else {
+                self.indicatorView.frame = CGRect(origin: CGPoint(x: floor((constrainedSize.width - indicatorViewSize.width) / 2),
+                                                                  y: floor(yOffset)),
+                                                  size: indicatorViewSize)
+            }
+        }
+        
+        return CGSize(width: constrainedSize.width, height: totalHeight)
     }
     
     open func startLoading(initialProgress: CGFloat) {
@@ -121,25 +212,44 @@
         self.stopLoading()
         
         self.retryHandler = retryHandler
-        self.tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapAction(_:)))
-        self.addGestureRecognizer(self.tapGestureRecognizer!)
         
-        let errorText = NSLocalizedString("An error occurred while loading this image.\nTap to try again.", comment: "")
+        if let errorImage = self.errorImage {
+            self.errorImageView = UIImageView(image: errorImage)
+            self.errorImageView?.tintColor = .white
+            self.addSubview(self.errorImageView!)
+        } else {
+            self.errorImageView?.removeFromSuperview()
+            self.errorImageView = nil
+        }
         
         self.errorLabel = UILabel()
-        self.errorLabel?.attributedText = NSAttributedString(string: errorText, attributes: self.errorAttributes)
+        self.errorLabel?.attributedText = NSAttributedString(string: self.errorText, attributes: self.errorAttributes)
         self.errorLabel?.textAlignment = .center
         self.errorLabel?.numberOfLines = 3
         self.errorLabel?.textColor = .white
         self.addSubview(self.errorLabel!)
         
+        self.retryButton = StateButton()
+        self.retryButton?.controlStateAnimationTimingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionLinear)
+        self.retryButton?.controlStateAnimationDuration = 0.1
+        self.retryButton?.setAttributedTitle(NSAttributedString(string: self.retryText, attributes: self.retryAttributes),
+                                             for: .normal)
+        self.retryButton?.setBorderWidth(1.0, for: .normal)
+        self.retryButton?.setBorderColor(.white, for: .normal)
+        self.retryButton?.setAlpha(1.0, for: .normal)
+        self.retryButton?.setAlpha(0.3, for: .highlighted)
+        self.retryButton?.setTransformScale(1.0, for: .normal)
+        self.retryButton?.setTransformScale(0.95, for: .highlighted)
+        self.retryButton?.addTarget(self, action: #selector(retryButtonAction(_:)), for: .touchUpInside)
+        self.addSubview(self.retryButton!)
+        
         self.setNeedsLayout()
     }
     
     open func removeError() {
-        if let tapGestureRecognizer = self.tapGestureRecognizer {
-            self.removeGestureRecognizer(tapGestureRecognizer)
-            self.tapGestureRecognizer = nil
+        if let errorImageView = self.errorImageView {
+            errorImageView.removeFromSuperview()
+            self.errorImageView = nil
         }
         
         if let errorLabel = self.errorLabel {
@@ -147,11 +257,16 @@
             self.errorLabel = nil
         }
         
+        if let retryButton = self.retryButton {
+            retryButton.removeFromSuperview()
+            self.retryButton = nil
+        }
+        
         self.retryHandler = nil
     }
     
-    // MARK: - UITapGestureRecognizer
-    @objc fileprivate func tapAction(_ sender: UITapGestureRecognizer) {
+    // MARK: - Button actions
+    @objc fileprivate func retryButtonAction(_ sender: StateButton) {
         self.retryHandler?()
         self.retryHandler = nil
     }

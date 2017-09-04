@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name            = "AXPhotoViewer"
-  s.version         = "1.2.7"
+  s.version         = "1.2.9"
   s.license         = { :type  => 'MIT', :file => 'LICENSE.md' }
   s.summary         = "An iPhone/iPad photo gallery viewer, useful for viewing a large number of photos."
   s.homepage        = "https://github.com/alexhillc/AXPhotoViewer"
@@ -13,7 +13,9 @@ Pod::Spec.new do |s|
   s.default_subspec = 'Lite'
 
   s.subspec 'Core' do |cs|
+    cs.dependency      'AXStateButton', '>= 1.1.2'
     cs.dependency      'FLAnimatedImage', '>= 1.0.0'
+    cs.resources     = 'Assets/*.{xcassets}'
     cs.source_files  = 'Source/*.{swift,h,m}',
                        'Source/Classes/**/*.{swift,h,m}',
                        'Source/Protocols/*.{swift,h,m}',
@@ -48,5 +50,12 @@ Pod::Spec.new do |s|
     as.dependency      'AXPhotoViewer/Core'
     as.dependency      'AFNetworking', '>= 3.1.0'
     as.source_files  = 'Source/Integrations/AFNetworkingIntegration.swift'
+  end
+
+  s.subspec 'Kingfisher' do |as|
+    as.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D AX_KINGFISHER_SUPPORT' }
+    as.dependency      'AXPhotoViewer/Core'
+    as.dependency      'Kingfisher', '>= 3.10.0'
+    as.source_files  = 'Source/Integrations/KingfisherIntegration.swift'
   end
 end
