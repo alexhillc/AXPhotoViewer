@@ -1,3 +1,9 @@
+# 1.2.8
+- **[NEW]** `AXLoadingView` extensibility, including text customization and image customization for error views
+- **[NEW]** `AXLoadingView` call-to-action retry button
+- **[NEW]** `AXLoadingView` default loading error image
+- **[FIXED]** `TransitionInfo` endingView resolution could be non-nil after returning nil from the resolution block
+
 # 1.2.7
 - **[NEW]** Exposes `currentPhotoIndex` and `currentPhotoViewController` on the `PhotosViewController` (contrib: @justindhill)
 
