@@ -45,11 +45,14 @@
                 
                 if let endingView = endingView(photo, index) {
                     guard endingView.bounds != .zero else {
+                        uSelf.endingView = nil
                         assertionFailure("'endingView' has invalid geometry: \(endingView)")
                         return
                     }
                     
                     uSelf.endingView = endingView
+                } else {
+                    uSelf.endingView = nil
                 }
             }
         }

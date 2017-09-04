@@ -13,7 +13,9 @@ Pod::Spec.new do |s|
   s.default_subspec = 'Lite'
 
   s.subspec 'Core' do |cs|
+    cs.dependency      'AXStateButton', '>= 1.1.2'
     cs.dependency      'FLAnimatedImage', '>= 1.0.0'
+    cs.resources     = 'Assets/*.{xcassets}'
     cs.source_files  = 'Source/*.{swift,h,m}',
                        'Source/Classes/**/*.{swift,h,m}',
                        'Source/Protocols/*.{swift,h,m}',
