@@ -65,6 +65,8 @@ import FLAnimatedImage
     fileprivate var captionViewInitialOriginY: CGFloat = .greatestFiniteMagnitude
     fileprivate var overlayViewOriginalSuperview: UIView?
     
+    fileprivate var panGestureRecognizer: UIPanGestureRecognizer?
+    
     var supportsContextualPresentation: Bool {
         get {
             return (self.transitionInfo.startingView != nil)
@@ -98,10 +100,15 @@ import FLAnimatedImage
             panGestureRecognizer.maximumNumberOfTouches = 1
             panGestureRecognizer.delegate = self
             photosViewController.view.addGestureRecognizer(panGestureRecognizer)
+            self.panGestureRecognizer = panGestureRecognizer
         }
     }
     
     deinit {
+        if let panGestureRecognizer = self.panGestureRecognizer {
+            self.photosViewController?.view.removeGestureRecognizer(panGestureRecognizer)
+        }
+        
         NotificationCenter.default.removeObserver(self)
     }
     

@@ -315,9 +315,13 @@ import MobileCoreServices
     }
     
     deinit {
-        self.recycledViewControllers.removeLifeycleObserver(self)
-        self.orderedViewControllers.removeLifeycleObserver(self)
-        self.pageViewController.scrollView.removeContentOffsetObserver(self)
+        // this setup happens in `viewDidLoad()`
+        // if the view is never loaded, we don't need to remove any observers
+        if self.isViewLoaded {
+            self.recycledViewControllers.removeLifeycleObserver(self)
+            self.orderedViewControllers.removeLifeycleObserver(self)
+            self.pageViewController.scrollView.removeContentOffsetObserver(self)
+        }
     }
     
     open override func didReceiveMemoryWarning() {
@@ -332,6 +336,8 @@ import MobileCoreServices
     open override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.view.backgroundColor = .black
+        
         self.transitionController = PhotosTransitionController(photosViewController: self, transitionInfo: self.transitionInfo)
         self.transitionController?.delegate = self
         
@@ -343,36 +349,38 @@ import MobileCoreServices
             self.transitionController?.containerViewController = nil
         }
         
-        self.view.backgroundColor = .black
+        if self.pageViewController.view.superview == nil {
+            self.pageViewController.delegate = self
+            self.pageViewController.dataSource = (self.dataSource.numberOfPhotos > 1) ? self : nil
+            self.pageViewController.scrollView.addContentOffsetObserver(self)
+            
+            self.singleTapGestureRecognizer.numberOfTapsRequired = 1
+            self.singleTapGestureRecognizer.addTarget(self, action: #selector(singleTapAction(_:)))
+            self.pageViewController.view.addGestureRecognizer(self.singleTapGestureRecognizer)
+            
+            self.addChildViewController(self.pageViewController)
+            self.view.addSubview(self.pageViewController.view)
+            self.pageViewController.didMove(toParentViewController: self)
+            
+            self.configurePageViewController()
+        }
         
-        self.pageViewController.delegate = self
-        self.pageViewController.dataSource = (self.dataSource.numberOfPhotos > 1) ? self : nil
-        self.pageViewController.scrollView.addContentOffsetObserver(self)
+        if self.overlayView.superview == nil {
+            self.overlayView.tintColor = .white
+            self.overlayView.setShowInterface(false, animated: false)
+            
+            let closeBarButtonItem = self.closeBarButtonItem
+            closeBarButtonItem.target = self
+            closeBarButtonItem.action = #selector(closeAction(_:))
+            self.overlayView.leftBarButtonItem = closeBarButtonItem
+            
+            let actionBarButtonItem = self.actionBarButtonItem
+            actionBarButtonItem.target = self
+            actionBarButtonItem.action = #selector(shareAction(_:))
+            self.overlayView.rightBarButtonItem = actionBarButtonItem
         
-        self.singleTapGestureRecognizer.numberOfTapsRequired = 1
-        self.singleTapGestureRecognizer.addTarget(self, action: #selector(singleTapAction(_:)))
-        self.pageViewController.view.addGestureRecognizer(self.singleTapGestureRecognizer)
-        
-        self.addChildViewController(self.pageViewController)
-        self.view.addSubview(self.pageViewController.view)
-        self.pageViewController.didMove(toParentViewController: self)
-        
-        self.configurePageViewController()
-        
-        self.overlayView.tintColor = .white
-        self.overlayView.setShowInterface(false, animated: false)
-        
-        let closeBarButtonItem = self.closeBarButtonItem
-        closeBarButtonItem.target = self
-        closeBarButtonItem.action = #selector(closeAction(_:))
-        self.overlayView.leftBarButtonItem = closeBarButtonItem
-        
-        let actionBarButtonItem = self.actionBarButtonItem
-        actionBarButtonItem.target = self
-        actionBarButtonItem.action = #selector(shareAction(_:))
-        self.overlayView.rightBarButtonItem = actionBarButtonItem
-        
-        self.view.addSubview(self.overlayView)
+            self.view.addSubview(self.overlayView)
+        }
     }
     
     open override func viewDidAppear(_ animated: Bool) {
