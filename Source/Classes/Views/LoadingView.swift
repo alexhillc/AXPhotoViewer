@@ -17,7 +17,7 @@ import AXStateButton
     /// The image to show in the `errorImageView` when displaying an error.
     open var errorImage: UIImage? {
         get {
-            let bundle = Bundle(for: type(of: self))
+            let bundle = Bundle(for: LoadingView.self)
             return UIImage(named: "error", in: bundle, compatibleWith: nil)
         }
     }

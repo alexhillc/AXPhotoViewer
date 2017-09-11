@@ -31,6 +31,7 @@ import FLAnimatedImage
     var transitionInfo: TransitionInfo
     
     weak var photosViewController: PhotosViewController?
+    weak var containerViewController: UIViewController?
     
     /// The distance threshold at which the interactive controller will dismiss upon end touches.
     fileprivate let DismissalPercentThreshold: CGFloat = 0.14
@@ -63,6 +64,8 @@ import FLAnimatedImage
     fileprivate var navigationBarUnderlayInitialOriginY: CGFloat = .greatestFiniteMagnitude
     fileprivate var captionViewInitialOriginY: CGFloat = .greatestFiniteMagnitude
     fileprivate var overlayViewOriginalSuperview: UIView?
+    
+    fileprivate var panGestureRecognizer: UIPanGestureRecognizer?
     
     var supportsContextualPresentation: Bool {
         get {
@@ -97,10 +100,15 @@ import FLAnimatedImage
             panGestureRecognizer.maximumNumberOfTouches = 1
             panGestureRecognizer.delegate = self
             photosViewController.view.addGestureRecognizer(panGestureRecognizer)
+            self.panGestureRecognizer = panGestureRecognizer
         }
     }
     
     deinit {
+        if let panGestureRecognizer = self.panGestureRecognizer {
+            self.photosViewController?.view.removeGestureRecognizer(panGestureRecognizer)
+        }
+        
         NotificationCenter.default.removeObserver(self)
     }
     
@@ -118,7 +126,7 @@ import FLAnimatedImage
     }
     
     fileprivate func animatePresentation(using transitionContext: UIViewControllerContextTransitioning) {
-        guard let to = transitionContext.viewController(forKey: .to) as? PhotosViewController,
+        guard let to = transitionContext.viewController(forKey: .to),
             let from = transitionContext.viewController(forKey: .from),
             let referenceView = self.transitionInfo.startingView,
             let referenceViewCopy = self.transitionInfo.startingView?.copy() as? UIImageView else {
@@ -200,10 +208,26 @@ import FLAnimatedImage
     
     fileprivate func animateDismissal(using transitionContext: UIViewControllerContextTransitioning) {
         guard let to = transitionContext.viewController(forKey: .to),
-            let from = transitionContext.viewController(forKey: .from) as? PhotosViewController,
-            let imageView = from.currentPhotoViewController?.zoomingImageView.imageView as UIImageView? else {
+            let from = transitionContext.viewController(forKey: .from) else {
                 assertionFailure("No. ಠ_ಠ")
                 return
+        }
+        
+        var photosViewController: PhotosViewController
+        if let from = from as? PhotosViewController {
+            photosViewController = from
+        } else {
+            guard let childViewController = from.childViewControllers.filter({ $0 is PhotosViewController }).first as? PhotosViewController else {
+                assertionFailure("Could not find AXPhotosViewController in container's children.")
+                return
+            }
+            
+            photosViewController = childViewController
+        }
+        
+        guard let imageView = photosViewController.currentPhotoViewController?.zoomingImageView.imageView as UIImageView? else {
+            assertionFailure("No. ಠ_ಠ")
+            return
         }
         
         if !transitionContext.isInteractive {
@@ -244,7 +268,7 @@ import FLAnimatedImage
             referenceView.alpha = 0
         }
         
-        from.overlayView.isHidden = true
+        photosViewController.overlayView.isHidden = true
         
         var offscreenImageViewCenter: CGPoint?
         let scaleAnimations = { [weak self] () in
@@ -358,13 +382,29 @@ import FLAnimatedImage
     
     fileprivate func cancelTransition(using transitionContext: UIViewControllerContextTransitioning) {
         guard let to = transitionContext.viewController(forKey: .to),
-            let from = transitionContext.viewController(forKey: .from) as? PhotosViewController,
-            let imageView = from.currentPhotoViewController?.zoomingImageView.imageView as UIImageView? else {
+            let from = transitionContext.viewController(forKey: .from) else {
                 assertionFailure("No. ಠ_ಠ")
                 return
         }
         
-        let overlayView = from.overlayView
+        var photosViewController: PhotosViewController
+        if let from = from as? PhotosViewController {
+            photosViewController = from
+        } else {
+            guard let childViewController = from.childViewControllers.filter({ $0 is PhotosViewController }).first as? PhotosViewController else {
+                assertionFailure("Could not find AXPhotosViewController in container's children.")
+                return
+            }
+            
+            photosViewController = childViewController
+        }
+        
+        guard let imageView = photosViewController.currentPhotoViewController?.zoomingImageView.imageView as UIImageView? else {
+            assertionFailure("No. ಠ_ಠ")
+            return
+        }
+        
+        let overlayView = photosViewController.overlayView
         let animations = { [weak self] () in
             guard let uSelf = self else {
                 return
@@ -434,14 +474,30 @@ import FLAnimatedImage
         self.dismissalTransitionContext = transitionContext
         
         guard let to = transitionContext.viewController(forKey: .to),
-            let from = transitionContext.viewController(forKey: .from) as? PhotosViewController,
-            let imageView = from.currentPhotoViewController?.zoomingImageView.imageView as UIImageView? else {
+            let from = transitionContext.viewController(forKey: .from) else {
                 assertionFailure("No. ಠ_ಠ")
                 return
         }
         
+        var photosViewController: PhotosViewController
+        if let from = from as? PhotosViewController {
+            photosViewController = from
+        } else {
+            guard let childViewController = from.childViewControllers.filter({ $0 is PhotosViewController }).first as? PhotosViewController else {
+                assertionFailure("Could not find AXPhotosViewController in container's children.")
+                return
+            }
+            
+            photosViewController = childViewController
+        }
+        
+        guard let imageView = photosViewController.currentPhotoViewController?.zoomingImageView.imageView as UIImageView? else {
+            assertionFailure("No. ಠ_ಠ")
+            return
+        }
+        
         self.imageView = imageView
-        self.overlayView = from.overlayView
+        self.overlayView = photosViewController.overlayView
         
         // if we're going to force an immediate dismissal, we can just return here
         // this setup will be done in `animateDismissal(_:)`
@@ -468,7 +524,7 @@ import FLAnimatedImage
         transitionContext.containerView.addSubview(imageView)
         self.imageViewInitialCenter = imageView.center
         
-        let overlayView = from.overlayView
+        let overlayView = photosViewController.overlayView
         self.overlayViewOriginalSuperview = overlayView.superview
         overlayView.frame = transitionContext.containerView.convert(overlayView.frame, from: overlayView.superview)
         transitionContext.containerView.addSubview(overlayView)
@@ -493,8 +549,15 @@ import FLAnimatedImage
     
     // MARK: - Interaction handling
     @objc fileprivate func panAction(_ sender: UIPanGestureRecognizer) {
-        guard let photosViewController = self.photosViewController,
-            self.supportsModalPresentationStyle(photosViewController.modalPresentationStyle) else {
+        var containingViewController: UIViewController?
+        if let containerViewController = self.containerViewController {
+            containingViewController = containerViewController
+        } else if let photosViewController = self.photosViewController {
+            containingViewController = photosViewController
+        }
+        
+        guard let uContainingViewController = containingViewController,
+            self.supportsModalPresentationStyle(uContainingViewController.modalPresentationStyle) else {
             return
         }
         
@@ -504,12 +567,12 @@ import FLAnimatedImage
         switch sender.state {
         case .began:
             self.overlayView = nil
-            photosViewController.presentingViewController?.dismiss(animated: true, completion: {
+            uContainingViewController.presentingViewController?.dismiss(animated: true, completion: {
                 sender.isEnabled = true
             })
             
             let endingOrientation = UIApplication.shared.statusBarOrientation
-            let startingOrientation = endingOrientation.by(transforming: photosViewController.view.transform)
+            let startingOrientation = endingOrientation.by(transforming: uContainingViewController.view.transform)
             
             let shouldForceImmediateInteractiveDismissal = (startingOrientation != endingOrientation)
             if shouldForceImmediateInteractiveDismissal {

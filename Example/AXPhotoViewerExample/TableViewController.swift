@@ -174,10 +174,17 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate, 
             return cell.contentView.viewWithTag(666) as? FLAnimatedImageView
         }
         
+        let container = UIViewController()
+        
         let dataSource = PhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row)
-//        let pagingConfig = PagingConfig(loadingViewClass: CustomLoadingView.self)
-        let photosViewController = PhotosViewController(dataSource: dataSource, pagingConfig: nil, transitionInfo: transitionInfo)
+        let pagingConfig = PagingConfig(loadingViewClass: CustomLoadingView.self)
+        let photosViewController = PhotosViewController(dataSource: dataSource, pagingConfig: pagingConfig, transitionInfo: transitionInfo)
+//        photosViewController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         photosViewController.delegate = self
+        
+//        container.addChildViewController(photosViewController)
+//        container.view.addSubview(photosViewController.view)
+//        photosViewController.didMove(toParentViewController: container)
         
         self.present(photosViewController, animated: true)
     }

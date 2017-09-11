@@ -1,3 +1,8 @@
+# 1.2.10
+- **[FIXED]** `AXLoadingView` subclass would fetch the incorrect asset bundle when searching for default error assets
+- **[NEW]** `AXPhotosViewController` now supports being embedded in a fullscreen container and upholding its responsibility as a `UIViewControllerTransitioningDelegate`
+- **[FIXED]** #12 (https://github.com/alexhillc/AXPhotoViewer/issues/12), an issue related to lifecycle methods not behaving as expected
+
 # 1.2.9
 - Adds `.swift-version`
 # 1.2.8
