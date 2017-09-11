@@ -71,11 +71,6 @@ import MobileCoreServices
     /// - Initialized by the end of `commonInit(dataSource:pagingConfig:transitionInfo:networkIntegration:)`.
     public fileprivate(set) var networkIntegration: NetworkIntegrationProtocol!
     
-    // MARK: - Private/internal variables
-    fileprivate enum SwipeDirection {
-        case none, left, right
-    }
-    
     /// The view controller containing the photo currently being shown.
     public var currentPhotoViewController: PhotoViewController? {
         get {
@@ -87,6 +82,28 @@ import MobileCoreServices
     public fileprivate(set) var currentPhotoIndex: Int = 0 {
         didSet {
             self.updateOverlay(for: currentPhotoIndex)
+        }
+    }
+    
+    // MARK: - Private/internal variables
+    fileprivate enum SwipeDirection {
+        case none, left, right
+    }
+    
+    /// If the `PhotosViewController` is being presented in a fullscreen container, this value is set when the `PhotosViewController`
+    /// is added to a parent view controller to allow `PhotosViewController` to be its transitioning delegate.
+    fileprivate weak var containerViewController: UIViewController? {
+        didSet {
+            oldValue?.transitioningDelegate = nil
+            
+            if let containerViewController = self.containerViewController {
+                containerViewController.transitioningDelegate = self
+                self.transitioningDelegate = nil
+                self.transitionController?.containerViewController = containerViewController
+            } else {
+                self.transitioningDelegate = self
+                self.transitionController?.containerViewController = nil
+            }
         }
     }
     
@@ -317,7 +334,14 @@ import MobileCoreServices
         
         self.transitionController = PhotosTransitionController(photosViewController: self, transitionInfo: self.transitionInfo)
         self.transitionController?.delegate = self
-        self.transitioningDelegate = self
+        
+        if let containerViewController = self.containerViewController {
+            containerViewController.transitioningDelegate = self
+            self.transitionController?.containerViewController = containerViewController
+        } else {
+            self.transitioningDelegate = self
+            self.transitionController?.containerViewController = nil
+        }
         
         self.view.backgroundColor = .black
         
@@ -379,6 +403,17 @@ import MobileCoreServices
                                                      left: 0,
                                                      bottom: 0, 
                                                      right: 0)
+    }
+    
+    open override func didMove(toParentViewController parent: UIViewController?) {
+        super.didMove(toParentViewController: parent)
+        
+        if parent is UINavigationController {
+            assertionFailure("Do not embed `PhotosViewController` in a navigation stack.")
+            return
+        }
+        
+        self.containerViewController = parent
     }
 
     // MARK: - UIViewControllerTransitioningDelegate, PhotosViewControllerTransitionAnimatorDelegate, PhotosViewControllerTransitionAnimatorDelegate
