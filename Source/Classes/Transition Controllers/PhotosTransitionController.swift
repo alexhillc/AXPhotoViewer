@@ -107,9 +107,7 @@ import FLAnimatedImage
     deinit {
         if let panGestureRecognizer = self.panGestureRecognizer {
             self.photosViewController?.view.removeGestureRecognizer(panGestureRecognizer)
-        }
-        
-        NotificationCenter.default.removeObserver(self)
+        }        
     }
     
     // MARK: - UIViewControllerAnimatedTransitioning
