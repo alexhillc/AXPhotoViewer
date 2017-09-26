@@ -45,7 +45,7 @@ import MobileCoreServices
     /// The internal tap gesture recognizer that is used to hide/show the overlay interface.
     public let singleTapGestureRecognizer = UITapGestureRecognizer()
     
-    /// The close bar button item that is initially set in the overlay's navigation bar. Any 'target' or 'action' provided to this button will be overwritten.
+    /// The close bar button item that is initially set in the overlay's toolbar. Any 'target' or 'action' provided to this button will be overwritten.
     /// Overriding this is purely for customizing the look and feel of the button.
     /// Alternatively, you may create your own `UIBarButtonItem`s and directly set them _and_ their actions on the `overlayView` property.
     open var closeBarButtonItem: UIBarButtonItem {
@@ -54,7 +54,7 @@ import MobileCoreServices
         }
     }
     
-    /// The action bar button item that is initially set in the overlay's navigation bar. Any 'target' or 'action' provided to this button will be overwritten.
+    /// The action bar button item that is initially set in the overlay's toolbar. Any 'target' or 'action' provided to this button will be overwritten.
     /// Overriding this is purely for customizing the look and feel of the button.
     /// Alternatively, you may create your own `UIBarButtonItem`s and directly set them _and_ their actions on the `overlayView` property.
     open var actionBarButtonItem: UIBarButtonItem {
@@ -414,6 +414,7 @@ import MobileCoreServices
         super.viewWillLayoutSubviews()
         self.pageViewController.view.frame = self.view.bounds
         self.overlayView.frame = self.view.bounds
+        self.updateOverlayInsets()
     }
     
     open override func didMove(toParentViewController parent: UIViewController?) {
@@ -484,7 +485,6 @@ import MobileCoreServices
     fileprivate func configurePageViewController() {
         func configure(with viewController: UIViewController, pageIndex: Int) {
             self.pageViewController.setViewControllers([viewController], direction: .forward, animated: false, completion: nil)
-            self.overlayView.ignoresInternalTitle = false
             self.currentPhotoIndex = pageIndex
             self.overlayView.titleView?.tweenBetweenLowIndex?(pageIndex, highIndex: pageIndex + 1, percent: 0)
         }
@@ -512,9 +512,21 @@ import MobileCoreServices
             self.overlayView.internalTitle = nil
         }
         
-        self.overlayView.captionView.applyCaptionInfo(attributedTitle: photo.attributedTitle ?? nil,
-                                                      attributedDescription: photo.attributedDescription ?? nil,
-                                                      attributedCredit: photo.attributedCredit ?? nil)
+        self.overlayView.updateCaptionView(photo: photo)
+    }
+    
+    fileprivate func updateOverlayInsets() {
+        var contentInset: UIEdgeInsets
+        if #available(iOS 11.0, *) {
+            contentInset = self.view.safeAreaInsets
+        } else {
+            contentInset = UIEdgeInsets(top: (UIApplication.shared.statusBarFrame.size.height > 0) ? 20 : 0,
+                                        left: 0,
+                                        bottom: 0,
+                                        right: 0)
+        }
+        
+        self.overlayView.contentInset = contentInset
     }
     
     @objc fileprivate func singleTapAction(_ sender: UITapGestureRecognizer) {
@@ -529,10 +541,7 @@ import MobileCoreServices
         self.setNeedsStatusBarAppearanceUpdate()
         if show {
             UIView.performWithoutAnimation { [weak self] in
-                self?.overlayView.contentInset = UIEdgeInsets(top: (UIApplication.shared.statusBarFrame.size.height > 0) ? 20 : 0,
-                                                              left: 0,
-                                                              bottom: 0,
-                                                              right: 0)
+                self?.updateOverlayInsets()
                 self?.overlayView.setNeedsLayout()
                 self?.overlayView.layoutIfNeeded()
             }
@@ -576,6 +585,10 @@ import MobileCoreServices
     }
     
     @objc public func closeAction(_ sender: UIBarButtonItem) {
+        if self.isBeingDismissed {
+            return
+        }
+        
         self.isForcingNonInteractiveDismissal = true
         self.presentingViewController?.dismiss(animated: true)
     }

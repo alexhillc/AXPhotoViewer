@@ -60,9 +60,8 @@ import FLAnimatedImage
     fileprivate var imageViewOriginalSuperview: UIView?
     
     weak fileprivate var overlayView: OverlayView?
-    fileprivate var navigationBarInitialOriginY: CGFloat = .greatestFiniteMagnitude
-    fileprivate var navigationBarUnderlayInitialOriginY: CGFloat = .greatestFiniteMagnitude
-    fileprivate var captionViewInitialOriginY: CGFloat = .greatestFiniteMagnitude
+    fileprivate var topStackContainerInitialOriginY: CGFloat = .greatestFiniteMagnitude
+    fileprivate var bottomStackContainerInitialOriginY: CGFloat = .greatestFiniteMagnitude
     fileprivate var overlayViewOriginalSuperview: UIView?
     
     fileprivate var panGestureRecognizer: UIPanGestureRecognizer?
@@ -409,9 +408,8 @@ import FLAnimatedImage
             }
             
             imageView.center.y = uSelf.imageViewInitialCenter.y
-            overlayView.navigationBar.frame.origin.y = uSelf.navigationBarInitialOriginY
-            overlayView.navigationBarUnderlay.frame.origin.y = uSelf.navigationBarUnderlayInitialOriginY
-            (overlayView.captionView as? UIView)?.frame.origin.y = uSelf.captionViewInitialOriginY
+            overlayView.topStackContainer.frame.origin.y = uSelf.topStackContainerInitialOriginY
+            overlayView.bottomStackContainer.frame.origin.y = uSelf.bottomStackContainerInitialOriginY
             
             to.view.alpha = 0
         }
@@ -441,9 +439,8 @@ import FLAnimatedImage
             uSelf.imageViewInitialCenter = .zero
             uSelf.imageViewOriginalSuperview = nil
             
-            uSelf.navigationBarInitialOriginY = .greatestFiniteMagnitude
-            uSelf.navigationBarUnderlayInitialOriginY = .greatestFiniteMagnitude
-            uSelf.captionViewInitialOriginY = .greatestFiniteMagnitude
+            uSelf.topStackContainerInitialOriginY = .greatestFiniteMagnitude
+            uSelf.bottomStackContainerInitialOriginY = .greatestFiniteMagnitude
             uSelf.overlayViewOriginalSuperview = nil
             
             uSelf.dismissalPercent = 0
@@ -527,9 +524,8 @@ import FLAnimatedImage
         overlayView.frame = transitionContext.containerView.convert(overlayView.frame, from: overlayView.superview)
         transitionContext.containerView.addSubview(overlayView)
         
-        self.navigationBarInitialOriginY = overlayView.navigationBar.frame.origin.y
-        self.navigationBarUnderlayInitialOriginY = overlayView.navigationBarUnderlay.frame.origin.y
-        self.captionViewInitialOriginY = (overlayView.captionView as? UIView)?.frame.origin.y ?? 0
+        self.topStackContainerInitialOriginY = overlayView.topStackContainer.frame.origin.y
+        self.bottomStackContainerInitialOriginY = overlayView.bottomStackContainer.frame.origin.y
         
         from.view.alpha = 0
         
@@ -588,9 +584,8 @@ import FLAnimatedImage
                 guard let uSelf = self,
                     let transitionContext = uSelf.dismissalTransitionContext,
                     let to = transitionContext.viewController(forKey: .to),
-                    let navigationBar = uSelf.overlayView?.navigationBar,
-                    let navigationBarUnderlay = uSelf.overlayView?.navigationBarUnderlay,
-                    let captionView = uSelf.overlayView?.captionView as? UIView else {
+                    let topStackContainer = uSelf.overlayView?.topStackContainer,
+                    let bottomStackContainer = uSelf.overlayView?.bottomStackContainer else {
                         assertionFailure("No. ಠ_ಠ")
                         return
                 }
@@ -604,25 +599,22 @@ import FLAnimatedImage
                 // this feels right-ish
                 let dismissalRatio = (1.2 * uSelf.dismissalPercent / uSelf.DismissalPercentThreshold)
                 
-                let navigationBarOriginY = max(uSelf.navigationBarInitialOriginY - navigationBarUnderlay.frame.size.height,
-                                               uSelf.navigationBarInitialOriginY - (navigationBarUnderlay.frame.size.height * dismissalRatio))
-                let navigationBarUnderlayOriginY = max(uSelf.navigationBarUnderlayInitialOriginY - navigationBarUnderlay.frame.size.height,
-                                                       uSelf.navigationBarUnderlayInitialOriginY - (navigationBarUnderlay.frame.size.height * dismissalRatio))
-                let captionViewOriginY = min(uSelf.captionViewInitialOriginY + captionView.frame.size.height,
-                                             uSelf.captionViewInitialOriginY + (captionView.frame.size.height * dismissalRatio))
+                let topStackContainerOriginY = max(uSelf.topStackContainerInitialOriginY - topStackContainer.frame.size.height,
+                                               uSelf.topStackContainerInitialOriginY - (topStackContainer.frame.size.height * dismissalRatio))
+                let bottomStackContainerOriginY = min(uSelf.bottomStackContainerInitialOriginY + bottomStackContainer.frame.size.height,
+                                             uSelf.bottomStackContainerInitialOriginY + (bottomStackContainer.frame.size.height * dismissalRatio))
                 let imageViewCenterY = uSelf.imageViewInitialCenter.y + translation.y
                 
                 UIView.performWithoutAnimation {
-                    navigationBar.frame.origin.y = navigationBarOriginY
-                    navigationBarUnderlay.frame.origin.y = navigationBarUnderlayOriginY
-                    captionView.frame.origin.y = captionViewOriginY
+                    topStackContainer.frame.origin.y = topStackContainerOriginY
+                    bottomStackContainer.frame.origin.y = bottomStackContainerOriginY
                     uSelf.imageView?.center.y = imageViewCenterY
                 }
                 
                 to.view.alpha = 1 * min(1, dismissalRatio)
             }
             
-            guard self.overlayView != nil else {
+            if self.imageView == nil || self.overlayView == nil {
                 self.pendingAnimations.append(animation)
                 return
             }
@@ -635,9 +627,8 @@ import FLAnimatedImage
             let animation = { [weak self] in
                 guard let uSelf = self,
                     let transitionContext = uSelf.dismissalTransitionContext,
-                    let _ = uSelf.overlayView?.navigationBar,
-                    let _ = uSelf.overlayView?.navigationBarUnderlay,
-                    let _ = uSelf.overlayView?.captionView as? UIView else {
+                    let _ = uSelf.overlayView?.topStackContainer,
+                    let _ = uSelf.overlayView?.bottomStackContainer else {
                         return
                 }
                 
@@ -648,8 +639,8 @@ import FLAnimatedImage
                 }
             }
             
-            // `overlayView` is set in `startInteractiveTransition(_:)`
-            guard self.overlayView != nil else {
+            // `imageView`, `overlayView` set in `startInteractiveTransition(_:)`
+            if self.imageView == nil || self.overlayView == nil {
                 self.pendingAnimations.append(animation)
                 return
             }

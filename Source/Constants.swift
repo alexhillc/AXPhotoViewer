@@ -9,5 +9,6 @@
 public struct AXConstants {
     
     public static let frameAnimDuration: TimeInterval = 0.25
-    
+    public static let defaultOverlayForegroundColor = UIColor.black.withAlphaComponent(0.6)
+
 }

@@ -1,15 +1,17 @@
 PODS:
-  - AXPhotoViewer (1.2.1):
-    - AXPhotoViewer/Lite (= 1.2.1)
-  - AXPhotoViewer/Core (1.2.1):
+  - AXPhotoViewer (1.2.10):
+    - AXPhotoViewer/Lite (= 1.2.10)
+  - AXPhotoViewer/Core (1.2.10):
+    - AXStateButton (>= 1.1.3)
     - FLAnimatedImage (>= 1.0.0)
-  - AXPhotoViewer/Lite (1.2.1):
+  - AXPhotoViewer/Lite (1.2.10):
     - AXPhotoViewer/Core
-  - DRPLoadingSpinner (1.3.0):
-    - DRPLoadingSpinner/core (= 1.3.0)
-  - DRPLoadingSpinner/core (1.3.0)
+  - AXStateButton (1.1.3)
+  - DRPLoadingSpinner (1.3.1):
+    - DRPLoadingSpinner/core (= 1.3.1)
+  - DRPLoadingSpinner/core (1.3.1)
   - FLAnimatedImage (1.0.12)
-  - Reveal-SDK (8)
+  - Reveal-SDK (11)
 
 DEPENDENCIES:
   - AXPhotoViewer (from `../AXPhotoViewer.podspec`)
@@ -18,14 +20,15 @@ DEPENDENCIES:
 
 EXTERNAL SOURCES:
   AXPhotoViewer:
-    :path: "../AXPhotoViewer.podspec"
+    :path: ../AXPhotoViewer.podspec
 
 SPEC CHECKSUMS:
-  AXPhotoViewer: 438426ae37e06b421b34c4463834018328c3a9d1
-  DRPLoadingSpinner: ea8edd542a61da6fae3ec868676a5c8b3072dcf7
+  AXPhotoViewer: 23425890c332a34c89ce95100bea4e21e4fd93d6
+  AXStateButton: b42f7132f4d8232fc342d004e4738b84923a93e9
+  DRPLoadingSpinner: 725e530bf4ebe2cc351b1fbc94d24fe8ac3300fd
   FLAnimatedImage: 4a0b56255d9b05f18b6dd7ee06871be5d3b89e31
-  Reveal-SDK: 43be4e662864e937960d0d04d005135e29c4e53b
+  Reveal-SDK: 7fa13d04bb55db61ff2342a990cf731d5159361d
 
 PODFILE CHECKSUM: 1a5082e76b10da00185af6bc764589b7a551e257
 
-COCOAPODS: 1.2.1
+COCOAPODS: 1.3.1

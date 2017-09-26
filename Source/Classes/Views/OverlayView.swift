@@ -8,19 +8,24 @@
 
 import UIKit
 
-@objc(AXOverlayView) open class OverlayView: UIView, CaptionViewDelegate {
+@objc(AXOverlayView) open class OverlayView: UIView, StackableViewContainerDelegate {
     
     /// The caption view to be used in the overlay.
     open var captionView: CaptionViewProtocol = CaptionView() {
         didSet {
-            (oldValue as? UIView)?.removeFromSuperview()
+            guard let oldCaptionView = oldValue as? UIView else {
+                assertionFailure("`oldCaptionView` must be a UIView.")
+                return
+            }
             
-            guard self.captionView is UIView else {
+            guard let captionView = self.captionView as? UIView else {
                 assertionFailure("`captionView` must be a UIView.")
                 return
             }
             
-            self.captionView.delegate = self
+            let index = self.bottomStackContainer.subviews.index(of: oldCaptionView)
+            oldCaptionView.removeFromSuperview()
+            self.bottomStackContainer.insertSubview(captionView, at: index ?? 0)
             self.setNeedsLayout()
         }
     }
@@ -32,140 +37,140 @@ import UIKit
         }
     }
     
-    /// The title view displayed in the navigation bar. This view is sized and centered between the `leftBarButtonItems` and `rightBarButtonItems`.
+    /// The title view displayed in the toolbar. This view is sized and centered between the `leftBarButtonItems` and `rightBarButtonItems`.
     /// This is prioritized over `title`.
     public var titleView: OverlayTitleViewProtocol? {
-        set(value) {
-            if let uValue = value {
-                guard let view = uValue as? UIView else {
-                    assertionFailure("`titleView` must be a UIView.")
-                    self.navigationItem.titleView = nil
-                    return
-                }
-                
-                self.navigationItem.titleView = view
-            } else {
-                self.navigationItem.titleView = nil
-            }
-        }
-        get {
-            return self.navigationItem.titleView as? OverlayTitleViewProtocol
-        }
-    }
-    
-    /// The title displayed in the navigation bar. This string is centered between the `leftBarButtonItems` and `rightBarButtonItems`.
-    /// Overwrites `internalTitle`.
-    public var title: String? {
-        set(value) {
-            self.ignoresInternalTitle = true
-            self.navigationItem.title = value
-        }
-        get {
-            return self.ignoresInternalTitle ? self.navigationItem.title : nil
-        }
-    }
-    
-    /// The title displayed in the navigation bar. This string is centered between the `leftBarButtonItems` and `rightBarButtonItems`.
-    /// This is used internally by the library to set a default title. Overwritten by `title`.
-    var internalTitle: String? {
-        set(value) {
-            if self.ignoresInternalTitle {
+        didSet {
+            assert(self.titleView == nil ? true : self.titleView is UIView, "`titleView` must be a UIView.")
+            
+            if self.window == nil {
                 return
             }
             
-            self.navigationItem.title = value
-        }
-        get {
-            return self.ignoresInternalTitle ? nil : self.navigationItem.title
+            self.updateToolbarBarButtonItems()
         }
     }
     
-    /// Flag that is set when `title` is set. Used by the setter/getter of `internalTitle` to determine whether or not to take action.
-    var ignoresInternalTitle: Bool = false
+    /// The bar button item used internally to display the `titleView` attribute in the toolbar.
+    var titleViewBarButtonItem: UIBarButtonItem?
+    
+    /// The title displayed in the toolbar. This string is centered between the `leftBarButtonItems` and `rightBarButtonItems`.
+    /// Overwrites `internalTitle`.
+    public var title: String? {
+        didSet {
+            self.updateTitleBarButtonItem()
+        }
+    }
+    
+    /// The title displayed in the toolbar. This string is centered between the `leftBarButtonItems` and `rightBarButtonItems`.
+    /// This is used internally by the library to set a default title. Overwritten by `title`.
+    var internalTitle: String? {
+        didSet {
+            self.updateTitleBarButtonItem()
+        }
+    }
     
     /// The title text attributes inherited by the `title`.
     public var titleTextAttributes: [NSAttributedStringKey: Any]? {
-        set(value) {
-            self.navigationBar.titleTextAttributes = value
-        }
-        get {
-            return self.navigationBar.titleTextAttributes
+        didSet {
+            if self.window == nil {
+                return
+            }
+            
+            self.updateToolbarBarButtonItems()
         }
     }
+    
+    /// The bar button item used internally to display the `title` attribute in the toolbar.
+    let titleBarButtonItem = UIBarButtonItem(customView: UILabel())
     
     /// The bar button item that appears in the top left corner of the overlay.
     public var leftBarButtonItem: UIBarButtonItem? {
         set(value) {
-            self.navigationItem.setLeftBarButton(value, animated: false)
+            if let value = value {
+                self.leftBarButtonItems = [value]
+            } else {
+                self.leftBarButtonItems = nil
+            }
         }
         get {
-            return self.navigationItem.leftBarButtonItem
+            return self.leftBarButtonItems?.first
         }
     }
     
     /// The bar button items that appear in the top left corner of the overlay.
     public var leftBarButtonItems: [UIBarButtonItem]? {
-        set(value) {
-            self.navigationItem.setLeftBarButtonItems(value, animated: false)
-        }
-        get {
-            return self.navigationItem.leftBarButtonItems
+        didSet {
+            if self.window == nil {
+                return
+            }
+            
+            self.updateToolbarBarButtonItems()
         }
     }
 
     /// The bar button item that appears in the top right corner of the overlay.
     public var rightBarButtonItem: UIBarButtonItem? {
         set(value) {
-            self.navigationItem.setRightBarButton(value, animated: false)
+            if let value = value {
+                self.rightBarButtonItems = [value]
+            } else {
+                self.rightBarButtonItems = nil
+            }
         }
         get {
-            return self.navigationItem.rightBarButtonItem
+            return self.rightBarButtonItems?.first
         }
     }
     
     /// The bar button items that appear in the top right corner of the overlay.
     public var rightBarButtonItems: [UIBarButtonItem]? {
-        set(value) {
-            self.navigationItem.setRightBarButtonItems(value, animated: false)
-        }
-        get {
-            return self.navigationItem.rightBarButtonItems
+        didSet {
+            if self.window == nil {
+                return
+            }
+            
+            self.updateToolbarBarButtonItems()
         }
     }
     
-    /// The navigation bar used to set the `titleView`, `leftBarButtonItems`, `rightBarButtonItems`
-    open let navigationBar = UINavigationBar()
-    open let navigationBarUnderlay = UIView()
-    
-    /// The underlying `UINavigationItem` used for setting the `titleView`, `leftBarButtonItems`, `rightBarButtonItems`.
-    fileprivate var navigationItem = UINavigationItem()
+    /// The toolbar used to set the `titleView`, `leftBarButtonItems`, `rightBarButtonItems`
+    public let toolbar = UIToolbar(frame: CGRect(origin: .zero, size: CGSize(width: 320, height: 44)))
     
     /// The inset of the contents of the `OverlayView`. Use this property to adjust layout for things such as status bar height.
     /// For internal use only.
     var contentInset: UIEdgeInsets = .zero
+    
+    /// Container to embed all content anchored at the top of the `overlayView`.
+    /// Add custom subviews to the top container in the order that you wish to stack them. These must be self-sizing views.
+    public var topStackContainer: StackableViewContainer!
+    
+    /// Container to embed all content anchored at the bottom of the `overlayView`.
+    /// Add custom subviews to the bottom container in the order that you wish to stack them. These must be self-sizing views.
+    public var bottomStackContainer: StackableViewContainer!
     
     fileprivate var isFirstLayout: Bool = true
     
     init() {
         super.init(frame: .zero)
         
-        self.captionView.delegate = self
+        self.toolbar.backgroundColor = .clear
+        self.toolbar.setBackgroundImage(UIImage(), forToolbarPosition: .any, barMetrics: .default)
+        
+        self.topStackContainer = StackableViewContainer(views: [self.toolbar], anchoredAt: .top)
+        self.topStackContainer.backgroundColor = AXConstants.defaultOverlayForegroundColor
+        self.topStackContainer.delegate = self
+        self.addSubview(self.topStackContainer)
+        
+        self.bottomStackContainer = StackableViewContainer(views: [], anchoredAt: .bottom)
+        self.bottomStackContainer.backgroundColor = AXConstants.defaultOverlayForegroundColor
+        self.bottomStackContainer.delegate = self
+        self.addSubview(self.bottomStackContainer)
+        
         self.captionView.animateCaptionInfoChanges = true
         if let captionView = self.captionView as? UIView {
-            self.addSubview(captionView)
+            self.bottomStackContainer.addSubview(captionView)
         }
-        
-        self.navigationBarUnderlay.backgroundColor = (self.captionView as? UIView)?.backgroundColor
-        self.addSubview(self.navigationBarUnderlay)
-        
-        self.navigationBar.backgroundColor = .clear
-        self.navigationBar.barTintColor = nil
-        self.navigationBar.isTranslucent = true
-        self.navigationBar.shadowImage = UIImage()
-        self.navigationBar.setBackgroundImage(UIImage(), for: .default)
-        self.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.white]
-        self.navigationBar.items = [self.navigationItem]
-        self.addSubview(self.navigationBar)
         
         NotificationCenter.default.addObserver(forName: .UIContentSizeCategoryDidChange, object: nil, queue: .main) { [weak self] (note) in
             self?.setNeedsLayout()
@@ -180,27 +185,30 @@ import UIKit
         NotificationCenter.default.removeObserver(self)
     }
     
+    open override func didMoveToWindow() {
+        super.didMoveToWindow()
+        
+        if self.window != nil {
+            self.updateToolbarBarButtonItems()
+        }
+    }
+    
     open override func layoutSubviews() {
         super.layoutSubviews()
         
-        var insetSize = self.bounds.size
-        insetSize.width -= (self.contentInset.left + self.contentInset.right)
-        insetSize.height -= (self.contentInset.top + self.contentInset.bottom)
+        self.topStackContainer.contentInset = UIEdgeInsets(top: self.contentInset.top,
+                                                           left: self.contentInset.left,
+                                                           bottom: 0,
+                                                           right: self.contentInset.right)
+        self.topStackContainer.frame = CGRect(origin: .zero, size: self.topStackContainer.sizeThatFits(self.frame.size))
         
-        let navigationBarSize = self.navigationBar.sizeThatFits(insetSize)
-        let navigationBarOrigin = CGPoint(x: self.contentInset.left, y: self.contentInset.top)
-        self.navigationBar.frame = CGRect(origin: navigationBarOrigin, size: navigationBarSize)
-        self.navigationBar.setNeedsLayout()
-        
-        self.navigationBarUnderlay.frame = CGRect(origin: .zero,
-                                                  size: CGSize(width: self.frame.size.width,
-                                                               height: self.navigationBar.frame.origin.y + self.navigationBar.frame.size.height))
-        
-        if let captionView = self.captionView as? UIView {
-            let captionViewSize = captionView.sizeThatFits(insetSize)
-            let captionViewOrigin = CGPoint(x: self.contentInset.left, y: self.frame.size.height - self.contentInset.bottom - captionViewSize.height)
-            captionView.frame = CGRect(origin: captionViewOrigin, size: captionViewSize)
-        }
+        self.bottomStackContainer.contentInset = UIEdgeInsets(top: 0,
+                                                              left: self.contentInset.left,
+                                                              bottom: self.contentInset.bottom,
+                                                              right: self.contentInset.right)
+        let bottomStackSize = self.bottomStackContainer.sizeThatFits(self.frame.size)
+        self.bottomStackContainer.frame = CGRect(origin: CGPoint(x: 0, y: self.frame.size.height - bottomStackSize.height),
+                                                 size: bottomStackSize)
         
         self.isFirstLayout = false
     }
@@ -250,24 +258,116 @@ import UIKit
         }
     }
     
-    // MARK: - CaptionViewDelegate
-    public func captionView(_ captionView: CaptionViewProtocol, contentSizeDidChange newSize: CGSize) {
-        guard let uCaptionView = captionView as? UIView else {
+    // MARK: - UIToolbar convenience
+    func updateToolbarBarButtonItems() {
+        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace,
+                                            target: nil,
+                                            action: nil)
+        
+        var barButtonItems = [UIBarButtonItem]()
+        if let leftBarButtonItems = self.leftBarButtonItems {
+            barButtonItems.append(contentsOf: leftBarButtonItems)
+        }
+        
+        barButtonItems.append(flexibleSpace)
+        
+        var centerBarButtonItem: UIBarButtonItem?
+        if let titleView = self.titleView as? UIView {
+            if let titleViewBarButtonItem = self.titleViewBarButtonItem, titleViewBarButtonItem.customView === titleView {
+                centerBarButtonItem = titleViewBarButtonItem
+            } else {
+                self.titleViewBarButtonItem = UIBarButtonItem(customView: titleView)
+                centerBarButtonItem = self.titleViewBarButtonItem
+            }
+        } else {
+            centerBarButtonItem = self.titleBarButtonItem
+        }
+        
+        if let centerBarButtonItem = centerBarButtonItem {
+            barButtonItems.append(centerBarButtonItem)
+            barButtonItems.append(flexibleSpace)
+        }
+        
+        if let rightBarButtonItems = self.rightBarButtonItems {
+            barButtonItems.append(contentsOf: rightBarButtonItems)
+        }
+        
+        self.toolbar.items = barButtonItems
+    }
+    
+    func updateTitleBarButtonItem() {
+        func defaultAttributes() -> [NSAttributedStringKey: Any] {
+            let pointSize: CGFloat = 17.0
+            var font: UIFont
+            if #available(iOS 8.2, *) {
+                font = UIFont.systemFont(ofSize: pointSize, weight: UIFont.Weight.semibold)
+            } else {
+                font = UIFont(name: "HelveticaNeue-Medium", size: pointSize)!
+            }
+            
+            return [
+                NSAttributedStringKey.font: font,
+                NSAttributedStringKey.foregroundColor: UIColor.white
+            ]
+        }
+        
+        var attributedText: NSAttributedString?
+        if let title = self.title {
+            attributedText = NSAttributedString(string: title,
+                                                attributes: self.titleTextAttributes ?? defaultAttributes())
+        } else if let internalTitle = self.internalTitle {
+            attributedText = NSAttributedString(string: internalTitle,
+                                                attributes: self.titleTextAttributes ?? defaultAttributes())
+        }
+        
+        if let attributedText = attributedText {
+            guard let titleBarButtonItemLabel = self.titleBarButtonItem.customView as? UILabel else {
+                return
+            }
+            
+            if titleBarButtonItemLabel.attributedText != attributedText {
+                titleBarButtonItemLabel.attributedText = attributedText
+                titleBarButtonItemLabel.sizeToFit()
+            }
+        }
+    }
+    
+    // MARK: - CaptionViewProtocol
+    func updateCaptionView(photo: PhotoProtocol) {
+        self.captionView.applyCaptionInfo(attributedTitle: photo.attributedTitle ?? nil,
+                                          attributedDescription: photo.attributedDescription ?? nil,
+                                          attributedCredit: photo.attributedCredit ?? nil)
+        
+        if self.isFirstLayout {
+            self.setNeedsLayout()
             return
         }
         
+        let size = self.bottomStackContainer.sizeThatFits(self.frame.size)
         let animations = { [weak self] in
             guard let uSelf = self else {
                 return
             }
             
-            uCaptionView.frame = CGRect(origin: CGPoint(x: 0, y: uSelf.frame.size.height - newSize.height), size: newSize)
+            uSelf.bottomStackContainer.frame = CGRect(origin: CGPoint(x: 0, y: uSelf.frame.size.height - size.height), size: size)
+            uSelf.bottomStackContainer.setNeedsLayout()
         }
         
-        if self.animateCaptionViewChanges && !self.isFirstLayout {
+        if self.animateCaptionViewChanges {
             UIView.animate(withDuration: AXConstants.frameAnimDuration, animations: animations)
         } else {
             animations()
+        }
+    }
+    
+    // MARK: - StackableViewContainerDelegate
+    func stackableViewContainer(_ stackableViewContainer: StackableViewContainer, didAddSubview: UIView) {
+        self.setNeedsLayout()
+    }
+    
+    func stackableViewContainer(_ stackableViewContainer: StackableViewContainer, willRemoveSubview: UIView) {
+        DispatchQueue.main.async { [weak self] in
+            self?.setNeedsLayout()
         }
     }
 }

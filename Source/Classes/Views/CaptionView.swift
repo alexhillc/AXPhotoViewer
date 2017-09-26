@@ -9,9 +9,7 @@
 import UIKit
 
 @objc(AXCaptionView) open class CaptionView: UIView, CaptionViewProtocol {
-    
-    open weak var delegate: CaptionViewDelegate?
-    
+        
     public var animateCaptionInfoChanges: Bool = true
     
     open var titleLabel = UILabel()
@@ -117,7 +115,7 @@ import UIKit
 
         super.init(frame: .zero)
         
-        self.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        self.backgroundColor = .clear
         
         self.titleSizingLabel.numberOfLines = 0
         self.descriptionSizingLabel.numberOfLines = 0
@@ -201,11 +199,6 @@ import UIKit
         }
         
         self.needsCaptionLayoutAnim = !self.isFirstLayout
-        
-        let newSize = self.computeSize(for: self.frame.size, applySizingLayout: false)
-        self.delegate?.captionView(self, contentSizeDidChange: newSize)
-        
-        self.setNeedsLayout()
     }
     
     open override func layoutSubviews() {
@@ -337,13 +330,17 @@ import UIKit
         let HorizontalPadding: CGFloat = 15
         let InterLabelSpacing: CGFloat = 2
         var yOffset: CGFloat = 0
+        var maxWidth: CGFloat = 0
 
         for (index, label) in self.visibleSizingLabels.enumerated() {
             var constrainedLabelSize = constrainedSize
             constrainedLabelSize.width -= (2 * HorizontalPadding)
             
             let labelSize = label.sizeThatFits(constrainedLabelSize)
-
+            if labelSize.width > maxWidth {
+                maxWidth = labelSize.width + (2 * HorizontalPadding)
+            }
+            
             if index == 0 {
                 yOffset += VerticalPadding
             } else {
@@ -364,7 +361,7 @@ import UIKit
             }
         }
         
-        return CGSize(width: constrainedSize.width, height: yOffset)
+        return CGSize(width: maxWidth, height: yOffset)
     }
 
 }
