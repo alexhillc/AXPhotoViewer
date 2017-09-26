@@ -16,11 +16,6 @@ let photosViewController = PhotosViewController(dataSource: dataSource)
 self.present(photosViewController, animated: true)
 ```
 
-```objc
-AXPhotosDataSource *dataSource = [[AXPhotosDataSource alloc] initWithPhotos:photos];
-AXPhotosViewController *photosViewController = [[AXPhotosViewController alloc] initWithDataSource:dataSource];
-[self presentViewController:photosViewController animated:YES completion:nil];
-```
 #### Force touch implementation?
 It's easy to implement force touch with this library by using `PreviewingPhotosViewController`:
 
@@ -51,39 +46,6 @@ func previewingContext(_ previewingContext: UIViewControllerPreviewing,
 }
 ```
 
-```objc
-- (UIViewController *)previewingContext:(id<UIViewControllerPreviewing>)previewingContext
-              viewControllerForLocation:(CGPoint)location {
-
-    NSIndexPath *indexPath = [self.tableView indexPathForRowAtPoint:location];
-    if (!indexPath) {
-        return nil;
-    }
-
-    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
-    UIImageView *imageView = cell.imageView;
-    if (!imageView) {
-        return nil;
-    }
-
-    previewingContext.sourceRect = [self.tableView convertRect:imageView.frame fromView:imageView.superview];
-
-    AXPhotosDataSource *dataSource = [[AXPhotosDataSource alloc] initWithPhotos:self.photos initialPhotoIndex:indexPath.row];
-    AXPreviewingPhotosViewController *previewingPhotosViewController = [[AXPreviewingPhotosViewController alloc] initWithDataSource:dataSource];
-
-    return previewingPhotosViewController;
-}
-
-- (void)previewingContext:(id<UIViewControllerPreviewing>)previewingContext
-     commitViewController:(UIViewController *)viewControllerToCommit {
-
-    AXPreviewingPhotosViewController *previewingPhotosViewController = (AXPreviewingPhotosViewController *)viewControllerToCommit;
-    if ([previewingPhotosViewController isKindOfClass:[AXPreviewingPhotosViewController class]]) {
-        [self presentViewController:[[AXPhotosViewController alloc] initFromPreviewingPhotosViewController:previewingPhotosViewController] animated:NO completion:nil];
-    }
-}
-```
-
 ### Objective-C interoperability
 This library fully supports interop between Objective-C and Swift codebases. If you run into any issues with this, please open a Github issue or submit a pull request with the suggested changes.
 
@@ -106,19 +68,10 @@ let photos = [first, second]
 let dataSource = PhotosDataSource(photos: photos, initialPhotoIndex: 1, prefetchBehavior: .aggressive)
 ```
 
-```objc
-NSArray<AXPhoto *> *photos = @[firstPhoto, secondPhoto];
-AXPhotosDataSource *dataSource = [[AXPhotosDataSource alloc] initWithPhotos:photos initialPhotoIndex:1 prefetchBehavior:AXPhotosPrefetchBehaviorAggressive];
-```
-
 On the `AXPagingConfig` object, you may set up the configuration with a different navigation orientation (horizontal vs vertical scrolling between pages), inter-photo spacing (the spacing, in points, between each photo), and/or a custom loading view class that will be instantiated by the library as needed.
 
 ```swift
 let pagingConfig = PagingConfig(navigationOrientation: .horizontal, interPhotoSpacing: 20, loadingViewClass: CustomLoadingView.self)
-```
-
-```objc
-AXPagingConfig *pagingConfig = [[AXPagingConfig alloc] initWithNavigationOrientation:UIPageViewControllerNavigationOrientationHorizontal interPhotoSpacing:20 loadingViewClass:[CustomLoadingView class]];
 ```
 
 Lastly, but surely not least, is the `AXTransitionInfo` configuration. This can be used to customize all things related to the presentation and dismissal of your `AXPhotosViewController`, including the starting reference view, the ending reference view, the duration of the animations, and a flag to disable/enable interactive dismissals.
@@ -130,24 +83,35 @@ let transitionInfo = TransitionInfo(interactiveDismissalEnabled: false, starting
 }
 ```
 
-```objc
-__weak typeof(self) weakSelf = self;
-AXTransitionInfo *transitionInfo = [[AXTransitionInfo alloc] initWithInteractiveDismissalEnabled:NO startingView:self.startingImageView endingView:^UIImageView * _Nullable(id<AXPhotoProtocol> _Nonnull, NSInteger) {
-    // this block can be used to adjust your UI before returning an `endingImageView`.
-    return weakSelf.endingImageView;
-}];
+### Custom views
+It's very simple to add a custom self-sizing view to the view hierarchy of the photo viewer by accessing properties on the `OverlayView`. The `topStackContainer` and `bottomStackContainer` are exactly what they sound like, anchored to either the top or bottom of the overlay. All that is necessary to add your custom view to these containers is the following:
+
+```swift
+photosViewController.overlayView.topStackContainer.addSubview(customSubview1)
+photosViewController.overlayView.bottomStackContainer.addSubview(customSubview2)
 ```
+
+These views will be sized and stacked in the order that they are added. It's possible to re-order these subviews to fit your needs.
 
 ### Network Integrations
 A network integration, in relation to this library, is a class conforming to the `AXNetworkIntegration` protocol. This protocol defines some methods to be used for downloading images, as well as delegating their completions (and errors) to the library. If you wish to create your own module for async downloading/caching of images and gifs, the protocol is fairly lightweight.
 
-Some pre-defined `AXNetworkIntegrations` have already been made as Cocoapod subspecs (SDWebImage, PINRemoteImage, AFNetworking..., as well as a simple network integration using NSURLSession that will serve most people's purposes quite sufficiently). To use these pre-defined subspecs, simply change your `Podfile`:
+Some pre-defined `AXNetworkIntegrations` have already been made as Cocoapod subspecs (SDWebImage, PINRemoteImage, AFNetworking, Kingfisher..., as well as a simple network integration using NSURLSession that will serve most people's purposes quite sufficiently). To use these pre-defined subspecs, simply change your `Podfile`:
 
 ```ruby
 pod install 'AXPhotoViewer/Lite'
+```
+```ruby
 pod install 'AXPhotoViewer/SDWebImage'
+```
+```ruby
 pod install 'AXPhotoViewer/PINRemoteImage'
+```
+```ruby
 pod install 'AXPhotoViewer/AFNetworking'
+```
+```ruby
+pod install 'AXPhotoViewer/Kingfisher'
 ```
 
 To create your own `AXNetworkIntegration`:
@@ -158,12 +122,6 @@ pod install 'AXPhotoViewer/Core'
 let customNetworkIntegration = CustomNetworkIntegration() // instantiate your custom network integration
 let dataSource = PhotosDataSource(photos: self.photos)
 let photosViewController = PhotosViewController(dataSource: dataSource, networkIntegration: customNetworkIntegration)
-```
-
-```objc
-CustomNetworkIntegration *customNetworkIntegration = [[CustomNetworkIntegration alloc] init];
-AXPhotosDataSource *dataSource = [[AXPhotosDataSource alloc] initWithPhotos:self.photos];
-AXPhotosViewController *photosViewController = [[AXPhotosViewController alloc] initWithDataSource:dataSource networkIntegration:customNetworkIntegration];
 ```
 
 ### Customization
