@@ -14,7 +14,7 @@ import MobileCoreServices
                                                                                    NetworkIntegrationDelegate {
     
     /// The photos to display in the `PhotosPreviewingViewController`.
-    open var dataSource: PhotosDataSource = PhotosDataSource() {
+    @objc open var dataSource: PhotosDataSource = PhotosDataSource() {
         didSet {
             // this can occur during `commonInit(dataSource:networkIntegration:)`
             if self.networkIntegration == nil {
@@ -28,7 +28,7 @@ import MobileCoreServices
     
     /// The `NetworkIntegration` passed in at initialization. This object is used to fetch images asynchronously from a cache or URL.
     /// - Initialized by the end of `commonInit(dataSource:networkIntegration:)`.
-    public fileprivate(set) var networkIntegration: NetworkIntegrationProtocol!
+    @objc public fileprivate(set) var networkIntegration: NetworkIntegrationProtocol!
     
     var imageView: FLAnimatedImageView {
         get {
@@ -38,13 +38,13 @@ import MobileCoreServices
     
     // MARK: - Initialization
     #if AX_SDWEBIMAGE_SUPPORT || AX_PINREMOTEIMAGE_SUPPORT || AX_AFNETWORKING_SUPPORT || AX_KINGFISHER_SUPPORT || AX_LITE_SUPPORT
-    public init(dataSource: PhotosDataSource) {
+    @objc public init(dataSource: PhotosDataSource) {
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource)
     }
     #else
-    public init(dataSource: PhotosDataSource,
-                networkIntegration: NetworkIntegrationProtocol) {
+    @objc public init(dataSource: PhotosDataSource,
+                      networkIntegration: NetworkIntegrationProtocol) {
     
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource,
@@ -52,7 +52,7 @@ import MobileCoreServices
     }
     #endif
     
-    public required init?(coder aDecoder: NSCoder) {
+    @objc public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     

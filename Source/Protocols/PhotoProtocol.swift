@@ -19,12 +19,12 @@
     
     /// The image data. If this value is present, it will be prioritized over `image`.
     /// Provide animated GIF data to this property.
-    var imageData: Data? { get set }
+    @objc var imageData: Data? { get set }
     
     /// The image to be displayed. If this value is present, it will be prioritized over `URL`.
-    var image: UIImage? { get set }
+    @objc var image: UIImage? { get set }
     
     /// The URL of the image.
-    var url: URL? { get }
+    @objc var url: URL? { get }
     
 }

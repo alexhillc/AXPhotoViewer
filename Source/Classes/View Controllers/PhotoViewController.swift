@@ -11,10 +11,10 @@ import FLAnimatedImage
 
 @objc(AXPhotoViewController) open class PhotoViewController: UIViewController, PageableViewControllerProtocol, ZoomingImageViewDelegate {
     
-    public weak var delegate: PhotoViewControllerDelegate?
-    public var pageIndex: Int = 0
+    @objc public weak var delegate: PhotoViewControllerDelegate?
+    @objc public var pageIndex: Int = 0
     
-    fileprivate(set) var loadingView: LoadingViewProtocol?
+    @objc fileprivate(set) var loadingView: LoadingViewProtocol?
 
     var zoomingImageView: ZoomingImageView {
         get {
@@ -25,7 +25,7 @@ import FLAnimatedImage
     fileprivate var photo: PhotoProtocol?
     fileprivate weak var notificationCenter: NotificationCenter?
     
-    public init(loadingView: LoadingViewProtocol, notificationCenter: NotificationCenter) {
+    @objc public init(loadingView: LoadingViewProtocol, notificationCenter: NotificationCenter) {
         self.loadingView = loadingView
         self.notificationCenter = notificationCenter
         
@@ -42,7 +42,7 @@ import FLAnimatedImage
                                        object: nil)
     }
     
-    public required init?(coder aDecoder: NSCoder) {
+    @objc public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
@@ -73,7 +73,7 @@ import FLAnimatedImage
                                                       size: loadingViewSize)
     }
     
-    public func applyPhoto(_ photo: PhotoProtocol) {
+    @objc public func applyPhoto(_ photo: PhotoProtocol) {
         self.photo = photo
         
         weak var weakSelf = self

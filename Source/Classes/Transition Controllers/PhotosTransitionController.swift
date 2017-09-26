@@ -13,9 +13,9 @@ import FLAnimatedImage
     case presenting, dismissing
 }
 
-@objc (AXPhotosTransitionController) class PhotosTransitionController: NSObject, UIViewControllerAnimatedTransitioning,
-                                                                       UIViewControllerInteractiveTransitioning,
-                                                                       UIGestureRecognizerDelegate {
+@objc(AXPhotosTransitionController) class PhotosTransitionController: NSObject, UIViewControllerAnimatedTransitioning,
+                                                                      UIViewControllerInteractiveTransitioning,
+                                                                      UIGestureRecognizerDelegate {
     
     fileprivate let FadeInOutTransitionRatio: Double = 1/3
     fileprivate let TransitionAnimSpringDampening: CGFloat = 1

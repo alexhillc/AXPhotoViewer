@@ -11,7 +11,7 @@ import UIKit
 @objc(AXOverlayView) open class OverlayView: UIView, StackableViewContainerDelegate {
     
     /// The caption view to be used in the overlay.
-    open var captionView: CaptionViewProtocol = CaptionView() {
+    @objc open var captionView: CaptionViewProtocol = CaptionView() {
         didSet {
             guard let oldCaptionView = oldValue as? UIView else {
                 assertionFailure("`oldCaptionView` must be a UIView.")
@@ -31,7 +31,7 @@ import UIKit
     }
     
     /// Whether or not to animate `captionView` changes. Defaults to true.
-    public var animateCaptionViewChanges: Bool = true {
+    @objc public var animateCaptionViewChanges: Bool = true {
         didSet {
             self.captionView.animateCaptionInfoChanges = self.animateCaptionViewChanges
         }
@@ -39,7 +39,7 @@ import UIKit
     
     /// The title view displayed in the toolbar. This view is sized and centered between the `leftBarButtonItems` and `rightBarButtonItems`.
     /// This is prioritized over `title`.
-    public var titleView: OverlayTitleViewProtocol? {
+    @objc public var titleView: OverlayTitleViewProtocol? {
         didSet {
             assert(self.titleView == nil ? true : self.titleView is UIView, "`titleView` must be a UIView.")
             
@@ -56,7 +56,7 @@ import UIKit
     
     /// The title displayed in the toolbar. This string is centered between the `leftBarButtonItems` and `rightBarButtonItems`.
     /// Overwrites `internalTitle`.
-    public var title: String? {
+    @objc public var title: String? {
         didSet {
             self.updateTitleBarButtonItem()
         }
@@ -71,7 +71,7 @@ import UIKit
     }
     
     /// The title text attributes inherited by the `title`.
-    public var titleTextAttributes: [NSAttributedStringKey: Any]? {
+    @objc public var titleTextAttributes: [NSAttributedStringKey: Any]? {
         didSet {
             if self.window == nil {
                 return
@@ -85,7 +85,7 @@ import UIKit
     let titleBarButtonItem = UIBarButtonItem(customView: UILabel())
     
     /// The bar button item that appears in the top left corner of the overlay.
-    public var leftBarButtonItem: UIBarButtonItem? {
+    @objc public var leftBarButtonItem: UIBarButtonItem? {
         set(value) {
             if let value = value {
                 self.leftBarButtonItems = [value]
@@ -99,7 +99,7 @@ import UIKit
     }
     
     /// The bar button items that appear in the top left corner of the overlay.
-    public var leftBarButtonItems: [UIBarButtonItem]? {
+    @objc public var leftBarButtonItems: [UIBarButtonItem]? {
         didSet {
             if self.window == nil {
                 return
@@ -110,7 +110,7 @@ import UIKit
     }
 
     /// The bar button item that appears in the top right corner of the overlay.
-    public var rightBarButtonItem: UIBarButtonItem? {
+    @objc public var rightBarButtonItem: UIBarButtonItem? {
         set(value) {
             if let value = value {
                 self.rightBarButtonItems = [value]
@@ -124,7 +124,7 @@ import UIKit
     }
     
     /// The bar button items that appear in the top right corner of the overlay.
-    public var rightBarButtonItems: [UIBarButtonItem]? {
+    @objc public var rightBarButtonItems: [UIBarButtonItem]? {
         didSet {
             if self.window == nil {
                 return
@@ -135,7 +135,7 @@ import UIKit
     }
     
     /// The toolbar used to set the `titleView`, `leftBarButtonItems`, `rightBarButtonItems`
-    public let toolbar = UIToolbar(frame: CGRect(origin: .zero, size: CGSize(width: 320, height: 44)))
+    @objc public let toolbar = UIToolbar(frame: CGRect(origin: .zero, size: CGSize(width: 320, height: 44)))
     
     /// The inset of the contents of the `OverlayView`. Use this property to adjust layout for things such as status bar height.
     /// For internal use only.
@@ -143,27 +143,27 @@ import UIKit
     
     /// Container to embed all content anchored at the top of the `overlayView`.
     /// Add custom subviews to the top container in the order that you wish to stack them. These must be self-sizing views.
-    public var topStackContainer: StackableViewContainer!
+    @objc public var topStackContainer: StackableViewContainer!
     
     /// Container to embed all content anchored at the bottom of the `overlayView`.
     /// Add custom subviews to the bottom container in the order that you wish to stack them. These must be self-sizing views.
-    public var bottomStackContainer: StackableViewContainer!
+    @objc public var bottomStackContainer: StackableViewContainer!
     
     fileprivate var isFirstLayout: Bool = true
     
-    init() {
+    @objc public init() {
         super.init(frame: .zero)
         
         self.toolbar.backgroundColor = .clear
         self.toolbar.setBackgroundImage(UIImage(), forToolbarPosition: .any, barMetrics: .default)
         
         self.topStackContainer = StackableViewContainer(views: [self.toolbar], anchoredAt: .top)
-        self.topStackContainer.backgroundColor = AXConstants.defaultOverlayForegroundColor
+        self.topStackContainer.backgroundColor = Constants.defaultOverlayForegroundColor
         self.topStackContainer.delegate = self
         self.addSubview(self.topStackContainer)
         
         self.bottomStackContainer = StackableViewContainer(views: [], anchoredAt: .bottom)
-        self.bottomStackContainer.backgroundColor = AXConstants.defaultOverlayForegroundColor
+        self.bottomStackContainer.backgroundColor = Constants.defaultOverlayForegroundColor
         self.bottomStackContainer.delegate = self
         self.addSubview(self.bottomStackContainer)
         
@@ -249,7 +249,7 @@ import UIKit
         }
         
         if animated {
-            UIView.animate(withDuration: AXConstants.frameAnimDuration,
+            UIView.animate(withDuration: Constants.frameAnimDuration,
                            animations: animations,
                            completion: internalCompletion)
         } else {
@@ -354,7 +354,7 @@ import UIKit
         }
         
         if self.animateCaptionViewChanges {
-            UIView.animate(withDuration: AXConstants.frameAnimDuration, animations: animations)
+            UIView.animate(withDuration: Constants.frameAnimDuration, animations: animations)
         } else {
             animations()
         }

@@ -15,7 +15,7 @@ import UIKit
     /// For internal use only.
     var contentInset: UIEdgeInsets = .zero
     
-    fileprivate(set) var anchorPoint: StackableViewContainerAnchorPoint
+    @objc fileprivate(set) var anchorPoint: StackableViewContainerAnchorPoint
     @objc(AXStackableViewContainerAnchorPoint) enum StackableViewContainerAnchorPoint: Int {
         case top, bottom
     }

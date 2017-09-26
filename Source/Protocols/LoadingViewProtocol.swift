@@ -11,12 +11,12 @@
     /// Called by the PhotoViewController when progress of the image download should be shown to the user.
     ///
     /// - Parameter initialProgress: The current progress of the image download. Exists on a scale from 0..1.
-    func startLoading(initialProgress: CGFloat) -> Void
+    @objc func startLoading(initialProgress: CGFloat) -> Void
     
     /// Called by the PhotoViewController when progress of the image download should be hidden. This usually happens when
     /// the containing view controller is moved offscreen.
     ///
-    func stopLoading() -> Void
+    @objc func stopLoading() -> Void
     
     /// Called by the PhotoViewController when the progress of an image download is updated. The optional implementation
     /// of this method should reflect the progress of the downloaded image.
@@ -30,17 +30,17 @@
     /// - Parameters:
     ///   - error: The error that the image download failed with.
     ///   - retryHandler: Call this handler to retry the image download.
-    func showError(_ error: Error, retryHandler: @escaping ()-> Void) -> Void
+    @objc func showError(_ error: Error, retryHandler: @escaping ()-> Void) -> Void
     
     /// Called by the PhotoViewController when an image download is being retried, or the container decides to stop
     /// displaying an error to the user.
     ///
-    func removeError() -> Void
+    @objc func removeError() -> Void
     
     /// The `PhotosViewController` uses this method to correctly size the loading view for a constrained width.
     ///
     /// - Parameter size: The constrained size. Use the width of this value to layout subviews.
     /// - Returns: A size that fits all subviews inside a constrained width.
-    func sizeThatFits(_ size: CGSize) -> CGSize
+    @objc func sizeThatFits(_ size: CGSize) -> CGSize
     
 }

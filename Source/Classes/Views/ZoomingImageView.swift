@@ -33,7 +33,7 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
         }
     }
     
-    public override var frame: CGRect {
+    override var frame: CGRect {
         didSet {
             self.updateZoomScale()
         }
@@ -44,7 +44,7 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
     
     fileprivate var needsUpdateImageView = false
 
-    public init() {
+    init() {
         super.init(frame: .zero)
         
         self.doubleTapGestureRecognizer.numberOfTapsRequired = 2
@@ -65,7 +65,7 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
         self.delegate = self
     }
     
-    public required init?(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
@@ -114,15 +114,15 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
     }
     
     // MARK: - UIScrollViewDelegate
-    public func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return self.imageView
     }
     
-    public func scrollViewWillBeginZooming(_ scrollView: UIScrollView, with view: UIView?) {
+    func scrollViewWillBeginZooming(_ scrollView: UIScrollView, with view: UIView?) {
         scrollView.isScrollEnabled = true
     }
     
-    public func scrollViewDidZoom(_ scrollView: UIScrollView) {
+    func scrollViewDidZoom(_ scrollView: UIScrollView) {
         let offsetX = (scrollView.bounds.size.width > scrollView.contentSize.width) ?
             (scrollView.bounds.size.width - scrollView.contentSize.width) / 2 : 0
         let offsetY = (scrollView.bounds.size.height > scrollView.contentSize.height) ?
@@ -130,7 +130,7 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
         self.imageView.center = CGPoint(x: offsetX + (scrollView.contentSize.width / 2), y: offsetY + (scrollView.contentSize.height / 2))
     }
     
-    public func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
+    func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
         guard abs(scale - self.minimumZoomScale) <= ZoomScaleEpsilon else {
             return
         }

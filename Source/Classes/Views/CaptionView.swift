@@ -10,11 +10,11 @@ import UIKit
 
 @objc(AXCaptionView) open class CaptionView: UIView, CaptionViewProtocol {
         
-    public var animateCaptionInfoChanges: Bool = true
+    @objc public var animateCaptionInfoChanges: Bool = true
     
-    open var titleLabel = UILabel()
-    open var descriptionLabel = UILabel()
-    open var creditLabel = UILabel()
+    @objc open var titleLabel = UILabel()
+    @objc open var descriptionLabel = UILabel()
+    @objc open var creditLabel = UILabel()
     
     fileprivate var titleSizingLabel = UILabel()
     fileprivate var descriptionSizingLabel = UILabel()
@@ -29,7 +29,7 @@ import UIKit
     
     fileprivate var isFirstLayout: Bool = true
     
-    open var defaultTitleAttributes: [NSAttributedStringKey: Any] {
+    @objc open var defaultTitleAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -53,7 +53,7 @@ import UIKit
         }
     }
     
-    open var defaultDescriptionAttributes: [NSAttributedStringKey: Any] {
+    @objc open var defaultDescriptionAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -77,7 +77,7 @@ import UIKit
         }
     }
     
-    open var defaultCreditAttributes: [NSAttributedStringKey: Any] {
+    @objc open var defaultCreditAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -101,7 +101,7 @@ import UIKit
         }
     }
     
-    init() {
+    @objc public init() {
         self.visibleLabels = [
             self.titleLabel,
             self.descriptionLabel,
@@ -146,9 +146,9 @@ import UIKit
         NotificationCenter.default.removeObserver(self)
     }
 
-    open func applyCaptionInfo(attributedTitle: NSAttributedString?,
-                               attributedDescription: NSAttributedString?,
-                               attributedCredit: NSAttributedString?) {
+    @objc open func applyCaptionInfo(attributedTitle: NSAttributedString?,
+                                     attributedDescription: NSAttributedString?,
+                                     attributedCredit: NSAttributedString?) {
         
         func makeAttributedStringWithDefaults(_ defaults: [NSAttributedStringKey: Any], for attributedString: NSAttributedString?) -> NSAttributedString? {
             guard let defaultAttributedString = attributedString?.mutableCopy() as? NSMutableAttributedString else {
@@ -260,7 +260,7 @@ import UIKit
             }
             
             self.isCaptionAnimatingOut = true
-            UIView.animate(withDuration: AXConstants.frameAnimDuration / 2,
+            UIView.animate(withDuration: Constants.frameAnimDuration / 2,
                            delay: 0,
                            options: [.beginFromCurrentState, .curveEaseOut], 
                            animations: animateOut) { [weak self] (finished) in
@@ -270,7 +270,7 @@ import UIKit
                 }
                 
                 animateOutCompletion(finished)
-                UIView.animate(withDuration: AXConstants.frameAnimDuration / 2,
+                UIView.animate(withDuration: Constants.frameAnimDuration / 2,
                                delay: 0, 
                                options: [.beginFromCurrentState, .curveEaseIn], 
                                animations: animateIn, 

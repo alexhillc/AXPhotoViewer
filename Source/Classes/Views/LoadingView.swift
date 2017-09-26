@@ -10,29 +10,29 @@ import AXStateButton
 
 @objc(AXLoadingView) open class LoadingView: UIView, LoadingViewProtocol {
     
-    open fileprivate(set) lazy var indicatorView: UIView = UIActivityIndicatorView(activityIndicatorStyle: .white)
+    @objc open fileprivate(set) lazy var indicatorView: UIView = UIActivityIndicatorView(activityIndicatorStyle: .white)
     
-    open fileprivate(set) var errorImageView: UIImageView?
+    @objc open fileprivate(set) var errorImageView: UIImageView?
     
     /// The image to show in the `errorImageView` when displaying an error.
-    open var errorImage: UIImage? {
+    @objc open var errorImage: UIImage? {
         get {
             let bundle = Bundle(for: LoadingView.self)
             return UIImage(named: "error", in: bundle, compatibleWith: nil)
         }
     }
     
-    open fileprivate(set) var errorLabel: UILabel?
+    @objc open fileprivate(set) var errorLabel: UILabel?
     
     /// The error text to show when displaying an error.
-    open var errorText: String {
+    @objc open var errorText: String {
         get {
             return NSLocalizedString("An error occurred while loading this image.", comment: "AXLoadingView - error text")
         }
     }
     
     /// The attributes that will get applied to the `errorText` when displaying an error.
-    open var errorAttributes: [NSAttributedStringKey: Any] {
+    @objc open var errorAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -56,15 +56,15 @@ import AXStateButton
         }
     }
     
-    open fileprivate(set) var retryButton: StateButton?
+    @objc open fileprivate(set) var retryButton: StateButton?
     
     /// The error text to show inside of the `retryButton` when displaying an error.
-    open var retryText: String {
+    @objc open var retryText: String {
         return NSLocalizedString("Try again", comment: "AXLoadingView - retry text")
     }
     
     /// The attributes that will get applied to the `retryText` when displaying an error.
-    open var retryAttributes: [NSAttributedStringKey: Any] {
+    @objc open var retryAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -88,9 +88,9 @@ import AXStateButton
         }
     }
     
-    public fileprivate(set) var retryHandler: (() -> Void)?
+    @objc public fileprivate(set) var retryHandler: (() -> Void)?
     
-    public init() {
+    @objc public init() {
         super.init(frame: .zero)
         
         NotificationCenter.default.addObserver(forName: .UIContentSizeCategoryDidChange, object: nil, queue: .main) { [weak self] (note) in
@@ -98,7 +98,7 @@ import AXStateButton
         }
     }
     
-    public required init?(coder aDecoder: NSCoder) {
+    @objc public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     

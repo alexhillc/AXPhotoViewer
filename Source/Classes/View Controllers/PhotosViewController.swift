@@ -13,13 +13,13 @@ import MobileCoreServices
                                                                UIViewControllerTransitioningDelegate, PhotoViewControllerDelegate, NetworkIntegrationDelegate,
                                                                PhotosTransitionControllerDelegate {
     
-    open weak var delegate: PhotosViewControllerDelegate?
+    @objc open weak var delegate: PhotosViewControllerDelegate?
     
     /// The underlying `OverlayView` that is used for displaying photo captions, titles, and actions.
-    open let overlayView = OverlayView()
+    @objc open let overlayView = OverlayView()
     
     /// The photos to display in the PhotosViewController.
-    open var dataSource = PhotosDataSource() {
+    @objc open var dataSource = PhotosDataSource() {
         didSet {
             // this can occur during `commonInit(dataSource:pagingConfig:transitionInfo:networkIntegration:)`
             // if that's the case, this logic will be applied in `viewDidLoad()`
@@ -34,21 +34,21 @@ import MobileCoreServices
     }
     
     /// The configuration object applied to the internal pager at initialization.
-    open fileprivate(set) var pagingConfig = PagingConfig()
+    @objc open fileprivate(set) var pagingConfig = PagingConfig()
     
     /// The underlying UIPageViewController that is used for swiping horizontally and vertically.
     /// - Important: `AXPhotosViewController` is this page view controller's `UIPageViewControllerDelegate`, `UIPageViewControllerDataSource`.
     ///              Changing these values will result in breakage.
     /// - Note: Initialized by the end of `commonInit(dataSource:pagingConfig:transitionInfo:networkIntegration:)`.
-    public fileprivate(set) var pageViewController: UIPageViewController!
+    @objc public fileprivate(set) var pageViewController: UIPageViewController!
     
     /// The internal tap gesture recognizer that is used to hide/show the overlay interface.
-    public let singleTapGestureRecognizer = UITapGestureRecognizer()
+    @objc public let singleTapGestureRecognizer = UITapGestureRecognizer()
     
     /// The close bar button item that is initially set in the overlay's toolbar. Any 'target' or 'action' provided to this button will be overwritten.
     /// Overriding this is purely for customizing the look and feel of the button.
     /// Alternatively, you may create your own `UIBarButtonItem`s and directly set them _and_ their actions on the `overlayView` property.
-    open var closeBarButtonItem: UIBarButtonItem {
+    @objc open var closeBarButtonItem: UIBarButtonItem {
         get {
             return UIBarButtonItem(barButtonSystemItem: .stop, target: nil, action: nil)
         }
@@ -57,7 +57,7 @@ import MobileCoreServices
     /// The action bar button item that is initially set in the overlay's toolbar. Any 'target' or 'action' provided to this button will be overwritten.
     /// Overriding this is purely for customizing the look and feel of the button.
     /// Alternatively, you may create your own `UIBarButtonItem`s and directly set them _and_ their actions on the `overlayView` property.
-    open var actionBarButtonItem: UIBarButtonItem {
+    @objc open var actionBarButtonItem: UIBarButtonItem {
         get {
             return UIBarButtonItem(barButtonSystemItem: .action, target: nil, action: nil)
         }
@@ -65,21 +65,21 @@ import MobileCoreServices
     
     /// The `TransitionInfo` passed in at initialization. This object is used to define functionality for the presentation and dismissal
     /// of the `PhotosViewController`.
-    open fileprivate(set) var transitionInfo = TransitionInfo()
+    @objc open fileprivate(set) var transitionInfo = TransitionInfo()
     
     /// The `NetworkIntegration` passed in at initialization. This object is used to fetch images asynchronously from a cache or URL.
     /// - Initialized by the end of `commonInit(dataSource:pagingConfig:transitionInfo:networkIntegration:)`.
-    public fileprivate(set) var networkIntegration: NetworkIntegrationProtocol!
+    @objc public fileprivate(set) var networkIntegration: NetworkIntegrationProtocol!
     
     /// The view controller containing the photo currently being shown.
-    public var currentPhotoViewController: PhotoViewController? {
+    @objc public var currentPhotoViewController: PhotoViewController? {
         get {
             return self.orderedViewControllers.filter({ $0.pageIndex == currentPhotoIndex }).first
         }
     }
     
     /// The index of the photo currently being shown.
-    public fileprivate(set) var currentPhotoIndex: Int = 0 {
+    @objc public fileprivate(set) var currentPhotoIndex: Int = 0 {
         didSet {
             self.updateOverlay(for: currentPhotoIndex)
         }
@@ -132,35 +132,35 @@ import MobileCoreServices
     
     // MARK: - Initialization
     #if AX_SDWEBIMAGE_SUPPORT || AX_PINREMOTEIMAGE_SUPPORT || AX_AFNETWORKING_SUPPORT || AX_KINGFISHER_SUPPORT || AX_LITE_SUPPORT
-    public init() {
+    @objc public init() {
         super.init(nibName: nil, bundle: nil)
         self.commonInit()
     }
     
-    public init(dataSource: PhotosDataSource?) {
+    @objc public init(dataSource: PhotosDataSource?) {
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource)
     }
     
-    public init(dataSource: PhotosDataSource?,
-                pagingConfig: PagingConfig?) {
+    @objc public init(dataSource: PhotosDataSource?,
+                      pagingConfig: PagingConfig?) {
         
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource,
                         pagingConfig: pagingConfig)
     }
     
-    public init(pagingConfig: PagingConfig?,
-                transitionInfo: TransitionInfo?) {
+    @objc public init(pagingConfig: PagingConfig?,
+                      transitionInfo: TransitionInfo?) {
         
         super.init(nibName: nil, bundle: nil)
         self.commonInit(pagingConfig: pagingConfig,
                         transitionInfo: transitionInfo)
     }
     
-    public init(dataSource: PhotosDataSource?,
-                pagingConfig: PagingConfig?,
-                transitionInfo: TransitionInfo?) {
+    @objc public init(dataSource: PhotosDataSource?,
+                      pagingConfig: PagingConfig?,
+                      transitionInfo: TransitionInfo?) {
         
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource,
@@ -168,22 +168,22 @@ import MobileCoreServices
                         transitionInfo: transitionInfo)
     }
     #else
-    public init(networkIntegration: NetworkIntegrationProtocol) {
+    @objc public init(networkIntegration: NetworkIntegrationProtocol) {
         super.init(nibName: nil, bundle: nil)
         self.commonInit(networkIntegration: networkIntegration)
     }
     
-    public init(dataSource: PhotosDataSource?,
-                networkIntegration: NetworkIntegrationProtocol) {
+    @objc public init(dataSource: PhotosDataSource?,
+                      networkIntegration: NetworkIntegrationProtocol) {
     
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource,
                         networkIntegration: networkIntegration)
     }
     
-    public init(dataSource: PhotosDataSource?,
-                pagingConfig: PagingConfig?,
-                networkIntegration: NetworkIntegrationProtocol) {
+    @objc public init(dataSource: PhotosDataSource?,
+                      pagingConfig: PagingConfig?,
+                      networkIntegration: NetworkIntegrationProtocol) {
     
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource,
@@ -191,9 +191,9 @@ import MobileCoreServices
                         networkIntegration: networkIntegration)
     }
     
-    public init(pagingConfig: PagingConfig?,
-                transitionInfo: TransitionInfo?,
-                networkIntegration: NetworkIntegrationProtocol) {
+    @objc public init(pagingConfig: PagingConfig?,
+                      transitionInfo: TransitionInfo?,
+                      networkIntegration: NetworkIntegrationProtocol) {
     
         super.init(nibName: nil, bundle: nil)
         self.commonInit(pagingConfig: pagingConfig,
@@ -201,10 +201,10 @@ import MobileCoreServices
                         networkIntegration: networkIntegration)
     }
     
-    public init(dataSource: PhotosDataSource?,
-                pagingConfig: PagingConfig?,
-                transitionInfo: TransitionInfo?,
-                networkIntegration: NetworkIntegrationProtocol) {
+    @objc public init(dataSource: PhotosDataSource?,
+                      pagingConfig: PagingConfig?,
+                      transitionInfo: TransitionInfo?,
+                      networkIntegration: NetworkIntegrationProtocol) {
 
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource,
@@ -267,7 +267,7 @@ import MobileCoreServices
         self.currentPhotoViewController?.zoomingImageView.imageView.ax_syncFrames(with: previewingPhotosViewController.imageView)
     }
     
-    public required init?(coder aDecoder: NSCoder) {
+    @objc public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
@@ -1141,14 +1141,14 @@ fileprivate extension UIScrollView {
 // MARK: - Notification definitions
 // Keep Obj-C land happy
 @objc(AXPhotosViewControllerNotification) open class PhotosViewControllerNotification: NSObject {
-    static let ProgressUpdate = Notification.Name.photoLoadingProgressUpdate.rawValue
-    static let ImageUpdate = Notification.Name.photoImageUpdate.rawValue
-    static let ImageKey = "AXPhotosViewControllerImage"
-    static let ImageDataKey = "AXPhotosViewControllerImageData"
-    static let ReferenceViewKey = "AXPhotosViewControllerReferenceView"
-    static let LoadingStateKey = "AXPhotosViewControllerLoadingState"
-    static let ProgressKey = "AXPhotosViewControllerProgress"
-    static let ErrorKey = "AXPhotosViewControllerError"
+    @objc static let ProgressUpdate = Notification.Name.photoLoadingProgressUpdate.rawValue
+    @objc static let ImageUpdate = Notification.Name.photoImageUpdate.rawValue
+    @objc static let ImageKey = "AXPhotosViewControllerImage"
+    @objc static let ImageDataKey = "AXPhotosViewControllerImageData"
+    @objc static let ReferenceViewKey = "AXPhotosViewControllerReferenceView"
+    @objc static let LoadingStateKey = "AXPhotosViewControllerLoadingState"
+    @objc static let ProgressKey = "AXPhotosViewControllerProgress"
+    @objc static let ErrorKey = "AXPhotosViewControllerError"
 }
 
 public extension Notification.Name {

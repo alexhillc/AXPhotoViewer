@@ -18,16 +18,16 @@
     /// Setting this property to `conservative`, only the current photo will be loaded.
     /// Setting this property to `regular` (default), the current photo, the previous photo, and the next photo will be loaded.
     /// Setting this property to `aggressive`, the current photo, the previous two photos, and the next two photos will be loaded.
-    fileprivate(set) var prefetchBehavior: PhotosPrefetchBehavior
+    @objc fileprivate(set) var prefetchBehavior: PhotosPrefetchBehavior
     
     /// The photos to display in the PhotosViewController.
     fileprivate var photos: [PhotoProtocol]
     
     // The initial photo index to display upon presentation.
-    private(set) var initialPhotoIndex: Int = 0
+    @objc fileprivate(set) var initialPhotoIndex: Int = 0
     
     // MARK: - Initialization
-    public init(photos: [PhotoProtocol], initialPhotoIndex: Int, prefetchBehavior: PhotosPrefetchBehavior) {
+    @objc public init(photos: [PhotoProtocol], initialPhotoIndex: Int, prefetchBehavior: PhotosPrefetchBehavior) {
         self.photos = photos
         self.prefetchBehavior = prefetchBehavior
         
@@ -39,20 +39,20 @@
         super.init()
     }
     
-    public convenience override init() {
+    @objc public convenience override init() {
         self.init(photos: [], initialPhotoIndex: 0, prefetchBehavior: .regular)
     }
     
-    public convenience init(photos: [PhotoProtocol]) {
+    @objc public convenience init(photos: [PhotoProtocol]) {
         self.init(photos: photos, initialPhotoIndex: 0, prefetchBehavior: .regular)
     }
     
-    public convenience init(photos: [PhotoProtocol], initialPhotoIndex: Int) {
+    @objc public convenience init(photos: [PhotoProtocol], initialPhotoIndex: Int) {
         self.init(photos: photos, initialPhotoIndex: initialPhotoIndex, prefetchBehavior: .regular)
     }
     
     // MARK: - DataSource
-    public var numberOfPhotos: Int {
+    @objc public var numberOfPhotos: Int {
         return self.photos.count
     }
     

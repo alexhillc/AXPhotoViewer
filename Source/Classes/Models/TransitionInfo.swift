@@ -10,21 +10,21 @@
     
     /// The view the the transition controller should use for contextual animation during the presentation.
     /// If the reference view that is provided is not currently visible, contextual animation will not occur.
-    fileprivate(set) weak var startingView: UIImageView?
+    @objc fileprivate(set) weak var startingView: UIImageView?
     
     /// The view the the transition controller should use for contextual animation during the dismissal.
     /// If the reference view that is provided is not currently visible, contextual animation will not occur.
-    fileprivate(set) weak var endingView: UIImageView?
+    @objc fileprivate(set) weak var endingView: UIImageView?
     
     /// The duration of the transition.
-    public var duration: TimeInterval = 0.3
+    @objc public var duration: TimeInterval = 0.3
     
     /// This value determines whether or not the user can dismiss the `PhotosViewController` by panning vertically.
-    fileprivate(set) var interactiveDismissalEnabled: Bool = true
+    @objc fileprivate(set) var interactiveDismissalEnabled: Bool = true
     
     var resolveEndingViewClosure: ((_ photo: PhotoProtocol, _ index: Int) -> Void)?
     
-    public init(interactiveDismissalEnabled: Bool, startingView: UIImageView?, endingView: ((_ photo: PhotoProtocol, _ index: Int) -> UIImageView?)?) {
+    @objc public init(interactiveDismissalEnabled: Bool, startingView: UIImageView?, endingView: ((_ photo: PhotoProtocol, _ index: Int) -> UIImageView?)?) {
         super.init()
         self.interactiveDismissalEnabled = interactiveDismissalEnabled
         
@@ -58,11 +58,11 @@
         }
     }
     
-    public convenience override init() {
+    @objc public convenience override init() {
         self.init(interactiveDismissalEnabled: true, startingView: nil, endingView: nil)
     }
 
-    public convenience init(startingView: UIImageView?, endingView: ((_ photo: PhotoProtocol, _ index: Int) -> UIImageView?)?) {
+    @objc public convenience init(startingView: UIImageView?, endingView: ((_ photo: PhotoProtocol, _ index: Int) -> UIImageView?)?) {
         self.init(interactiveDismissalEnabled: true, startingView: startingView, endingView: endingView)
     }
     

@@ -47,7 +47,7 @@
 }
 
 - (void)ax_syncFramesWithImageView:(FLAnimatedImageView *)imageView {
-    if (self.animatedImage == nil || imageView.animatedImage == nil || ![self.animatedImage.data isEqualToData:imageView.animatedImage.data]) {
+    if (!self.animatedImage || !imageView.animatedImage || ![self.animatedImage.data isEqualToData:imageView.animatedImage.data]) {
         return;
     }
     
