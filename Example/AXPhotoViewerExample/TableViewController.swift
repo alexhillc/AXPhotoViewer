@@ -50,12 +50,14 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate, 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         
-        if self.traitCollection.forceTouchCapability == .available {
-            if self.previewingContext == nil {
-                self.previewingContext = self.registerForPreviewing(with: self, sourceView: self.tableView)
+        if #available(iOS 9.0, *) {
+            if self.traitCollection.forceTouchCapability == .available {
+                if self.previewingContext == nil {
+                    self.previewingContext = self.registerForPreviewing(with: self, sourceView: self.tableView)
+                }
+            } else if let previewingContext = self.previewingContext {
+                self.unregisterForPreviewing(withContext: previewingContext)
             }
-        } else if let previewingContext = self.previewingContext {
-            self.unregisterForPreviewing(withContext: previewingContext)
         }
     }
 
@@ -219,6 +221,7 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate, 
     }
     
     // MARK: - UIViewControllerPreviewingDelegate
+    @available(iOS 9.0, *)
     func previewingContext(_ previewingContext: UIViewControllerPreviewing, viewControllerForLocation location: CGPoint) -> UIViewController? {
         guard let indexPath = self.tableView.indexPathForRow(at: location),
             let cell = self.tableView.cellForRow(at: indexPath),
@@ -234,6 +237,7 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate, 
         return previewingPhotosViewController
     }
     
+    @available(iOS 9.0, *)
     func previewingContext(_ previewingContext: UIViewControllerPreviewing, commit viewControllerToCommit: UIViewController) {
         if let previewingPhotosViewController = viewControllerToCommit as? PreviewingPhotosViewController {
             self.present(PhotosViewController(from: previewingPhotosViewController), animated: false)

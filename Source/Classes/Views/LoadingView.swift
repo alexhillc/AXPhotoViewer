@@ -42,12 +42,16 @@ import AXStateButton
                 fontDescriptor = UIFont.preferredFont(forTextStyle: .body).fontDescriptor
             }
             
-            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFont.Weight.light)
-            let textColor = UIColor.white
+            var font: UIFont
+            if #available(iOS 8.2, *) {
+                font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFont.Weight.light)
+            } else {
+                font = UIFont(name: "HelveticaNeue-Light", size: fontDescriptor.pointSize)!
+            }
             
             return [
                 NSAttributedStringKey.font: font,
-                NSAttributedStringKey.foregroundColor: textColor
+                NSAttributedStringKey.foregroundColor: UIColor.white
             ]
         }
     }
@@ -70,12 +74,16 @@ import AXStateButton
                 fontDescriptor = UIFont.preferredFont(forTextStyle: .caption1).fontDescriptor
             }
             
-            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFont.Weight.light)
-            let textColor = UIColor.white
+            var font: UIFont
+            if #available(iOS 8.2, *) {
+                font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFont.Weight.light)
+            } else {
+                font = UIFont(name: "HelveticaNeue-Light", size: fontDescriptor.pointSize)!
+            }
             
             return [
                 NSAttributedStringKey.font: font,
-                NSAttributedStringKey.foregroundColor: textColor
+                NSAttributedStringKey.foregroundColor: UIColor.white
             ]
         }
     }

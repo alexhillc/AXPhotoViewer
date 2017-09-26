@@ -7,13 +7,13 @@ Pod::Spec.new do |s|
   s.author          = { "Alex Hill" => "alexhill.c@gmail.com" }
   s.source          = { :git => "https://github.com/alexhillc/AXPhotoViewer.git", :tag => "v#{s.version}" }
 
-  s.platform        = :ios, '9.0'
+  s.platform        = :ios, '8.0'
   s.requires_arc    = true
 
   s.default_subspec = 'Lite'
 
   s.subspec 'Core' do |cs|
-    cs.dependency      'AXStateButton', '>= 1.1.2'
+    cs.dependency      'AXStateButton', '>= 1.1.3'
     cs.dependency      'FLAnimatedImage', '>= 1.0.0'
     cs.resources     = 'Assets/*.{xcassets}'
     cs.source_files  = 'Source/*.{swift,h,m}',

@@ -220,7 +220,12 @@ import MobileCoreServices
         self.commonInit(dataSource: previewingPhotosViewController.dataSource,
                         networkIntegration: previewingPhotosViewController.networkIntegration)
         
-        self.loadViewIfNeeded()
+        if #available(iOS 9.0, *) {
+            self.loadViewIfNeeded()
+        } else {
+            let _ = self.view
+        }
+        
         self.currentPhotoViewController?.zoomingImageView.imageView.ax_syncFrames(with: previewingPhotosViewController.imageView)
     }
     
@@ -233,7 +238,12 @@ import MobileCoreServices
                         pagingConfig: pagingConfig,
                         networkIntegration: previewingPhotosViewController.networkIntegration)
         
-        self.loadViewIfNeeded()
+        if #available(iOS 9.0, *) {
+            self.loadViewIfNeeded()
+        } else {
+            let _ = self.view
+        }
+        
         self.currentPhotoViewController?.zoomingImageView.imageView.ax_syncFrames(with: previewingPhotosViewController.imageView)
     }
     
@@ -248,7 +258,12 @@ import MobileCoreServices
                         transitionInfo: transitionInfo,
                         networkIntegration: previewingPhotosViewController.networkIntegration)
         
-        self.loadViewIfNeeded()
+        if #available(iOS 9.0, *) {
+            self.loadViewIfNeeded()
+        } else {
+            let _ = self.view
+        }
+        
         self.currentPhotoViewController?.zoomingImageView.imageView.ax_syncFrames(with: previewingPhotosViewController.imageView)
     }
     
