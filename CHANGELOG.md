@@ -1,3 +1,11 @@
+# 1.3.0
+- iOS 11 support, Swift 4 migration & support
+- iOS 8 support
+- **[NEW]** Introduce `StackableViewContainer`, a useful class that will stack self-sizing views on an anchor point. This is used to add custom views anchored at the top and bottom of the OverlayView. OverlayView.topStackContainer, OverlayView.bottomStackContainer can be used to display custom views (button bars, any extra self-sizing views) to the user without a hacky subclass.
+- **[NEW]** Adopt iOS 11 `safeAreaInsets` for iPhone X support.
+- **[REMOVED]** `CaptionViewDelegate`
+- **[FIXED]** `PhotosViewController` initialization would not allow for `OverlayView` manipulation until the view was loaded.
+
 # 1.2.10
 - **[FIXED]** `AXLoadingView` subclass would fetch the incorrect asset bundle when searching for default error assets
 - **[NEW]** `AXPhotosViewController` now supports being embedded in a fullscreen container and upholding its responsibility as a `UIViewControllerTransitioningDelegate`
