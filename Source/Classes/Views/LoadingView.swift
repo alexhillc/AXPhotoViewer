@@ -42,7 +42,10 @@ import AXStateButton
                 fontDescriptor = UIFont.preferredFont(forTextStyle: .body).fontDescriptor
             }
             
-            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFontWeightLight)
+            var font = UIFont.systemFont(ofSize: 10)
+            if #available(iOS 8.2, *) {
+                font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFontWeightLight)
+            }
             let textColor = UIColor.white
             
             return [
@@ -70,7 +73,10 @@ import AXStateButton
                 fontDescriptor = UIFont.preferredFont(forTextStyle: .caption1).fontDescriptor
             }
             
-            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFontWeightLight)
+            var font = UIFont.systemFont(ofSize: 10)
+            if #available(iOS 8.2, *) {
+                font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFontWeightLight)
+            }
             let textColor = UIColor.white
             
             return [
