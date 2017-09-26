@@ -32,7 +32,7 @@ import AXStateButton
     }
     
     /// The attributes that will get applied to the `errorText` when displaying an error.
-    open var errorAttributes: [String: Any] {
+    open var errorAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -42,12 +42,16 @@ import AXStateButton
                 fontDescriptor = UIFont.preferredFont(forTextStyle: .body).fontDescriptor
             }
             
-            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFontWeightLight)
-            let textColor = UIColor.white
+            var font: UIFont
+            if #available(iOS 8.2, *) {
+                font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFont.Weight.light)
+            } else {
+                font = UIFont(name: "HelveticaNeue-Light", size: fontDescriptor.pointSize)!
+            }
             
             return [
-                NSFontAttributeName: font,
-                NSForegroundColorAttributeName: textColor
+                NSAttributedStringKey.font: font,
+                NSAttributedStringKey.foregroundColor: UIColor.white
             ]
         }
     }
@@ -60,7 +64,7 @@ import AXStateButton
     }
     
     /// The attributes that will get applied to the `retryText` when displaying an error.
-    open var retryAttributes: [String: Any] {
+    open var retryAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -70,12 +74,16 @@ import AXStateButton
                 fontDescriptor = UIFont.preferredFont(forTextStyle: .caption1).fontDescriptor
             }
             
-            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFontWeightLight)
-            let textColor = UIColor.white
+            var font: UIFont
+            if #available(iOS 8.2, *) {
+                font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFont.Weight.light)
+            } else {
+                font = UIFont(name: "HelveticaNeue-Light", size: fontDescriptor.pointSize)!
+            }
             
             return [
-                NSFontAttributeName: font,
-                NSForegroundColorAttributeName: textColor
+                NSAttributedStringKey.font: font,
+                NSAttributedStringKey.foregroundColor: UIColor.white
             ]
         }
     }
@@ -108,7 +116,7 @@ import AXStateButton
     }
     
     @discardableResult fileprivate func computeSize(for constrainedSize: CGSize, applySizingLayout: Bool) -> CGSize {
-        func makeAttributedStringWithAttributes(_ attributes: [String: Any], for attributedString: NSAttributedString?) -> NSAttributedString? {
+        func makeAttributedStringWithAttributes(_ attributes: [NSAttributedStringKey: Any], for attributedString: NSAttributedString?) -> NSAttributedString? {
             guard let newAttributedString = attributedString?.mutableCopy() as? NSMutableAttributedString else {
                 return attributedString
             }

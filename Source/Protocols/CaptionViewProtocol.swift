@@ -8,9 +8,6 @@
 
 @objc(AXCaptionViewProtocol) public protocol CaptionViewProtocol: NSObjectProtocol {
     
-    /// The delegate used by the framework to respond to content size changes.
-    weak var delegate: CaptionViewDelegate? { get set }
-    
     /// Whether or not the `CaptionView` should animate caption info changes - using `AXConstants.frameAnimDuration` as
     /// the animation duration.
     var animateCaptionInfoChanges: Bool { get set }
@@ -31,18 +28,5 @@
     /// - Parameter size: The constrained size. Use the width of this value to layout subviews.
     /// - Returns: A size that fits all subviews inside a constrained width.
     func sizeThatFits(_ size: CGSize) -> CGSize
-    
-}
-
-@objc(AXCaptionViewDelegate) public protocol CaptionViewDelegate: AnyObject, NSObjectProtocol {
-    
-    /// This method should be called when the size of the content inside of your view changes. This notifies the containing
-    /// view that it should update its layout to accomodate the content size change.
-    ///
-    /// - Parameters:
-    ///   - captionView: The `captionView` whose content size changed.
-    ///   - newSize: The new content size of the `captionView`.
-    @objc(captionView:contentSizeDidChange:)
-    func captionView(_ captionView: CaptionViewProtocol, contentSizeDidChange newSize: CGSize) -> Void
     
 }

@@ -9,9 +9,7 @@
 import UIKit
 
 @objc(AXCaptionView) open class CaptionView: UIView, CaptionViewProtocol {
-    
-    open weak var delegate: CaptionViewDelegate?
-    
+        
     public var animateCaptionInfoChanges: Bool = true
     
     open var titleLabel = UILabel()
@@ -31,7 +29,7 @@ import UIKit
     
     fileprivate var isFirstLayout: Bool = true
     
-    open var defaultTitleAttributes: [String: Any] {
+    open var defaultTitleAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -41,17 +39,21 @@ import UIKit
                 fontDescriptor = UIFont.preferredFont(forTextStyle: .body).fontDescriptor
             }
             
-            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFontWeightBold)
-            let textColor = UIColor.white
+            var font: UIFont
+            if #available(iOS 8.2, *) {
+                font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFont.Weight.bold)
+            } else {
+                font = UIFont(name: "HelveticaNeue-Bold", size: fontDescriptor.pointSize)!
+            }
             
             return [
-                NSFontAttributeName: font,
-                NSForegroundColorAttributeName: textColor
+                NSAttributedStringKey.font: font,
+                NSAttributedStringKey.foregroundColor: UIColor.white
             ]
         }
     }
     
-    open var defaultDescriptionAttributes: [String: Any] {
+    open var defaultDescriptionAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -61,17 +63,21 @@ import UIKit
                 fontDescriptor = UIFont.preferredFont(forTextStyle: .body).fontDescriptor
             }
             
-            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFontWeightLight)
-            let textColor = UIColor.lightGray
+            var font: UIFont
+            if #available(iOS 8.2, *) {
+                font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFont.Weight.light)
+            } else {
+                font = UIFont(name: "HelveticaNeue-Light", size: fontDescriptor.pointSize)!
+            }
             
             return [
-                NSFontAttributeName: font,
-                NSForegroundColorAttributeName: textColor
+                NSAttributedStringKey.font: font,
+                NSAttributedStringKey.foregroundColor: UIColor.lightGray
             ]
         }
     }
     
-    open var defaultCreditAttributes: [String: Any] {
+    open var defaultCreditAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, *) {
@@ -81,12 +87,16 @@ import UIKit
                 fontDescriptor = UIFont.preferredFont(forTextStyle: .caption1).fontDescriptor
             }
             
-            let font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFontWeightLight)
-            let textColor = UIColor.gray
+            var font: UIFont
+            if #available(iOS 8.2, *) {
+                font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFont.Weight.light)
+            } else {
+                font = UIFont(name: "HelveticaNeue-Light", size: fontDescriptor.pointSize)!
+            }
             
             return [
-                NSFontAttributeName: font,
-                NSForegroundColorAttributeName: textColor
+                NSAttributedStringKey.font: font,
+                NSAttributedStringKey.foregroundColor: UIColor.gray
             ]
         }
     }
@@ -105,7 +115,7 @@ import UIKit
 
         super.init(frame: .zero)
         
-        self.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        self.backgroundColor = .clear
         
         self.titleSizingLabel.numberOfLines = 0
         self.descriptionSizingLabel.numberOfLines = 0
@@ -140,7 +150,7 @@ import UIKit
                                attributedDescription: NSAttributedString?,
                                attributedCredit: NSAttributedString?) {
         
-        func makeAttributedStringWithDefaults(_ defaults: [String: Any], for attributedString: NSAttributedString?) -> NSAttributedString? {
+        func makeAttributedStringWithDefaults(_ defaults: [NSAttributedStringKey: Any], for attributedString: NSAttributedString?) -> NSAttributedString? {
             guard let defaultAttributedString = attributedString?.mutableCopy() as? NSMutableAttributedString else {
                 return attributedString
             }
@@ -189,11 +199,6 @@ import UIKit
         }
         
         self.needsCaptionLayoutAnim = !self.isFirstLayout
-        
-        let newSize = self.computeSize(for: self.frame.size, applySizingLayout: false)
-        self.delegate?.captionView(self, contentSizeDidChange: newSize)
-        
-        self.setNeedsLayout()
     }
     
     open override func layoutSubviews() {
@@ -291,7 +296,7 @@ import UIKit
                 return attributedString
             }
             
-            fontAdjustedAttributedString.enumerateAttribute(NSFontAttributeName,
+            fontAdjustedAttributedString.enumerateAttribute(NSAttributedStringKey.font,
                                                             in: NSMakeRange(0, fontAdjustedAttributedString.length),
                                                             options: [], using: { [weak self] (value, range, stop) in
                 guard let oldFont = value as? UIFont else {
@@ -307,8 +312,8 @@ import UIKit
                 }
                                                                 
                 let newFont = oldFont.withSize(newFontDescriptor.pointSize)
-                fontAdjustedAttributedString.removeAttribute(NSFontAttributeName, range: range)
-                fontAdjustedAttributedString.addAttribute(NSFontAttributeName, value: newFont, range: range)
+                fontAdjustedAttributedString.removeAttribute(NSAttributedStringKey.font, range: range)
+                fontAdjustedAttributedString.addAttribute(NSAttributedStringKey.font, value: newFont, range: range)
             })
             
             return fontAdjustedAttributedString.copy() as? NSAttributedString
@@ -325,13 +330,17 @@ import UIKit
         let HorizontalPadding: CGFloat = 15
         let InterLabelSpacing: CGFloat = 2
         var yOffset: CGFloat = 0
+        var maxWidth: CGFloat = 0
 
         for (index, label) in self.visibleSizingLabels.enumerated() {
             var constrainedLabelSize = constrainedSize
             constrainedLabelSize.width -= (2 * HorizontalPadding)
             
             let labelSize = label.sizeThatFits(constrainedLabelSize)
-
+            if labelSize.width > maxWidth {
+                maxWidth = labelSize.width + (2 * HorizontalPadding)
+            }
+            
             if index == 0 {
                 yOffset += VerticalPadding
             } else {
@@ -352,7 +361,7 @@ import UIKit
             }
         }
         
-        return CGSize(width: constrainedSize.width, height: yOffset)
+        return CGSize(width: maxWidth, height: yOffset)
     }
 
 }

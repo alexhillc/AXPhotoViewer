@@ -8,7 +8,7 @@
 
 @objc(AXOverlayTitleViewProtocol) public protocol OverlayTitleViewProtocol: NSObjectProtocol {
     
-    /// This method is called by the `OverlayView`'s navigation bar in order to size the view appropriately for display.
+    /// This method is called by the `OverlayView`'s toolbar in order to size the view appropriately for display.
     func sizeToFit() -> Void
     
     /// Called when swipe progress between photos is updated. This method can be implemented to update your [progressive] 
