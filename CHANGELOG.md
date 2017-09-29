@@ -1,3 +1,7 @@
+# 1.3.1
+- **[FIXED]** `OverlayView` bar button items were not spaced correctly by default
+- **[FIXED]** `StackableViewContainer` was not playing well with animations due to an earlier work aroudn that was made for CaptionView animations, but that is now fixed; as a result, subviews are now laid out at the time of their container's layout
+
 # 1.3.0
 - iOS 11 support, Swift 4 migration & support
 - iOS 8 support
