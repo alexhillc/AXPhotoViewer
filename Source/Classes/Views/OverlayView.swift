@@ -158,12 +158,12 @@ import UIKit
         self.toolbar.setBackgroundImage(UIImage(), forToolbarPosition: .any, barMetrics: .default)
         
         self.topStackContainer = StackableViewContainer(views: [self.toolbar], anchoredAt: .top)
-        self.topStackContainer.backgroundColor = Constants.defaultOverlayForegroundColor
+        self.topStackContainer.backgroundColor = Constants.overlayForegroundColor
         self.topStackContainer.delegate = self
         self.addSubview(self.topStackContainer)
         
         self.bottomStackContainer = StackableViewContainer(views: [], anchoredAt: .bottom)
-        self.bottomStackContainer.backgroundColor = Constants.defaultOverlayForegroundColor
+        self.bottomStackContainer.backgroundColor = Constants.overlayForegroundColor
         self.bottomStackContainer.delegate = self
         self.addSubview(self.bottomStackContainer)
         
@@ -260,13 +260,20 @@ import UIKit
     
     // MARK: - UIToolbar convenience
     func updateToolbarBarButtonItems() {
-        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace,
-                                            target: nil,
-                                            action: nil)
+        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let fixedSpace = UIBarButtonItem(barButtonSystemItem: .fixedSpace, target: nil, action: nil)
+        fixedSpace.width = Constants.overlayBarButtonItemSpacing
         
         var barButtonItems = [UIBarButtonItem]()
         if let leftBarButtonItems = self.leftBarButtonItems {
-            barButtonItems.append(contentsOf: leftBarButtonItems)
+            let last = leftBarButtonItems.last
+            for barButtonItem in leftBarButtonItems {
+                barButtonItems.append(barButtonItem)
+                
+                if barButtonItem != last {
+                    barButtonItems.append(fixedSpace)
+                }
+            }
         }
         
         barButtonItems.append(flexibleSpace)
@@ -288,8 +295,15 @@ import UIKit
             barButtonItems.append(flexibleSpace)
         }
         
-        if let rightBarButtonItems = self.rightBarButtonItems {
-            barButtonItems.append(contentsOf: rightBarButtonItems)
+        if let rightBarButtonItems = self.rightBarButtonItems?.reversed() {
+            let last = rightBarButtonItems.last
+            for barButtonItem in rightBarButtonItems {
+                barButtonItems.append(barButtonItem)
+                
+                if barButtonItem != last {
+                    barButtonItems.append(fixedSpace)
+                }
+            }
         }
         
         self.toolbar.items = barButtonItems
@@ -351,6 +365,7 @@ import UIKit
             
             uSelf.bottomStackContainer.frame = CGRect(origin: CGPoint(x: 0, y: uSelf.frame.size.height - size.height), size: size)
             uSelf.bottomStackContainer.setNeedsLayout()
+            uSelf.bottomStackContainer.layoutIfNeeded()
         }
         
         if self.animateCaptionViewChanges {

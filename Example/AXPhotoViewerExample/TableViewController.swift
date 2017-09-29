@@ -20,6 +20,9 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate, 
     var urlSession = URLSession(configuration: .default)
     var content = [Int: Data]()
     
+    weak var photosViewController: PhotosViewController?
+    weak var customView: UILabel?
+    
     let photos = [
         Photo(attributedTitle: NSAttributedString(string: "The Flash Poster"),
               attributedDescription: NSAttributedString(string: "Season 3"),
@@ -184,11 +187,42 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate, 
 //        photosViewController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         photosViewController.delegate = self
         
+        let flex = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let bottomView = UIToolbar(frame: CGRect(origin: .zero, size: CGSize(width: 320, height: 44)))
+        let customView = UILabel(frame: CGRect(origin: .zero, size: CGSize(width: 80, height: 20)))
+        customView.text = "\(photosViewController.currentPhotoIndex + 1)"
+        customView.textColor = .white
+        customView.sizeToFit()
+        bottomView.items = [
+            UIBarButtonItem(barButtonSystemItem: .add, target: nil, action: nil),
+            flex,
+            UIBarButtonItem(customView: customView),
+            flex,
+            UIBarButtonItem(barButtonSystemItem: .trash, target: nil, action: nil),
+        ]
+        bottomView.backgroundColor = .clear
+        bottomView.setBackgroundImage(UIImage(), forToolbarPosition: .any, barMetrics: .default)
+        photosViewController.overlayView.bottomStackContainer.insertSubview(bottomView, at: 0)
+        
+        self.customView = customView
+        
 //        container.addChildViewController(photosViewController)
 //        container.view.addSubview(photosViewController.view)
 //        photosViewController.didMove(toParentViewController: container)
         
         self.present(photosViewController, animated: true)
+        self.photosViewController = photosViewController
+    }
+    
+    // MARK: - PhotosViewControllerDelegate
+    func photosViewController(_ photosViewController: PhotosViewController,
+                              willUpdate overlayView: OverlayView,
+                              for photo: PhotoProtocol,
+                              at index: Int,
+                              totalNumberOfPhotos: Int) {
+        
+        self.customView?.text = "\(index + 1)"
+        self.customView?.sizeToFit()
     }
     
     // MARK: - Loading

@@ -226,55 +226,62 @@ import UIKit
         }
         
         if self.animateCaptionInfoChanges && self.needsCaptionLayoutAnim {
-            let animateOut: () -> Void = { [weak self] in
-                self?.titleLabel.alpha = 0
-                self?.descriptionLabel.alpha = 0
-                self?.creditLabel.alpha = 0
-            }
-            
-            let animateOutCompletion: (_ finished: Bool) -> Void = { [weak self] (finished) in
-                guard let uSelf = self, finished else {
+            // ensure that this block runs in its own animation context (container may animate)
+            DispatchQueue.main.async { [weak self] in
+                guard let uSelf = self else {
                     return
                 }
                 
-                applySizingAttributes()
-                uSelf.isCaptionAnimatingOut = false
-            }
-            
-            let animateIn: () -> Void = { [weak self] in
-                self?.titleLabel.alpha = 1
-                self?.descriptionLabel.alpha = 1
-                self?.creditLabel.alpha = 1
-            }
-            
-            let animateInCompletion: (_ finished: Bool) -> Void = { [weak self] (finished) in
-                guard let uSelf = self, finished else {
+                let animateOut: () -> Void = {
+                    uSelf.titleLabel.alpha = 0
+                    uSelf.descriptionLabel.alpha = 0
+                    uSelf.creditLabel.alpha = 0
+                }
+                
+                let animateOutCompletion: (_ finished: Bool) -> Void = { (finished) in
+                    if !finished {
+                        return
+                    }
+                    
+                    applySizingAttributes()
+                    uSelf.isCaptionAnimatingOut = false
+                }
+                
+                let animateIn: () -> Void = {
+                    uSelf.titleLabel.alpha = 1
+                    uSelf.descriptionLabel.alpha = 1
+                    uSelf.creditLabel.alpha = 1
+                }
+                
+                let animateInCompletion: (_ finished: Bool) -> Void = { (finished) in
+                    if !finished {
+                        return
+                    }
+                    
+                    uSelf.isCaptionAnimatingIn = false
+                }
+                
+                if uSelf.isCaptionAnimatingOut {
                     return
                 }
                 
-                uSelf.isCaptionAnimatingIn = false
-            }
-            
-            if self.isCaptionAnimatingOut {
-                return
-            }
-            
-            self.isCaptionAnimatingOut = true
-            UIView.animate(withDuration: Constants.frameAnimDuration / 2,
-                           delay: 0,
-                           options: [.beginFromCurrentState, .curveEaseOut], 
-                           animations: animateOut) { [weak self] (finished) in
-                            
-                guard let uSelf = self, !uSelf.isCaptionAnimatingIn else {
-                    return
-                }
-                
-                animateOutCompletion(finished)
+                uSelf.isCaptionAnimatingOut = true
                 UIView.animate(withDuration: Constants.frameAnimDuration / 2,
-                               delay: 0, 
-                               options: [.beginFromCurrentState, .curveEaseIn], 
-                               animations: animateIn, 
-                               completion: animateInCompletion)
+                               delay: 0,
+                               options: [.beginFromCurrentState, .curveEaseOut],
+                               animations: animateOut) { (finished) in
+                    
+                    if uSelf.isCaptionAnimatingIn {
+                        return
+                    }
+                    
+                    animateOutCompletion(finished)
+                    UIView.animate(withDuration: Constants.frameAnimDuration / 2,
+                                   delay: 0,
+                                   options: [.beginFromCurrentState, .curveEaseIn],
+                                   animations: animateIn,
+                                   completion: animateInCompletion)
+                }
             }
             
             self.needsCaptionLayoutAnim = false

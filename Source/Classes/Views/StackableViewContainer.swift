@@ -66,6 +66,7 @@ import UIKit
             if applySizingLayout {
                 subview.frame = frame
                 subview.setNeedsLayout()
+                subview.layoutIfNeeded()
             }
         }
         
