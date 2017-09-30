@@ -45,10 +45,6 @@ import UIKit
     
     @discardableResult fileprivate func computeSize(for constrainedSize: CGSize, applySizingLayout: Bool) -> CGSize {
         var yOffset: CGFloat = 0
-        if self.subviews.count > 0 {
-            yOffset = self.contentInset.top
-        }
-        
         let xOffset: CGFloat = self.contentInset.left
         var constrainedInsetSize = constrainedSize
         constrainedInsetSize.width -= (self.contentInset.left + self.contentInset.right)
@@ -57,6 +53,10 @@ import UIKit
         for subview in subviews {
             let size = subview.sizeThatFits(constrainedInsetSize)
             var frame: CGRect
+            
+            if yOffset == 0 && size.height > 0 {
+                yOffset = self.contentInset.top
+            }
             
             // special cases
             if subview is UIToolbar || subview is UINavigationBar {
