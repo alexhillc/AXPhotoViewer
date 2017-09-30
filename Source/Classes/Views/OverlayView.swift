@@ -73,11 +73,7 @@ import UIKit
     /// The title text attributes inherited by the `title`.
     @objc public var titleTextAttributes: [NSAttributedStringKey: Any]? {
         didSet {
-            if self.window == nil {
-                return
-            }
-            
-            self.updateToolbarBarButtonItems()
+            self.updateTitleBarButtonItem()
         }
     }
     

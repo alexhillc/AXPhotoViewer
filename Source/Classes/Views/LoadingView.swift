@@ -71,7 +71,7 @@ import AXStateButton
                 fontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body,
                                                                           compatibleWith: self.traitCollection)
             } else {
-                fontDescriptor = UIFont.preferredFont(forTextStyle: .caption1).fontDescriptor
+                fontDescriptor = UIFont.preferredFont(forTextStyle: .body).fontDescriptor
             }
             
             var font: UIFont

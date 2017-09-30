@@ -44,7 +44,11 @@ import UIKit
     }
     
     @discardableResult fileprivate func computeSize(for constrainedSize: CGSize, applySizingLayout: Bool) -> CGSize {
-        var yOffset: CGFloat = self.contentInset.top
+        var yOffset: CGFloat = 0
+        if self.subviews.count > 0 {
+            yOffset = self.contentInset.top
+        }
+        
         let xOffset: CGFloat = self.contentInset.left
         var constrainedInsetSize = constrainedSize
         constrainedInsetSize.width -= (self.contentInset.left + self.contentInset.right)
