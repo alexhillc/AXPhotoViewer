@@ -1,3 +1,10 @@
+# 1.3.2
+- **[FIXED]** `LoadingView` retry attributes are the same on iOS 10 & prior
+- **[FIXED]** Stackable container will size itself to zero height if there are no
+subviews
+- **[FIXED]** Updating `OverlayView` title text attributes will update the title
+immediately
+
 # 1.3.1
 - **[FIXED]** `OverlayView` bar button items were not spaced correctly by default
 - **[FIXED]** `StackableViewContainer` was not playing well with animations due to an earlier work aroudn that was made for CaptionView animations, but that is now fixed; as a result, subviews are now laid out at the time of their container's layout
