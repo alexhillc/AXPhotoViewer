@@ -159,7 +159,7 @@ import AXStateButton
             totalHeight += VerticalPadding
         } else {
             indicatorViewSize = self.indicatorView.sizeThatFits(constrainedSize)
-            totalHeight += totalHeight
+            totalHeight += indicatorViewSize.height
         }
         
         if applySizingLayout {
