@@ -1,3 +1,6 @@
+# 1.3.3
+- **[FIXED]** `LoadingView` custom loading indicator improperly sized
+
 # 1.3.2
 - **[FIXED]** `LoadingView` retry attributes are the same on iOS 10 & prior
 - **[FIXED]** Stackable container will size itself to zero height if there are no
