@@ -1,3 +1,6 @@
+# 1.3.4
+- **[FIXED]** `OverlayView` insets changing while interface was animating out (iOS 11)
+
 # 1.3.3
 - **[FIXED]** `LoadingView` custom loading indicator improperly sized
 
