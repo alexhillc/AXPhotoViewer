@@ -414,7 +414,9 @@ import MobileCoreServices
         super.viewWillLayoutSubviews()
         self.pageViewController.view.frame = self.view.bounds
         self.overlayView.frame = self.view.bounds
-        self.updateOverlayInsets()
+        self.overlayView.performAfterShowInterfaceCompletion { [weak self] in
+            self?.updateOverlayInsets()
+        }
     }
     
     open override func didMove(toParentViewController parent: UIViewController?) {

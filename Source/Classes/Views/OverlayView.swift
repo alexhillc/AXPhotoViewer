@@ -145,6 +145,12 @@ import UIKit
     /// Add custom subviews to the bottom container in the order that you wish to stack them. These must be self-sizing views.
     @objc public var bottomStackContainer: StackableViewContainer!
     
+    /// A flag that is set at the beginning and end of `OverlayView.setShowInterface(_:alongside:completion:)`
+    fileprivate var isShowInterfaceAnimating = false
+    
+    /// Closures to be processed at the end of `OverlayView.setShowInterface(_:alongside:completion:)`
+    fileprivate var showInterfaceCompletions = [() -> Void]()
+    
     fileprivate var isFirstLayout: Bool = true
     
     @objc public init() {
@@ -217,15 +223,33 @@ import UIKit
         return nil
     }
     
+    // MARK: - Completions
+    func performAfterShowInterfaceCompletion(_ closure: @escaping () -> Void) {
+        self.showInterfaceCompletions.append(closure)
+        
+        if !self.isShowInterfaceAnimating {
+            self.processShowInterfaceCompletions()
+        }
+    }
+    
+    func processShowInterfaceCompletions() {
+        for completion in self.showInterfaceCompletions {
+            completion()
+        }
+        
+        self.showInterfaceCompletions.removeAll()
+    }
+    
     // MARK: - Show / hide interface
-    // For internal use only.
     func setShowInterface(_ show: Bool, animated: Bool, alongside closure: (() -> Void)? = nil, completion: ((Bool) -> Void)? = nil) {
         let alpha: CGFloat = show ? 1 : 0
-        guard self.alpha != alpha else {
+        if abs(alpha - self.alpha) <= .ulpOfOne {
             return
         }
         
-        if alpha == 1 {
+        self.isShowInterfaceAnimating = true
+        
+        if abs(alpha - 1) <= .ulpOfOne {
             self.isHidden = false
         }
         
@@ -235,13 +259,14 @@ import UIKit
         }
         
         let internalCompletion: (_ finished: Bool) -> Void = { [weak self] (finished) in
-            guard alpha == 0 else {
-                completion?(finished)
-                return
+            if abs(alpha) <= .ulpOfOne {
+                self?.isHidden = true
             }
             
-            self?.isHidden = true
+            self?.isShowInterfaceAnimating = false
+            
             completion?(finished)
+            self?.processShowInterfaceCompletions()
         }
         
         if animated {
