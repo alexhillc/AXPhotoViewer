@@ -135,7 +135,11 @@ import UIKit
     
     /// The inset of the contents of the `OverlayView`. Use this property to adjust layout for things such as status bar height.
     /// For internal use only.
-    var contentInset: UIEdgeInsets = .zero
+    var contentInset: UIEdgeInsets = .zero {
+        didSet {
+            self.setNeedsLayout()
+        }
+    }
     
     /// Container to embed all content anchored at the top of the `overlayView`.
     /// Add custom subviews to the top container in the order that you wish to stack them. These must be self-sizing views.
