@@ -107,7 +107,7 @@ import FLAnimatedImage
                 self?.loadingView?.startLoading(initialProgress: photo.ax_progress)
             })
         case .loaded:
-            guard photo.image != nil || photo.imageData != nil else {
+            guard photo.image != nil || photo.ax_animatedImage != nil else {
                 assertionFailure("Must provide valid `UIImage` in \(#function)")
                 return
             }

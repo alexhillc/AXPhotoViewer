@@ -52,7 +52,7 @@ extension PhotoProtocol {
             return objc_getAssociatedObject(self, &AssociationKeys.animatedImage) as? FLAnimatedImage
         }
         set(value) {
-            objc_setAssociatedObject(self, &AssociationKeys.animatedImage, image, .OBJC_ASSOCIATION_RETAIN)
+            objc_setAssociatedObject(self, &AssociationKeys.animatedImage, value, .OBJC_ASSOCIATION_RETAIN)
         }
     }
     
