@@ -1,3 +1,9 @@
+# 1.3.5
+- **[FIXED]** `OverlayView` insets changing on PhotosVC dismissal
+- **[FIXED]** `OverlayView` insets could potentially be wrong if a layout was occurring at the same time as a interface show/hide
+- **[FIXED]** `LoadingView` could potentially be sized incorrectly on iPhone X
+- **[FIXED]** Bad GIF performance
+
 # 1.3.4
 - **[FIXED]** `OverlayView` insets changing while interface was animating out (iOS 11)
 
