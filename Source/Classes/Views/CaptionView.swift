@@ -337,16 +337,12 @@ import UIKit
         let HorizontalPadding: CGFloat = 15
         let InterLabelSpacing: CGFloat = 2
         var yOffset: CGFloat = 0
-        var maxWidth: CGFloat = 0
-
+        
         for (index, label) in self.visibleSizingLabels.enumerated() {
             var constrainedLabelSize = constrainedSize
             constrainedLabelSize.width -= (2 * HorizontalPadding)
             
             let labelSize = label.sizeThatFits(constrainedLabelSize)
-            if labelSize.width > maxWidth {
-                maxWidth = labelSize.width + (2 * HorizontalPadding)
-            }
             
             if index == 0 {
                 yOffset += VerticalPadding
@@ -368,7 +364,7 @@ import UIKit
             }
         }
         
-        return CGSize(width: maxWidth, height: yOffset)
+        return CGSize(width: constrainedSize.width, height: yOffset)
     }
 
 }
