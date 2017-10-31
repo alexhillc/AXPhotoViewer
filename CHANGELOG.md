@@ -1,3 +1,6 @@
+# 1.3.6
+- **[FIXED]** 'CaptionView' sometimes improperly sizing its labels
+
 # 1.3.5
 - **[FIXED]** `OverlayView` insets changing on PhotosVC dismissal
 - **[FIXED]** `OverlayView` insets could potentially be wrong if a layout was occurring at the same time as a interface show/hide
