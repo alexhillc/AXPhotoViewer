@@ -10,37 +10,49 @@ enum PhotoLoadingState: Int {
     case notLoaded, loading, loaded, loadingCancelled, loadingFailed
 }
 
-var PhotoErrorAssociationKey: UInt8 = 0
-var PhotoProgressAssociationKey: UInt8 = 0
-var PhotoLoadingStateAssociationKey: UInt8 = 0
+fileprivate struct AssociationKeys {
+    static var error: UInt8 = 0
+    static var progress: UInt8 = 0
+    static var loadingState: UInt8 = 0
+    static var animatedImage: UInt8 = 0
+}
 
 // MARK: - Internal PhotoProtocol extension to be used by the framework.
 extension PhotoProtocol {
     
     var ax_progress: CGFloat {
         get {
-            return objc_getAssociatedObject(self, &PhotoProgressAssociationKey) as? CGFloat ?? 0
+            return objc_getAssociatedObject(self, &AssociationKeys.progress) as? CGFloat ?? 0
         }
         set(value) {
-            objc_setAssociatedObject(self, &PhotoProgressAssociationKey, value, .OBJC_ASSOCIATION_RETAIN)
+            objc_setAssociatedObject(self, &AssociationKeys.progress, value, .OBJC_ASSOCIATION_RETAIN)
         }
     }
     
     var ax_error: Error? {
         get {
-            return objc_getAssociatedObject(self, &PhotoErrorAssociationKey) as? Error
+            return objc_getAssociatedObject(self, &AssociationKeys.error) as? Error
         }
         set(value) {
-            objc_setAssociatedObject(self, &PhotoErrorAssociationKey, value, .OBJC_ASSOCIATION_RETAIN)
+            objc_setAssociatedObject(self, &AssociationKeys.error, value, .OBJC_ASSOCIATION_RETAIN)
         }
     }
     
     var ax_loadingState: PhotoLoadingState {
         get {
-            return objc_getAssociatedObject(self, &PhotoLoadingStateAssociationKey) as? PhotoLoadingState ?? .notLoaded
+            return objc_getAssociatedObject(self, &AssociationKeys.loadingState) as? PhotoLoadingState ?? .notLoaded
         }
         set(value) {
-            objc_setAssociatedObject(self, &PhotoLoadingStateAssociationKey, value, .OBJC_ASSOCIATION_RETAIN)
+            objc_setAssociatedObject(self, &AssociationKeys.loadingState, value, .OBJC_ASSOCIATION_RETAIN)
+        }
+    }
+    
+    var ax_animatedImage: FLAnimatedImage? {
+        get {
+            return objc_getAssociatedObject(self, &AssociationKeys.animatedImage) as? FLAnimatedImage
+        }
+        set(value) {
+            objc_setAssociatedObject(self, &AssociationKeys.animatedImage, image, .OBJC_ASSOCIATION_RETAIN)
         }
     }
     

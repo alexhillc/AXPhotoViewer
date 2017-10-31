@@ -67,7 +67,13 @@ import FLAnimatedImage
     open override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         
-        let loadingViewSize = self.loadingView?.sizeThatFits(self.view.bounds.size) ?? .zero
+        var adjustedSize = self.view.bounds.size
+        if #available(iOS 11.0, *) {
+            adjustedSize.width -= (self.view.safeAreaInsets.left + self.view.safeAreaInsets.right)
+            adjustedSize.height -= (self.view.safeAreaInsets.left + self.view.safeAreaInsets.right)
+        }
+        
+        let loadingViewSize = self.loadingView?.sizeThatFits(adjustedSize) ?? .zero
         (self.loadingView as? UIView)?.frame = CGRect(origin: CGPoint(x: floor((self.view.bounds.size.width - loadingViewSize.width) / 2),
                                                                       y: floor((self.view.bounds.size.height - loadingViewSize.height) / 2)),
                                                       size: loadingViewSize)
@@ -108,8 +114,8 @@ import FLAnimatedImage
             
             self.loadingView?.stopLoading()
             
-            if let imageData = photo.imageData {
-                self.zoomingImageView.animatedImage = FLAnimatedImage(animatedGIFData: imageData)
+            if let animatedImage = photo.ax_animatedImage {
+                self.zoomingImageView.animatedImage = animatedImage
             } else if let image = photo.image {
                 self.zoomingImageView.image = image
             }
@@ -156,7 +162,7 @@ import FLAnimatedImage
             return
         }
         
-        if userInfo[PhotosViewControllerNotification.ImageDataKey] != nil || userInfo[PhotosViewControllerNotification.ImageKey] != nil {
+        if userInfo[PhotosViewControllerNotification.AnimatedImageKey] != nil || userInfo[PhotosViewControllerNotification.ImageKey] != nil {
             self.applyPhoto(photo)
         } else if let referenceView = userInfo[PhotosViewControllerNotification.ReferenceViewKey] as? FLAnimatedImageView {
             self.zoomingImageView.imageView.ax_syncFrames(with: referenceView)

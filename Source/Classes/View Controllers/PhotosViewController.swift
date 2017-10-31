@@ -630,6 +630,7 @@ import MobileCoreServices
             } else if photo.ax_loadingState == .loaded && photo.ax_isReducible {
                 photo.imageData = nil
                 photo.image = nil
+                photo.ax_animatedImage = nil
                 photo.ax_loadingState = .notLoaded
             }
         }
@@ -971,13 +972,24 @@ import MobileCoreServices
     
     // MARK: - NetworkIntegrationDelegate
     public func networkIntegration(_ networkIntegration: NetworkIntegrationProtocol, loadDidFinishWith photo: PhotoProtocol) {
-        if let imageData = photo.imageData {
+        if let animatedImage = photo.ax_animatedImage {
             photo.ax_loadingState = .loaded
             DispatchQueue.main.async { [weak self] in
                 self?.notificationCenter.post(name: .photoImageUpdate,
                                               object: photo,
                                               userInfo: [
-                                                 PhotosViewControllerNotification.ImageDataKey: imageData,
+                                                PhotosViewControllerNotification.AnimatedImageKey: animatedImage,
+                                                PhotosViewControllerNotification.LoadingStateKey: PhotoLoadingState.loaded
+                                              ])
+            }
+        } else if let imageData = photo.imageData, let animatedImage = FLAnimatedImage(animatedGIFData: imageData) {
+            photo.ax_animatedImage = animatedImage
+            photo.ax_loadingState = .loaded
+            DispatchQueue.main.async { [weak self] in
+                self?.notificationCenter.post(name: .photoImageUpdate,
+                                              object: photo,
+                                              userInfo: [
+                                                 PhotosViewControllerNotification.AnimatedImageKey: animatedImage,
                                                  PhotosViewControllerNotification.LoadingStateKey: PhotoLoadingState.loaded
                                               ])
             }
@@ -1146,7 +1158,7 @@ fileprivate extension UIScrollView {
     @objc static let ProgressUpdate = Notification.Name.photoLoadingProgressUpdate.rawValue
     @objc static let ImageUpdate = Notification.Name.photoImageUpdate.rawValue
     @objc static let ImageKey = "AXPhotosViewControllerImage"
-    @objc static let ImageDataKey = "AXPhotosViewControllerImageData"
+    @objc static let AnimatedImageKey = "AXPhotosViewControllerAnimatedImage"
     @objc static let ReferenceViewKey = "AXPhotosViewControllerReferenceView"
     @objc static let LoadingStateKey = "AXPhotosViewControllerLoadingState"
     @objc static let ProgressKey = "AXPhotosViewControllerProgress"

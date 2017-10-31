@@ -116,10 +116,17 @@ import MobileCoreServices
     
     // MARK: - NetworkIntegrationDelegate
     public func networkIntegration(_ networkIntegration: NetworkIntegrationProtocol, loadDidFinishWith photo: PhotoProtocol) {
-        if let imageData = photo.imageData {
+        if let animatedImage = photo.ax_animatedImage {
             photo.ax_loadingState = .loaded
             DispatchQueue.main.async { [weak self] in
-                self?.imageView.animatedImage = FLAnimatedImage(animatedGIFData: imageData)
+                self?.imageView.animatedImage = animatedImage
+                self?.view.setNeedsLayout()
+            }
+        } else if let imageData = photo.imageData, let animatedImage = FLAnimatedImage(animatedGIFData: imageData) {
+            photo.ax_animatedImage = animatedImage
+            photo.ax_loadingState = .loaded
+            DispatchQueue.main.async { [weak self] in
+                self?.imageView.animatedImage = animatedImage
                 self?.view.setNeedsLayout()
             }
         } else if let image = photo.image {
