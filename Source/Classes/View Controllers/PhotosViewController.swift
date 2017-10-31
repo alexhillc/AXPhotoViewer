@@ -415,7 +415,12 @@ import MobileCoreServices
         self.pageViewController.view.frame = self.view.bounds
         self.overlayView.frame = self.view.bounds
         self.overlayView.performAfterShowInterfaceCompletion { [weak self] in
-            self?.updateOverlayInsets()
+            // if being dismissed, let's just return early rather than update insets
+            guard let uSelf = self, !uSelf.isBeingDismissed else {
+                return
+            }
+            
+            uSelf.updateOverlayInsets()
         }
     }
     
