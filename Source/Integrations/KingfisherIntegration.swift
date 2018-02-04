@@ -24,22 +24,22 @@ class KingfisherIntegration: NSObject, NetworkIntegrationProtocol {
         }
 
         let progress: DownloadProgressBlock = { [weak self] (receivedSize, totalSize) in
-            guard let uSelf = self else {
+            guard let `self` = self else {
                 return
             }
 
-            uSelf.delegate?.networkIntegration?(uSelf, didUpdateLoadingProgress: CGFloat(receivedSize) / CGFloat(totalSize), for: photo)
+            self.delegate?.networkIntegration?(self, didUpdateLoadingProgress: CGFloat(receivedSize) / CGFloat(totalSize), for: photo)
         }
 
         let completion: CompletionHandler = { [weak self] (image, error, cacheType, imageURL) in
-            guard let uSelf = self else {
+            guard let `self` = self else {
                 return
             }
 
-            self?.retrieveImageTasks.removeObject(forKey: photo)
+            self.retrieveImageTasks.removeObject(forKey: photo)
 
             if let error = error {
-                uSelf.delegate?.networkIntegration(uSelf, loadDidFailWith: error, for: photo)
+                self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
             } else {
                 if let image = image {
                     if let imageData = image.kf.gifRepresentation() {
@@ -49,7 +49,7 @@ class KingfisherIntegration: NSObject, NetworkIntegrationProtocol {
                     photo.image = image
                 }
 
-                uSelf.delegate?.networkIntegration(uSelf, loadDidFinishWith: photo)
+                self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
             }
         }
 

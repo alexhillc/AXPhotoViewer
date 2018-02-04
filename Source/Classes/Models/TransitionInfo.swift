@@ -39,20 +39,20 @@
         
         if let endingView = endingView {
             self.resolveEndingViewClosure = { [weak self] (photo, index) in
-                guard let uSelf = self else {
+                guard let `self` = self else {
                     return
                 }
                 
                 if let endingView = endingView(photo, index) {
                     guard endingView.bounds != .zero else {
-                        uSelf.endingView = nil
+                        self.endingView = nil
                         assertionFailure("'endingView' has invalid geometry: \(endingView)")
                         return
                     }
                     
-                    uSelf.endingView = endingView
+                    self.endingView = endingView
                 } else {
-                    uSelf.endingView = nil
+                    self.endingView = nil
                 }
             }
         }

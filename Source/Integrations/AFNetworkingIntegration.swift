@@ -25,19 +25,19 @@ class AFNetworkingIntegration: NSObject, NetworkIntegrationProtocol {
         }
         
         let progress: (_ progress: Progress) -> Void = { [weak self] (progress) in
-            guard let uSelf = self else {
+            guard let `self` = self else {
                 return
             }
             
-            uSelf.delegate?.networkIntegration?(uSelf, didUpdateLoadingProgress: CGFloat(progress.fractionCompleted), for: photo)
+            self.delegate?.networkIntegration?(self, didUpdateLoadingProgress: CGFloat(progress.fractionCompleted), for: photo)
         }
 
         let success: (_ dataTask: URLSessionDataTask, _ responseObject: Any?) -> Void = { [weak self] (dataTask, responseObject) in
-            guard let uSelf = self else {
+            guard let `self` = self else {
                 return
             }
             
-            uSelf.downloadTasks.removeObject(forKey: photo)
+            self.downloadTasks.removeObject(forKey: photo)
             
             if let responseGIFData = responseObject as? Data {
                 photo.imageData = responseGIFData
@@ -45,16 +45,16 @@ class AFNetworkingIntegration: NSObject, NetworkIntegrationProtocol {
                 photo.image = responseImage
             }
             
-            uSelf.delegate?.networkIntegration(uSelf, loadDidFinishWith: photo)
+            self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
         }
         
         let failure: (_ dataTask: URLSessionDataTask?, _ error: Error) -> Void = { [weak self] (dataTask, error) in
-            guard let uSelf = self else {
+            guard let `self` = self else {
                 return
             }
             
-            uSelf.downloadTasks.removeObject(forKey: photo)
-            uSelf.delegate?.networkIntegration(uSelf, loadDidFailWith: error, for: photo)
+            self.downloadTasks.removeObject(forKey: photo)
+            self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
         }
         
         guard let dataTask = AXAFHTTPSessionManager.shared.get(url.absoluteString, parameters: nil, progress: progress, success: success, failure: failure) else {

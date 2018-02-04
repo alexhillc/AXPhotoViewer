@@ -416,11 +416,11 @@ import MobileCoreServices
         self.overlayView.frame = self.view.bounds
         self.overlayView.performAfterShowInterfaceCompletion { [weak self] in
             // if being dismissed, let's just return early rather than update insets
-            guard let uSelf = self, !uSelf.isBeingDismissed else {
+            guard let `self` = self, !self.isBeingDismissed else {
                 return
             }
             
-            uSelf.updateOverlayInsets()
+            self.updateOverlayInsets()
         }
     }
     
@@ -578,12 +578,12 @@ import MobileCoreServices
         
         let activityViewController = UIActivityViewController(activityItems: [uAnyRepresentation], applicationActivities: nil)
         activityViewController.completionWithItemsHandler = { [weak self] (activityType, completed, returnedItems, activityError) in
-            guard let uSelf = self else {
+            guard let `self` = self else {
                 return
             }
             
             if completed, let activityType = activityType {
-                uSelf.actionCompleted(activityType: activityType, for: photo)
+                self.actionCompleted(activityType: activityType, for: photo)
             }
         }
         
@@ -625,12 +625,12 @@ import MobileCoreServices
         
         weak var weakSelf = self
         func reduceMemory(for photo: PhotoProtocol) {
-            guard let uSelf = weakSelf else {
+            guard let `self` = weakSelf else {
                 return
             }
             
             if photo.ax_loadingState == .loading {
-                uSelf.networkIntegration.cancelLoad(for: photo)
+                self.networkIntegration.cancelLoad(for: photo)
                 photo.ax_loadingState = .loadingCancelled
             } else if photo.ax_loadingState == .loaded && photo.ax_isReducible {
                 photo.imageData = nil

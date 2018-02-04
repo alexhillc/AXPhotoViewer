@@ -168,11 +168,11 @@ import FLAnimatedImage
         }
         
         let scaleCompletion = { [weak self] (_ finished: Bool) in
-            guard let uSelf = self else {
+            guard let `self` = self else {
                 return
             }
             
-            uSelf.delegate?.transitionController(uSelf, didFinishAnimatingWith: referenceViewCopy, transitionControllerMode: .presenting)
+            self.delegate?.transitionController(self, didFinishAnimatingWith: referenceViewCopy, transitionControllerMode: .presenting)
             
             to.view.alpha = 1
             from.view.alpha = 1
@@ -269,12 +269,12 @@ import FLAnimatedImage
         
         var offscreenImageViewCenter: CGPoint?
         let scaleAnimations = { [weak self] () in
-            guard let uSelf = self else {
+            guard let `self` = self else {
                 return
             }
             
-            if uSelf.canPerformContextualDismissal() {
-                guard let referenceView = uSelf.transitionInfo.endingView else {
+            if self.canPerformContextualDismissal() {
+                guard let referenceView = self.transitionInfo.endingView else {
                     assertionFailure("No. ಠ_ಠ")
                     return
                 }
@@ -292,14 +292,14 @@ import FLAnimatedImage
         }
         
         let scaleCompletion = { [weak self] (_ finished: Bool) in
-            guard let uSelf = self else {
+            guard let `self` = self else {
                 return
             }
             
-            uSelf.delegate?.transitionController(uSelf, didFinishAnimatingWith: imageView, transitionControllerMode: .dismissing)
+            self.delegate?.transitionController(self, didFinishAnimatingWith: imageView, transitionControllerMode: .dismissing)
             
-            if uSelf.canPerformContextualDismissal() {
-                guard let referenceView = uSelf.transitionInfo.endingView else {
+            if self.canPerformContextualDismissal() {
+                guard let referenceView = self.transitionInfo.endingView else {
                     assertionFailure("No. ಠ_ಠ")
                     return
                 }
@@ -403,24 +403,24 @@ import FLAnimatedImage
         
         let overlayView = photosViewController.overlayView
         let animations = { [weak self] () in
-            guard let uSelf = self else {
+            guard let `self` = self else {
                 return
             }
             
-            imageView.center.y = uSelf.imageViewInitialCenter.y
-            overlayView.topStackContainer.frame.origin.y = uSelf.topStackContainerInitialOriginY
-            overlayView.bottomStackContainer.frame.origin.y = uSelf.bottomStackContainerInitialOriginY
+            imageView.center.y = self.imageViewInitialCenter.y
+            overlayView.topStackContainer.frame.origin.y = self.topStackContainerInitialOriginY
+            overlayView.bottomStackContainer.frame.origin.y = self.bottomStackContainerInitialOriginY
             
             to.view.alpha = 0
         }
         
         let completion = { [weak self] (_ finished: Bool) in
-            guard let uSelf = self else {
+            guard let `self` = self else {
                 return
             }
 
-            if uSelf.canPerformContextualDismissal() {
-                guard let referenceView = uSelf.transitionInfo.endingView else {
+            if self.canPerformContextualDismissal() {
+                guard let referenceView = self.transitionInfo.endingView else {
                     assertionFailure("No. ಠ_ಠ")
                     return
                 }
@@ -431,28 +431,28 @@ import FLAnimatedImage
             to.view.alpha = 1
             from.view.alpha = 1
             
-            imageView.frame = transitionContext.containerView.convert(imageView.frame, to: uSelf.imageViewOriginalSuperview)
-            uSelf.imageViewOriginalSuperview?.addSubview(imageView)
-            overlayView.frame = transitionContext.containerView.convert(overlayView.frame, to: uSelf.overlayViewOriginalSuperview)
-            uSelf.overlayViewOriginalSuperview?.addSubview(overlayView)
+            imageView.frame = transitionContext.containerView.convert(imageView.frame, to: self.imageViewOriginalSuperview)
+            self.imageViewOriginalSuperview?.addSubview(imageView)
+            overlayView.frame = transitionContext.containerView.convert(overlayView.frame, to: self.overlayViewOriginalSuperview)
+            self.overlayViewOriginalSuperview?.addSubview(overlayView)
             
-            uSelf.imageViewInitialCenter = .zero
-            uSelf.imageViewOriginalSuperview = nil
+            self.imageViewInitialCenter = .zero
+            self.imageViewOriginalSuperview = nil
             
-            uSelf.topStackContainerInitialOriginY = .greatestFiniteMagnitude
-            uSelf.bottomStackContainerInitialOriginY = .greatestFiniteMagnitude
-            uSelf.overlayViewOriginalSuperview = nil
+            self.topStackContainerInitialOriginY = .greatestFiniteMagnitude
+            self.bottomStackContainerInitialOriginY = .greatestFiniteMagnitude
+            self.overlayViewOriginalSuperview = nil
             
-            uSelf.dismissalPercent = 0
-            uSelf.directionalDismissalPercent = 0
-            uSelf.dismissalVelocityY = 1
+            self.dismissalPercent = 0
+            self.directionalDismissalPercent = 0
+            self.dismissalVelocityY = 1
             
             if transitionContext.isInteractive {
                 transitionContext.cancelInteractiveTransition()
             }
             
             transitionContext.completeTransition(false)
-            uSelf.dismissalTransitionContext = nil
+            self.dismissalTransitionContext = nil
         }
         
         UIView.animate(withDuration: self.transitionDuration(using: transitionContext),
@@ -581,34 +581,34 @@ import FLAnimatedImage
             }
         case .changed:
             let animation = { [weak self] in
-                guard let uSelf = self,
-                    let transitionContext = uSelf.dismissalTransitionContext,
+                guard let `self` = self,
+                    let transitionContext = self.dismissalTransitionContext,
                     let to = transitionContext.viewController(forKey: .to),
-                    let topStackContainer = uSelf.overlayView?.topStackContainer,
-                    let bottomStackContainer = uSelf.overlayView?.bottomStackContainer else {
+                    let topStackContainer = self.overlayView?.topStackContainer,
+                    let bottomStackContainer = self.overlayView?.bottomStackContainer else {
                         assertionFailure("No. ಠ_ಠ")
                         return
                 }
                 
                 let height = UIScreen.main.bounds.size.height
-                uSelf.directionalDismissalPercent = translation.y > 0 ? min(1, translation.y / height) : max(-1, translation.y / height)
-                uSelf.dismissalPercent = min(1, abs(translation.y / height))
-                uSelf.completeInteractiveDismissal = (uSelf.dismissalPercent >= uSelf.DismissalPercentThreshold) ||
-                                                     (abs(uSelf.dismissalVelocityY) >= uSelf.DismissalVelocityYThreshold)
+                self.directionalDismissalPercent = translation.y > 0 ? min(1, translation.y / height) : max(-1, translation.y / height)
+                self.dismissalPercent = min(1, abs(translation.y / height))
+                self.completeInteractiveDismissal = (self.dismissalPercent >= self.DismissalPercentThreshold) ||
+                                                     (abs(self.dismissalVelocityY) >= self.DismissalVelocityYThreshold)
                 
                 // this feels right-ish
-                let dismissalRatio = (1.2 * uSelf.dismissalPercent / uSelf.DismissalPercentThreshold)
+                let dismissalRatio = (1.2 * self.dismissalPercent / self.DismissalPercentThreshold)
                 
-                let topStackContainerOriginY = max(uSelf.topStackContainerInitialOriginY - topStackContainer.frame.size.height,
-                                               uSelf.topStackContainerInitialOriginY - (topStackContainer.frame.size.height * dismissalRatio))
-                let bottomStackContainerOriginY = min(uSelf.bottomStackContainerInitialOriginY + bottomStackContainer.frame.size.height,
-                                             uSelf.bottomStackContainerInitialOriginY + (bottomStackContainer.frame.size.height * dismissalRatio))
-                let imageViewCenterY = uSelf.imageViewInitialCenter.y + translation.y
+                let topStackContainerOriginY = max(self.topStackContainerInitialOriginY - topStackContainer.frame.size.height,
+                                               self.topStackContainerInitialOriginY - (topStackContainer.frame.size.height * dismissalRatio))
+                let bottomStackContainerOriginY = min(self.bottomStackContainerInitialOriginY + bottomStackContainer.frame.size.height,
+                                             self.bottomStackContainerInitialOriginY + (bottomStackContainer.frame.size.height * dismissalRatio))
+                let imageViewCenterY = self.imageViewInitialCenter.y + translation.y
                 
                 UIView.performWithoutAnimation {
                     topStackContainer.frame.origin.y = topStackContainerOriginY
                     bottomStackContainer.frame.origin.y = bottomStackContainerOriginY
-                    uSelf.imageView?.center.y = imageViewCenterY
+                    self.imageView?.center.y = imageViewCenterY
                 }
                 
                 to.view.alpha = 1 * min(1, dismissalRatio)
@@ -625,17 +625,17 @@ import FLAnimatedImage
             fallthrough
         case .cancelled:
             let animation = { [weak self] in
-                guard let uSelf = self,
-                    let transitionContext = uSelf.dismissalTransitionContext,
-                    let _ = uSelf.overlayView?.topStackContainer,
-                    let _ = uSelf.overlayView?.bottomStackContainer else {
+                guard let `self` = self,
+                    let transitionContext = self.dismissalTransitionContext,
+                    let _ = self.overlayView?.topStackContainer,
+                    let _ = self.overlayView?.bottomStackContainer else {
                         return
                 }
                 
-                if uSelf.completeInteractiveDismissal {
-                    uSelf.animateDismissal(using: transitionContext)
+                if self.completeInteractiveDismissal {
+                    self.animateDismissal(using: transitionContext)
                 } else {
-                    uSelf.cancelTransition(using: transitionContext)
+                    self.cancelTransition(using: transitionContext)
                 }
             }
             

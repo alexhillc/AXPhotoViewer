@@ -98,13 +98,13 @@ import FLAnimatedImage
             resetImageView()
             let error = photo.ax_error ?? NSError()
             self.loadingView?.showError(error, retryHandler: { [weak self] in
-                guard let uSelf = self else {
+                guard let `self` = self else {
                     return
                 }
                 
-                self?.delegate?.photoViewController(uSelf, retryDownloadFor: photo)
-                self?.loadingView?.removeError()
-                self?.loadingView?.startLoading(initialProgress: photo.ax_progress)
+                self.delegate?.photoViewController(self, retryDownloadFor: photo)
+                self.loadingView?.removeError()
+                self.loadingView?.startLoading(initialProgress: photo.ax_progress)
             })
         case .loaded:
             guard photo.image != nil || photo.ax_animatedImage != nil else {
@@ -168,14 +168,14 @@ import FLAnimatedImage
             self.zoomingImageView.imageView.ax_syncFrames(with: referenceView)
         } else if let error = userInfo[PhotosViewControllerNotification.ErrorKey] as? Error {
             self.loadingView?.showError(error, retryHandler: { [weak self] in
-                guard let uSelf = self, let photo = uSelf.photo else {
+                guard let `self` = self, let photo = self.photo else {
                     return
                 }
                 
-                self?.delegate?.photoViewController(uSelf, retryDownloadFor: photo)
-                self?.loadingView?.removeError()
-                self?.loadingView?.startLoading(initialProgress: photo.ax_progress)
-                self?.view.setNeedsLayout()
+                self.delegate?.photoViewController(self, retryDownloadFor: photo)
+                self.loadingView?.removeError()
+                self.loadingView?.startLoading(initialProgress: photo.ax_progress)
+                self.view.setNeedsLayout()
             })
             
             self.view.setNeedsLayout()

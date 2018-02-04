@@ -166,12 +166,12 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate, 
         let imageView = cell?.contentView.viewWithTag(666) as? FLAnimatedImageView
         
         let transitionInfo = TransitionInfo(interactiveDismissalEnabled: true, startingView: imageView) { [weak self] (photo, index) -> UIImageView? in
-            guard let uSelf = self else {
+            guard let `self` = self else {
                 return nil
             }
             
             let indexPath = IndexPath(row: index, section: 0)
-            guard let cell = uSelf.tableView.cellForRow(at: indexPath) else {
+            guard let cell = self.tableView.cellForRow(at: indexPath) else {
                 return nil
             }
             

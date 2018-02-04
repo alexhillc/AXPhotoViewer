@@ -208,34 +208,34 @@ import UIKit
         
         weak var weakSelf = self
         func applySizingAttributes() {
-            guard let uSelf = weakSelf else {
+            guard let `self` = weakSelf else {
                 return
             }
             
-            uSelf.titleLabel.attributedText = uSelf.titleSizingLabel.attributedText
-            uSelf.titleLabel.frame = uSelf.titleSizingLabel.frame
-            uSelf.titleLabel.isHidden = (uSelf.titleSizingLabel.attributedText?.string.isEmpty ?? true)
+            self.titleLabel.attributedText = self.titleSizingLabel.attributedText
+            self.titleLabel.frame = self.titleSizingLabel.frame
+            self.titleLabel.isHidden = (self.titleSizingLabel.attributedText?.string.isEmpty ?? true)
             
-            uSelf.descriptionLabel.attributedText = uSelf.descriptionSizingLabel.attributedText
-            uSelf.descriptionLabel.frame = uSelf.descriptionSizingLabel.frame
-            uSelf.descriptionLabel.isHidden = (uSelf.descriptionSizingLabel.attributedText?.string.isEmpty ?? true)
+            self.descriptionLabel.attributedText = self.descriptionSizingLabel.attributedText
+            self.descriptionLabel.frame = self.descriptionSizingLabel.frame
+            self.descriptionLabel.isHidden = (self.descriptionSizingLabel.attributedText?.string.isEmpty ?? true)
             
-            uSelf.creditLabel.attributedText = uSelf.creditSizingLabel.attributedText
-            uSelf.creditLabel.frame = uSelf.creditSizingLabel.frame
-            uSelf.creditLabel.isHidden = (uSelf.creditSizingLabel.attributedText?.string.isEmpty ?? true)
+            self.creditLabel.attributedText = self.creditSizingLabel.attributedText
+            self.creditLabel.frame = self.creditSizingLabel.frame
+            self.creditLabel.isHidden = (self.creditSizingLabel.attributedText?.string.isEmpty ?? true)
         }
         
         if self.animateCaptionInfoChanges && self.needsCaptionLayoutAnim {
             // ensure that this block runs in its own animation context (container may animate)
             DispatchQueue.main.async { [weak self] in
-                guard let uSelf = self else {
+                guard let `self` = self else {
                     return
                 }
                 
                 let animateOut: () -> Void = {
-                    uSelf.titleLabel.alpha = 0
-                    uSelf.descriptionLabel.alpha = 0
-                    uSelf.creditLabel.alpha = 0
+                    self.titleLabel.alpha = 0
+                    self.descriptionLabel.alpha = 0
+                    self.creditLabel.alpha = 0
                 }
                 
                 let animateOutCompletion: (_ finished: Bool) -> Void = { (finished) in
@@ -244,13 +244,13 @@ import UIKit
                     }
                     
                     applySizingAttributes()
-                    uSelf.isCaptionAnimatingOut = false
+                    self.isCaptionAnimatingOut = false
                 }
                 
                 let animateIn: () -> Void = {
-                    uSelf.titleLabel.alpha = 1
-                    uSelf.descriptionLabel.alpha = 1
-                    uSelf.creditLabel.alpha = 1
+                    self.titleLabel.alpha = 1
+                    self.descriptionLabel.alpha = 1
+                    self.creditLabel.alpha = 1
                 }
                 
                 let animateInCompletion: (_ finished: Bool) -> Void = { (finished) in
@@ -258,20 +258,20 @@ import UIKit
                         return
                     }
                     
-                    uSelf.isCaptionAnimatingIn = false
+                    self.isCaptionAnimatingIn = false
                 }
                 
-                if uSelf.isCaptionAnimatingOut {
+                if self.isCaptionAnimatingOut {
                     return
                 }
                 
-                uSelf.isCaptionAnimatingOut = true
+                self.isCaptionAnimatingOut = true
                 UIView.animate(withDuration: Constants.frameAnimDuration / 2,
                                delay: 0,
                                options: [.beginFromCurrentState, .curveEaseOut],
                                animations: animateOut) { (finished) in
                     
-                    if uSelf.isCaptionAnimatingIn {
+                    if self.isCaptionAnimatingIn {
                         return
                     }
                     

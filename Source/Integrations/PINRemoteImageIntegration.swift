@@ -24,30 +24,30 @@ class PINRemoteImageIntegration: NSObject, NetworkIntegrationProtocol {
         }
         
         let progress: PINRemoteImageManagerProgressDownload = { [weak self] (completedBytes, totalBytes) in
-            guard let uSelf = self else {
+            guard let `self` = self else {
                 return
             }
             
-            uSelf.delegate?.networkIntegration?(uSelf, didUpdateLoadingProgress: CGFloat(completedBytes) / CGFloat(totalBytes), for: photo)
+            self.delegate?.networkIntegration?(self, didUpdateLoadingProgress: CGFloat(completedBytes) / CGFloat(totalBytes), for: photo)
         }
         
         let completion: PINRemoteImageManagerImageCompletion = { [weak self] (result) in
-            guard let uSelf = self else {
+            guard let `self` = self else {
                 return
             }
             
-            self?.downloadUUIDs.removeObject(forKey: photo)
+            self.downloadUUIDs.removeObject(forKey: photo)
             
             if let error = result.error {
-                uSelf.delegate?.networkIntegration(uSelf, loadDidFailWith: error, for: photo)
+                self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
             } else if let animatedImage = result.alternativeRepresentation as? FLAnimatedImage {
                 // this is not great, as `PINRemoteImage` already creates the `FLAnimatedImage` that we need.
                 // something to fix in the future.
                 photo.imageData = animatedImage.data
-                uSelf.delegate?.networkIntegration(uSelf, loadDidFinishWith: photo)
+                self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
             } else if let image = result.image {
                 photo.image = image
-                uSelf.delegate?.networkIntegration(uSelf, loadDidFinishWith: photo)
+                self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
             }
         }
         

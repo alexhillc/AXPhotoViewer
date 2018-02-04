@@ -384,13 +384,13 @@ import UIKit
         
         let size = self.bottomStackContainer.sizeThatFits(self.frame.size)
         let animations = { [weak self] in
-            guard let uSelf = self else {
+            guard let `self` = self else {
                 return
             }
             
-            uSelf.bottomStackContainer.frame = CGRect(origin: CGPoint(x: 0, y: uSelf.frame.size.height - size.height), size: size)
-            uSelf.bottomStackContainer.setNeedsLayout()
-            uSelf.bottomStackContainer.layoutIfNeeded()
+            self.bottomStackContainer.frame = CGRect(origin: CGPoint(x: 0, y: self.frame.size.height - size.height), size: size)
+            self.bottomStackContainer.setNeedsLayout()
+            self.bottomStackContainer.layoutIfNeeded()
         }
         
         if self.animateCaptionViewChanges {
