@@ -126,7 +126,7 @@ import FLAnimatedImage
         guard let to = transitionContext.viewController(forKey: .to),
             let from = transitionContext.viewController(forKey: .from),
             let referenceView = self.transitionInfo.startingView,
-            let referenceViewCopy = self.transitionInfo.startingView?.copy() as? UIImageView else {
+            let referenceViewCopy = self.transitionInfo.startingView?.ax_copy() else {
                 assertionFailure("No. ಠ_ಠ")
                 return
         }

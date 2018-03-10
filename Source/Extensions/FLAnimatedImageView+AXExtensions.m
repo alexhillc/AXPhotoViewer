@@ -9,7 +9,7 @@
 @import FLAnimatedImage;
 
 #import "FLAnimatedImageView+AXExtensions.h"
-#import <AXPhotoViewer/AXPhotoViewer-Swift.h>
+#import "UIImageView+AXExtensions.h"
 
 @interface FLAnimatedImageView ()
 
@@ -37,8 +37,8 @@
 
 @implementation FLAnimatedImageView (AXExtensions)
 
-- (id)copyWithZone:(struct _NSZone *)zone {
-    FLAnimatedImageView *imageView = [super copyWithZone:zone];
+- (UIImageView *)ax_copy {
+    FLAnimatedImageView *imageView = [super ax_copy];
     imageView.animatedImage = self.animatedImage;
     imageView.currentFrame = self.currentFrame;
     imageView.currentFrameIndex = self.currentFrameIndex;
