@@ -1,5 +1,5 @@
 //
-//  StackableViewContainer.swift
+//  AXStackableViewContainer.swift
 //  AXPhotoViewer
 //
 //  Created by Alex Hill on 9/17/17.
@@ -7,21 +7,21 @@
 
 import UIKit
 
-@objc(AXStackableViewContainer) public class StackableViewContainer: UIView {
+@objc public class AXStackableViewContainer: UIView {
     
-    weak var delegate: StackableViewContainerDelegate?
+    weak var delegate: AXStackableViewContainerDelegate?
     
     /// The inset of the contents of the `StackableViewContainer`.
     /// For internal use only.
     var contentInset: UIEdgeInsets = .zero
     
-    @objc fileprivate(set) var anchorPoint: StackableViewContainerAnchorPoint
-    @objc(AXStackableViewContainerAnchorPoint) enum StackableViewContainerAnchorPoint: Int {
+    @objc fileprivate(set) var anchorPoint: AXStackableViewContainerAnchorPoint
+    @objc enum AXStackableViewContainerAnchorPoint: Int {
         case top, bottom
     }
 
     @objc(initWithViews:anchoredAtPoint:)
-    init(views: [UIView], anchoredAt point: StackableViewContainerAnchorPoint) {
+    init(views: [UIView], anchoredAt point: AXStackableViewContainerAnchorPoint) {
         self.anchorPoint = point
         super.init(frame: .zero)
         
@@ -81,7 +81,7 @@ import UIKit
         return CGSize(width: constrainedSize.width, height: yOffset)
     }
     
-    // MARK: - StackableViewContainerDelegate
+    // MARK: - AXStackableViewContainerDelegate
     override public func didAddSubview(_ subview: UIView) {
         super.didAddSubview(subview)
         self.delegate?.stackableViewContainer?(self, didAddSubview: subview)
@@ -94,9 +94,9 @@ import UIKit
     
 }
 
-@objc(AXStackableViewContainerDelegate) protocol StackableViewContainerDelegate: AnyObject, NSObjectProtocol {
+@objc protocol AXStackableViewContainerDelegate: AnyObject, NSObjectProtocol {
     
-    @objc optional func stackableViewContainer(_ stackableViewContainer: StackableViewContainer, didAddSubview: UIView)
-    @objc optional func stackableViewContainer(_ stackableViewContainer: StackableViewContainer, willRemoveSubview: UIView)
+    @objc optional func stackableViewContainer(_ stackableViewContainer: AXStackableViewContainer, didAddSubview: UIView)
+    @objc optional func stackableViewContainer(_ stackableViewContainer: AXStackableViewContainer, willRemoveSubview: UIView)
     
 }

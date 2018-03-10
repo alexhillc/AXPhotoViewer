@@ -11,7 +11,7 @@ import AXPhotoViewer
 import FLAnimatedImage
 
 // This class contains some hacked together sample project code that I couldn't be arsed to make less ugly. ¯\_(ツ)_/¯
-class TableViewController: UITableViewController, PhotosViewControllerDelegate, UIViewControllerPreviewingDelegate {
+class TableViewController: UITableViewController, AXPhotosViewControllerDelegate, UIViewControllerPreviewingDelegate {
     
     let ReuseIdentifier = "AXReuseIdentifier"
     
@@ -20,27 +20,27 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate, 
     var urlSession = URLSession(configuration: .default)
     var content = [Int: Data]()
     
-    weak var photosViewController: PhotosViewController?
+    weak var photosViewController: AXPhotosViewController?
     weak var customView: UILabel?
     
     let photos = [
-        Photo(attributedTitle: NSAttributedString(string: "The Flash Poster"),
+        AXPhoto(attributedTitle: NSAttributedString(string: "The Flash Poster"),
               attributedDescription: NSAttributedString(string: "Season 3"),
               attributedCredit: NSAttributedString(string: "Vignette"),
               url: URL(string: "https://goo.gl/T4oZdY")),
-        Photo(attributedTitle: NSAttributedString(string: "The Flash and Savitar"),
+        AXPhoto(attributedTitle: NSAttributedString(string: "The Flash and Savitar"),
               attributedDescription: NSAttributedString(string: "Season 3"),
               attributedCredit: NSAttributedString(string: "Screen Rant"),
               url: URL(string: "https://goo.gl/pYeJ4H")),
-        Photo(attributedTitle: NSAttributedString(string: "The Flash: Rebirth"),
+        AXPhoto(attributedTitle: NSAttributedString(string: "The Flash: Rebirth"),
               attributedDescription: NSAttributedString(string: "Comic Book"),
               attributedCredit: NSAttributedString(string: "DC Comics"),
               url: URL(string: "https://goo.gl/9wgyAo")),
-        Photo(attributedTitle: NSAttributedString(string: "The Flash has a cute smile"),
+        AXPhoto(attributedTitle: NSAttributedString(string: "The Flash has a cute smile"),
               attributedDescription: nil,
               attributedCredit: NSAttributedString(string: "Giphy"),
               url: URL(string: "https://media.giphy.com/media/IOEcl8A8iLIUo/giphy.gif")),
-        Photo(attributedTitle: NSAttributedString(string: "The Flash slinging a rocket"),
+        AXPhoto(attributedTitle: NSAttributedString(string: "The Flash slinging a rocket"),
               attributedDescription: nil,
               attributedCredit: NSAttributedString(string: "Giphy"),
               url: URL(string: "https://media.giphy.com/media/lXiRDbPcRYfUgxOak/giphy.gif"))
@@ -165,7 +165,7 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate, 
         let cell = tableView.cellForRow(at: indexPath)
         let imageView = cell?.contentView.viewWithTag(666) as? FLAnimatedImageView
         
-        let transitionInfo = TransitionInfo(interactiveDismissalEnabled: true, startingView: imageView) { [weak self] (photo, index) -> UIImageView? in
+        let transitionInfo = AXTransitionInfo(interactiveDismissalEnabled: true, startingView: imageView) { [weak self] (photo, index) -> UIImageView? in
             guard let `self` = self else {
                 return nil
             }
@@ -181,9 +181,9 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate, 
         
         let container = UIViewController()
         
-        let dataSource = PhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row)
-        let pagingConfig = PagingConfig(loadingViewClass: CustomLoadingView.self)
-        let photosViewController = PhotosViewController(dataSource: dataSource, pagingConfig: pagingConfig, transitionInfo: transitionInfo)
+        let dataSource = AXPhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row)
+        let pagingConfig = AXPagingConfig(loadingViewClass: CustomLoadingView.self)
+        let photosViewController = AXPhotosViewController(dataSource: dataSource, pagingConfig: pagingConfig, transitionInfo: transitionInfo)
 //        photosViewController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         photosViewController.delegate = self
         
@@ -214,10 +214,10 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate, 
         self.photosViewController = photosViewController
     }
     
-    // MARK: - PhotosViewControllerDelegate
-    func photosViewController(_ photosViewController: PhotosViewController,
-                              willUpdate overlayView: OverlayView,
-                              for photo: PhotoProtocol,
+    // MARK: - AXPhotosViewControllerDelegate
+    func photosViewController(_ photosViewController: AXPhotosViewController,
+                              willUpdate overlayView: AXOverlayView,
+                              for photo: AXPhotoProtocol,
                               at index: Int,
                               totalNumberOfPhotos: Int) {
         
@@ -242,9 +242,9 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate, 
         }.resume()
     }
     
-    // MARK: - PhotosViewControllerDelegate
-    func photosViewController(_ photosViewController: PhotosViewController,
-                              didNavigateTo photo: PhotoProtocol,
+    // MARK: - AXPhotosViewControllerDelegate
+    func photosViewController(_ photosViewController: AXPhotosViewController,
+                              didNavigateTo photo: AXPhotoProtocol,
                               at index: Int) {
         
         let indexPath = IndexPath(row: index, section: 0)
@@ -265,16 +265,16 @@ class TableViewController: UITableViewController, PhotosViewControllerDelegate, 
         
         previewingContext.sourceRect = self.tableView.convert(imageView.frame, from: imageView.superview)
         
-        let dataSource = PhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row)
-        let previewingPhotosViewController = PreviewingPhotosViewController(dataSource: dataSource)
+        let dataSource = AXPhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row)
+        let previewingPhotosViewController = AXPreviewingPhotosViewController(dataSource: dataSource)
         
         return previewingPhotosViewController
     }
     
     @available(iOS 9.0, *)
     func previewingContext(_ previewingContext: UIViewControllerPreviewing, commit viewControllerToCommit: UIViewController) {
-        if let previewingPhotosViewController = viewControllerToCommit as? PreviewingPhotosViewController {
-            self.present(PhotosViewController(from: previewingPhotosViewController), animated: false)
+        if let previewingPhotosViewController = viewControllerToCommit as? AXPreviewingPhotosViewController {
+            self.present(AXPhotosViewController(from: previewingPhotosViewController), animated: false)
         }
     }
 }

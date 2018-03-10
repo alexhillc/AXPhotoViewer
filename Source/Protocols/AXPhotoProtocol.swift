@@ -1,12 +1,12 @@
 //
-//  PhotoProtocol.swift
+//  AXPhotoProtocol.swift
 //  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/7/17.
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
-@objc(AXPhotoProtocol) public protocol PhotoProtocol: AnyObject, NSObjectProtocol {
+@objc public protocol AXPhotoProtocol: AnyObject, NSObjectProtocol {
     
     /// The attributed title of the image that will be displayed in the photo's `captionView`.
     @objc optional var attributedTitle: NSAttributedString? { get }

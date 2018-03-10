@@ -1,12 +1,12 @@
 //
-//  Photo+Internal.swift
+//  AXPhoto+Internal.swift
 //  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/27/17.
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
-enum PhotoLoadingState: Int {
+enum AXPhotoLoadingState {
     case notLoaded, loading, loaded, loadingCancelled, loadingFailed
 }
 
@@ -17,8 +17,8 @@ fileprivate struct AssociationKeys {
     static var animatedImage: UInt8 = 0
 }
 
-// MARK: - Internal PhotoProtocol extension to be used by the framework.
-extension PhotoProtocol {
+// MARK: - Internal AXPhotoProtocol extension to be used by the framework.
+extension AXPhotoProtocol {
     
     var ax_progress: CGFloat {
         get {
@@ -38,9 +38,9 @@ extension PhotoProtocol {
         }
     }
     
-    var ax_loadingState: PhotoLoadingState {
+    var ax_loadingState: AXPhotoLoadingState {
         get {
-            return objc_getAssociatedObject(self, &AssociationKeys.loadingState) as? PhotoLoadingState ?? .notLoaded
+            return objc_getAssociatedObject(self, &AssociationKeys.loadingState) as? AXPhotoLoadingState ?? .notLoaded
         }
         set(value) {
             objc_setAssociatedObject(self, &AssociationKeys.loadingState, value, .OBJC_ASSOCIATION_RETAIN)

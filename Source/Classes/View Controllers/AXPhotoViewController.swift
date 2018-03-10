@@ -1,5 +1,5 @@
 //
-//  PhotoViewController.swift
+//  AXPhotoViewController.swift
 //  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/7/17.
@@ -9,23 +9,23 @@
 import UIKit
 import FLAnimatedImage
 
-@objc(AXPhotoViewController) open class PhotoViewController: UIViewController, PageableViewControllerProtocol, ZoomingImageViewDelegate {
+@objc open class AXPhotoViewController: UIViewController, AXPageableViewControllerProtocol, AXZoomingImageViewDelegate {
     
-    @objc public weak var delegate: PhotoViewControllerDelegate?
+    @objc public weak var delegate: AXPhotoViewControllerDelegate?
     @objc public var pageIndex: Int = 0
     
-    @objc fileprivate(set) var loadingView: LoadingViewProtocol?
+    @objc fileprivate(set) var loadingView: AXLoadingViewProtocol?
 
-    var zoomingImageView: ZoomingImageView {
+    var zoomingImageView: AXZoomingImageView {
         get {
-            return self.view as! ZoomingImageView
+            return self.view as! AXZoomingImageView
         }
     }
     
-    fileprivate var photo: PhotoProtocol?
+    fileprivate var photo: AXPhotoProtocol?
     fileprivate weak var notificationCenter: NotificationCenter?
     
-    @objc public init(loadingView: LoadingViewProtocol, notificationCenter: NotificationCenter) {
+    @objc public init(loadingView: AXLoadingViewProtocol, notificationCenter: NotificationCenter) {
         self.loadingView = loadingView
         self.notificationCenter = notificationCenter
         
@@ -51,7 +51,7 @@ import FLAnimatedImage
     }
     
     open override func loadView() {
-        self.view = ZoomingImageView()
+        self.view = AXZoomingImageView()
     }
     
     open override func viewDidLoad() {
@@ -79,7 +79,7 @@ import FLAnimatedImage
                                                       size: loadingViewSize)
     }
     
-    @objc public func applyPhoto(_ photo: PhotoProtocol) {
+    @objc public func applyPhoto(_ photo: AXPhotoProtocol) {
         self.photo = photo
         
         weak var weakSelf = self
@@ -124,14 +124,14 @@ import FLAnimatedImage
         self.view.setNeedsLayout()
     }
     
-    // MARK: - PageableViewControllerProtocol
+    // MARK: - AXPageableViewControllerProtocol
     func prepareForReuse() {
         self.zoomingImageView.image = nil
         self.zoomingImageView.animatedImage = nil
     }
     
-    // MARK: - ZoomingImageViewDelegate
-    func zoomingImageView(_ zoomingImageView: ZoomingImageView, maximumZoomScaleFor imageSize: CGSize) -> CGFloat {
+    // MARK: - AXZoomingImageViewDelegate
+    func zoomingImageView(_ zoomingImageView: AXZoomingImageView, maximumZoomScaleFor imageSize: CGSize) -> CGFloat {
         return self.delegate?.photoViewController(self,
                                                   maximumZoomScaleForPhotoAt: self.pageIndex,
                                                   minimumZoomScale: zoomingImageView.minimumZoomScale,
@@ -140,12 +140,12 @@ import FLAnimatedImage
     
     // MARK: - Notifications
     @objc fileprivate func photoLoadingProgressDidUpdate(_ notification: Notification) {
-        guard let photo = notification.object as? PhotoProtocol else {
+        guard let photo = notification.object as? AXPhotoProtocol else {
             assertionFailure("Photos must conform to the AXPhoto protocol.")
             return
         }
         
-        guard photo === self.photo, let progress = notification.userInfo?[PhotosViewControllerNotification.ProgressKey] as? CGFloat else {
+        guard photo === self.photo, let progress = notification.userInfo?[AXPhotosViewControllerNotification.ProgressKey] as? CGFloat else {
             return
         }
         
@@ -153,7 +153,7 @@ import FLAnimatedImage
     }
     
     @objc fileprivate func photoImageDidUpdate(_ notification: Notification) {
-        guard let photo = notification.object as? PhotoProtocol else {
+        guard let photo = notification.object as? AXPhotoProtocol else {
             assertionFailure("Photos must conform to the AXPhoto protocol.")
             return
         }
@@ -162,11 +162,11 @@ import FLAnimatedImage
             return
         }
         
-        if userInfo[PhotosViewControllerNotification.AnimatedImageKey] != nil || userInfo[PhotosViewControllerNotification.ImageKey] != nil {
+        if userInfo[AXPhotosViewControllerNotification.AnimatedImageKey] != nil || userInfo[AXPhotosViewControllerNotification.ImageKey] != nil {
             self.applyPhoto(photo)
-        } else if let referenceView = userInfo[PhotosViewControllerNotification.ReferenceViewKey] as? FLAnimatedImageView {
+        } else if let referenceView = userInfo[AXPhotosViewControllerNotification.ReferenceViewKey] as? FLAnimatedImageView {
             self.zoomingImageView.imageView.ax_syncFrames(with: referenceView)
-        } else if let error = userInfo[PhotosViewControllerNotification.ErrorKey] as? Error {
+        } else if let error = userInfo[AXPhotosViewControllerNotification.ErrorKey] as? Error {
             self.loadingView?.showError(error, retryHandler: { [weak self] in
                 guard let `self` = self, let photo = self.photo else {
                     return
@@ -184,13 +184,13 @@ import FLAnimatedImage
 
 }
 
-@objc(AXPhotoViewControllerDelegate) public protocol PhotoViewControllerDelegate: AnyObject, NSObjectProtocol {
+@objc public protocol AXPhotoViewControllerDelegate: AnyObject, NSObjectProtocol {
     
     @objc(photoViewController:retryDownloadForPhoto:)
-    func photoViewController(_ photoViewController: PhotoViewController, retryDownloadFor photo: PhotoProtocol)
+    func photoViewController(_ photoViewController: AXPhotoViewController, retryDownloadFor photo: AXPhotoProtocol)
     
     @objc(photoViewController:maximumZoomScaleForPhotoAtIndex:minimumZoomScale:imageSize:)
-    func photoViewController(_ photoViewController: PhotoViewController,
+    func photoViewController(_ photoViewController: AXPhotoViewController,
                              maximumZoomScaleForPhotoAt index: Int,
                              minimumZoomScale: CGFloat,
                              imageSize: CGSize) -> CGFloat

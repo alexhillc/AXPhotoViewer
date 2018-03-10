@@ -6,13 +6,13 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
-open class SimpleNetworkIntegration: NSObject, NetworkIntegrationProtocol, SimpleNetworkIntegrationURLSessionWrapperDelegate {
+open class SimpleNetworkIntegration: NSObject, AXNetworkIntegrationProtocol, SimpleNetworkIntegrationURLSessionWrapperDelegate {
     
     fileprivate var urlSessionWrapper = SimpleNetworkIntegrationURLSessionWrapper()
-    public weak var delegate: NetworkIntegrationDelegate?
+    public weak var delegate: AXNetworkIntegrationDelegate?
     
-    fileprivate var dataTasks = NSMapTable<PhotoProtocol, URLSessionDataTask>(keyOptions: .strongMemory, valueOptions: .strongMemory)
-    fileprivate var photos = [Int: PhotoProtocol]()
+    fileprivate var dataTasks = NSMapTable<AXPhotoProtocol, URLSessionDataTask>(keyOptions: .strongMemory, valueOptions: .strongMemory)
+    fileprivate var photos = [Int: AXPhotoProtocol]()
     
     public override init() {
         super.init()
@@ -23,7 +23,7 @@ open class SimpleNetworkIntegration: NSObject, NetworkIntegrationProtocol, Simpl
         self.urlSessionWrapper.invalidate()
     }
     
-    public func loadPhoto(_ photo: PhotoProtocol) {
+    public func loadPhoto(_ photo: AXPhotoProtocol) {
         if photo.imageData != nil || photo.image != nil {
             self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
         }
@@ -38,7 +38,7 @@ open class SimpleNetworkIntegration: NSObject, NetworkIntegrationProtocol, Simpl
         dataTask.resume()
     }
     
-    public func cancelLoad(for photo: PhotoProtocol) {
+    public func cancelLoad(for photo: AXPhotoProtocol) {
         guard let dataTask = self.dataTasks.object(forKey: photo) else {
             return
         }

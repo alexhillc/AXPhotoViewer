@@ -1,5 +1,5 @@
 //
-//  PhotosViewController.swift
+//  AXPhotosViewController.swift
 //  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/7/17.
@@ -9,17 +9,20 @@
 import UIKit
 import MobileCoreServices
 
-@objc(AXPhotosViewController) open class PhotosViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource,
-                                                               UIViewControllerTransitioningDelegate, PhotoViewControllerDelegate, NetworkIntegrationDelegate,
-                                                               PhotosTransitionControllerDelegate {
+@objc open class AXPhotosViewController: UIViewController, UIPageViewControllerDelegate,
+                                                           UIPageViewControllerDataSource,
+                                                           UIViewControllerTransitioningDelegate,
+                                                           AXPhotoViewControllerDelegate,
+                                                           AXNetworkIntegrationDelegate,
+                                                           AXPhotosTransitionControllerDelegate {
     
-    @objc open weak var delegate: PhotosViewControllerDelegate?
+    @objc open weak var delegate: AXPhotosViewControllerDelegate?
     
     /// The underlying `OverlayView` that is used for displaying photo captions, titles, and actions.
-    @objc open let overlayView = OverlayView()
+    @objc open let overlayView = AXOverlayView()
     
     /// The photos to display in the PhotosViewController.
-    @objc open var dataSource = PhotosDataSource() {
+    @objc open var dataSource = AXPhotosDataSource() {
         didSet {
             // this can occur during `commonInit(dataSource:pagingConfig:transitionInfo:networkIntegration:)`
             // if that's the case, this logic will be applied in `viewDidLoad()`
@@ -34,7 +37,7 @@ import MobileCoreServices
     }
     
     /// The configuration object applied to the internal pager at initialization.
-    @objc open fileprivate(set) var pagingConfig = PagingConfig()
+    @objc open fileprivate(set) var pagingConfig = AXPagingConfig()
     
     /// The underlying UIPageViewController that is used for swiping horizontally and vertically.
     /// - Important: `AXPhotosViewController` is this page view controller's `UIPageViewControllerDelegate`, `UIPageViewControllerDataSource`.
@@ -63,16 +66,16 @@ import MobileCoreServices
         }
     }
     
-    /// The `TransitionInfo` passed in at initialization. This object is used to define functionality for the presentation and dismissal
+    /// The `AXTransitionInfo` passed in at initialization. This object is used to define functionality for the presentation and dismissal
     /// of the `PhotosViewController`.
-    @objc open fileprivate(set) var transitionInfo = TransitionInfo()
+    @objc open fileprivate(set) var transitionInfo = AXTransitionInfo()
     
     /// The `NetworkIntegration` passed in at initialization. This object is used to fetch images asynchronously from a cache or URL.
     /// - Initialized by the end of `commonInit(dataSource:pagingConfig:transitionInfo:networkIntegration:)`.
-    @objc public fileprivate(set) var networkIntegration: NetworkIntegrationProtocol!
+    @objc public fileprivate(set) var networkIntegration: AXNetworkIntegrationProtocol!
     
     /// The view controller containing the photo currently being shown.
-    @objc public var currentPhotoViewController: PhotoViewController? {
+    @objc public var currentPhotoViewController: AXPhotoViewController? {
         get {
             return self.orderedViewControllers.filter({ $0.pageIndex == currentPhotoIndex }).first
         }
@@ -111,10 +114,10 @@ import MobileCoreServices
     fileprivate var isForcingNonInteractiveDismissal = false
     fileprivate var isFirstAppearance = true
     
-    fileprivate var orderedViewControllers = [PhotoViewController]()
-    fileprivate var recycledViewControllers = [PhotoViewController]()
+    fileprivate var orderedViewControllers = [AXPhotoViewController]()
+    fileprivate var recycledViewControllers = [AXPhotoViewController]()
     
-    fileprivate var transitionController: PhotosTransitionController?
+    fileprivate var transitionController: AXPhotosTransitionController?
     fileprivate let notificationCenter = NotificationCenter()
     
     fileprivate var ax_prefersStatusBarHidden: Bool = false
@@ -137,30 +140,30 @@ import MobileCoreServices
         self.commonInit()
     }
     
-    @objc public init(dataSource: PhotosDataSource?) {
+    @objc public init(dataSource: AXPhotosDataSource?) {
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource)
     }
     
-    @objc public init(dataSource: PhotosDataSource?,
-                      pagingConfig: PagingConfig?) {
+    @objc public init(dataSource: AXPhotosDataSource?,
+                      pagingConfig: AXPagingConfig?) {
         
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource,
                         pagingConfig: pagingConfig)
     }
     
-    @objc public init(pagingConfig: PagingConfig?,
-                      transitionInfo: TransitionInfo?) {
+    @objc public init(pagingConfig: AXPagingConfig?,
+                      transitionInfo: AXTransitionInfo?) {
         
         super.init(nibName: nil, bundle: nil)
         self.commonInit(pagingConfig: pagingConfig,
                         transitionInfo: transitionInfo)
     }
     
-    @objc public init(dataSource: PhotosDataSource?,
-                      pagingConfig: PagingConfig?,
-                      transitionInfo: TransitionInfo?) {
+    @objc public init(dataSource: AXPhotosDataSource?,
+                      pagingConfig: AXPagingConfig?,
+                      transitionInfo: AXTransitionInfo?) {
         
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource,
@@ -173,7 +176,7 @@ import MobileCoreServices
         self.commonInit(networkIntegration: networkIntegration)
     }
     
-    @objc public init(dataSource: PhotosDataSource?,
+    @objc public init(dataSource: AXPhotosDataSource?,
                       networkIntegration: NetworkIntegrationProtocol) {
     
         super.init(nibName: nil, bundle: nil)
@@ -181,8 +184,8 @@ import MobileCoreServices
                         networkIntegration: networkIntegration)
     }
     
-    @objc public init(dataSource: PhotosDataSource?,
-                      pagingConfig: PagingConfig?,
+    @objc public init(dataSource: AXPhotosDataSource?,
+                      pagingConfig: AXPagingConfig?,
                       networkIntegration: NetworkIntegrationProtocol) {
     
         super.init(nibName: nil, bundle: nil)
@@ -191,8 +194,8 @@ import MobileCoreServices
                         networkIntegration: networkIntegration)
     }
     
-    @objc public init(pagingConfig: PagingConfig?,
-                      transitionInfo: TransitionInfo?,
+    @objc public init(pagingConfig: AXPagingConfig?,
+                      transitionInfo: AXTransitionInfo?,
                       networkIntegration: NetworkIntegrationProtocol) {
     
         super.init(nibName: nil, bundle: nil)
@@ -201,9 +204,9 @@ import MobileCoreServices
                         networkIntegration: networkIntegration)
     }
     
-    @objc public init(dataSource: PhotosDataSource?,
-                      pagingConfig: PagingConfig?,
-                      transitionInfo: TransitionInfo?,
+    @objc public init(dataSource: AXPhotosDataSource?,
+                      pagingConfig: AXPagingConfig?,
+                      transitionInfo: AXTransitionInfo?,
                       networkIntegration: NetworkIntegrationProtocol) {
 
         super.init(nibName: nil, bundle: nil)
@@ -215,7 +218,7 @@ import MobileCoreServices
     #endif
     
     @objc(initFromPreviewingPhotosViewController:)
-    public init(from previewingPhotosViewController: PreviewingPhotosViewController) {
+    public init(from previewingPhotosViewController: AXPreviewingPhotosViewController) {
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: previewingPhotosViewController.dataSource,
                         networkIntegration: previewingPhotosViewController.networkIntegration)
@@ -230,8 +233,8 @@ import MobileCoreServices
     }
     
     @objc(initFromPreviewingPhotosViewController:pagingConfig:)
-    public init(from previewingPhotosViewController: PreviewingPhotosViewController,
-                pagingConfig: PagingConfig?) {
+    public init(from previewingPhotosViewController: AXPreviewingPhotosViewController,
+                pagingConfig: AXPagingConfig?) {
         
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: previewingPhotosViewController.dataSource,
@@ -248,9 +251,9 @@ import MobileCoreServices
     }
     
     @objc(initFromPreviewingPhotosViewController:pagingConfig:transitionInfo:)
-    public init(from previewingPhotosViewController: PreviewingPhotosViewController,
-                pagingConfig: PagingConfig?,
-                transitionInfo: TransitionInfo?) {
+    public init(from previewingPhotosViewController: AXPreviewingPhotosViewController,
+                pagingConfig: AXPagingConfig?,
+                transitionInfo: AXTransitionInfo?) {
         
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: previewingPhotosViewController.dataSource,
@@ -272,10 +275,10 @@ import MobileCoreServices
     }
     
     // init to be used internally by the library
-    @nonobjc init(dataSource: PhotosDataSource? = nil,
-                  pagingConfig: PagingConfig? = nil,
-                  transitionInfo: TransitionInfo? = nil,
-                  networkIntegration: NetworkIntegrationProtocol? = nil) {
+    @nonobjc init(dataSource: AXPhotosDataSource? = nil,
+                  pagingConfig: AXPagingConfig? = nil,
+                  transitionInfo: AXTransitionInfo? = nil,
+                  networkIntegration: AXNetworkIntegrationProtocol? = nil) {
         
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource,
@@ -284,10 +287,10 @@ import MobileCoreServices
                         networkIntegration: networkIntegration)
     }
     
-    fileprivate func commonInit(dataSource: PhotosDataSource? = nil,
-                                pagingConfig: PagingConfig? = nil,
-                                transitionInfo: TransitionInfo? = nil,
-                                networkIntegration: NetworkIntegrationProtocol? = nil) {
+    fileprivate func commonInit(dataSource: AXPhotosDataSource? = nil,
+                                pagingConfig: AXPagingConfig? = nil,
+                                transitionInfo: AXTransitionInfo? = nil,
+                                networkIntegration: AXNetworkIntegrationProtocol? = nil) {
         
         if let uDataSource = dataSource {
             self.dataSource = uDataSource
@@ -366,7 +369,7 @@ import MobileCoreServices
         
         self.view.backgroundColor = .black
         
-        self.transitionController = PhotosTransitionController(photosViewController: self, transitionInfo: self.transitionInfo)
+        self.transitionController = AXPhotosTransitionController(photosViewController: self, transitionInfo: self.transitionInfo)
         self.transitionController?.delegate = self
         
         if let containerViewController = self.containerViewController {
@@ -471,9 +474,9 @@ import MobileCoreServices
         return transitionController
     }
     
-    func transitionController(_ transitionController: PhotosTransitionController,
+    func transitionController(_ transitionController: AXPhotosTransitionController,
                               didFinishAnimatingWith view: UIImageView, 
-                              transitionControllerMode: PhotosTransitionControllerMode) {
+                              transitionControllerMode: AXPhotosTransitionControllerMode) {
         
         guard let photo = self.dataSource.photo(at: self.currentPhotoIndex) else {
             return
@@ -483,7 +486,7 @@ import MobileCoreServices
             self.notificationCenter.post(name: .photoImageUpdate,
                                          object: photo,
                                          userInfo: [
-                                            PhotosViewControllerNotification.ReferenceViewKey: view
+                                            AXPhotosViewControllerNotification.ReferenceViewKey: view
                                          ])
         }
     }
@@ -514,7 +517,7 @@ import MobileCoreServices
         self.willUpdate(overlayView: self.overlayView, for: photo, at: photoIndex, totalNumberOfPhotos: self.dataSource.numberOfPhotos)
         
         if self.dataSource.numberOfPhotos > 1 {
-            self.overlayView.internalTitle = NSLocalizedString("\(photoIndex + 1) of \(self.dataSource.numberOfPhotos)", comment: "")
+            self.overlayView.internalTitle = String.localizedStringWithFormat("%d of %d", photoIndex + 1, self.dataSource.numberOfPhotos)
         } else {
             self.overlayView.internalTitle = nil
         }
@@ -624,7 +627,7 @@ import MobileCoreServices
         let upperIndex = (index + (numberOfPhotosToLoad / 2) + 1 < self.dataSource.numberOfPhotos) ? index + (numberOfPhotosToLoad / 2) + 1 : NSNotFound
         
         weak var weakSelf = self
-        func reduceMemory(for photo: PhotoProtocol) {
+        func reduceMemory(for photo: AXPhotoProtocol) {
             guard let `self` = weakSelf else {
                 return
             }
@@ -650,12 +653,12 @@ import MobileCoreServices
     }
     
     // MARK: - Reuse / Factory
-    fileprivate func makePhotoViewController(for pageIndex: Int) -> PhotoViewController? {
+    fileprivate func makePhotoViewController(for pageIndex: Int) -> AXPhotoViewController? {
         guard let photo = self.dataSource.photo(at: pageIndex) else {
             return nil
         }
         
-        var photoViewController: PhotoViewController
+        var photoViewController: AXPhotoViewController
         
         if self.recycledViewControllers.count > 0 {
             photoViewController = self.recycledViewControllers.removeLast()
@@ -665,7 +668,7 @@ import MobileCoreServices
                 return nil
             }
             
-            photoViewController = PhotoViewController(loadingView: loadingView, notificationCenter: self.notificationCenter)
+            photoViewController = AXPhotoViewController(loadingView: loadingView, notificationCenter: self.notificationCenter)
             photoViewController.addLifecycleObserver(self)
             photoViewController.delegate = self
             
@@ -683,17 +686,17 @@ import MobileCoreServices
         return photoViewController
     }
     
-    fileprivate func makeLoadingView(for pageIndex: Int) -> LoadingViewProtocol? {
+    fileprivate func makeLoadingView(for pageIndex: Int) -> AXLoadingViewProtocol? {
         guard let loadingViewType = self.pagingConfig.loadingViewClass as? UIView.Type else {
             assertionFailure("`loadingViewType` must be a UIView.")
             return nil
         }
         
-        return loadingViewType.init() as? LoadingViewProtocol
+        return loadingViewType.init() as? AXLoadingViewProtocol
     }
     
     // MARK: - Recycling
-    fileprivate func recyclePhotoViewController(_ photoViewController: PhotoViewController) {
+    fileprivate func recyclePhotoViewController(_ photoViewController: AXPhotoViewController) {
         if self.recycledViewControllers.contains(photoViewController) {
             return
         }
@@ -718,7 +721,7 @@ import MobileCoreServices
     }
     
     fileprivate func lifecycleContextDidUpdate(object: Any?, change: [NSKeyValueChangeKey : Any]?) {
-        guard let photoViewController = object as? PhotoViewController else {
+        guard let photoViewController = object as? AXPhotoViewController else {
             return
         }
         
@@ -800,8 +803,8 @@ import MobileCoreServices
         self.overlayView.titleView?.tweenBetweenLowIndex?(lowIndex, highIndex: highIndex, percent: percent)
     }
     
-    fileprivate func computeVisibleViewControllers(in referenceView: UIScrollView) -> [PhotoViewController] {
-        var visibleViewControllers = [PhotoViewController]()
+    fileprivate func computeVisibleViewControllers(in referenceView: UIScrollView) -> [AXPhotoViewController] {
+        var visibleViewControllers = [AXPhotoViewController]()
         
         for viewController in self.orderedViewControllers {
             if viewController.view.frame.equalTo(.zero) {
@@ -828,7 +831,7 @@ import MobileCoreServices
     
     // MARK: - UIPageViewControllerDataSource
     public func pageViewController(_ pageViewController: UIPageViewController, willTransitionTo pendingViewControllers: [UIViewController]) {
-        guard let viewController = pendingViewControllers.first as? PhotoViewController else {
+        guard let viewController = pendingViewControllers.first as? AXPhotoViewController else {
             return
         }
         
@@ -836,7 +839,7 @@ import MobileCoreServices
     }
     
     public func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
-        guard let viewController = pageViewController.viewControllers?.first as? PhotoViewController else {
+        guard let viewController = pageViewController.viewControllers?.first as? AXPhotoViewController else {
             return
         }
         
@@ -844,8 +847,8 @@ import MobileCoreServices
     }
     
     public func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
-        guard let uViewController = viewController as? PhotoViewController else {
-            assertionFailure("Paging VC must be a subclass of `PhotoViewController`.")
+        guard let uViewController = viewController as? AXPhotoViewController else {
+            assertionFailure("Paging VC must be a subclass of `AXPhotoViewController`.")
             return nil
         }
         
@@ -853,8 +856,8 @@ import MobileCoreServices
     }
     
     public func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
-        guard let uViewController = viewController as? PhotoViewController else {
-            assertionFailure("Paging VC must be a subclass of `PhotoViewController`.")
+        guard let uViewController = viewController as? AXPhotoViewController else {
+            assertionFailure("Paging VC must be a subclass of `AXPhotoViewController`.")
             return nil
         }
         
@@ -869,8 +872,8 @@ import MobileCoreServices
         return self.makePhotoViewController(for: index)
     }
     
-    // MARK: - PhotoViewControllerDelegate
-    public func photoViewController(_ photoViewController: PhotoViewController, retryDownloadFor photo: PhotoProtocol) {
+    // MARK: - AXPhotoViewControllerDelegate
+    public func photoViewController(_ photoViewController: AXPhotoViewController, retryDownloadFor photo: AXPhotoProtocol) {
         guard photo.ax_loadingState != .loading && photo.ax_loadingState != .loaded else {
             return
         }
@@ -880,7 +883,7 @@ import MobileCoreServices
         self.networkIntegration.loadPhoto(photo)
     }
     
-    public func photoViewController(_ photoViewController: PhotoViewController,
+    public func photoViewController(_ photoViewController: AXPhotoViewController,
                                     maximumZoomScaleForPhotoAt index: Int,
                                     minimumZoomScale: CGFloat,
                                     imageSize: CGSize) -> CGFloat {
@@ -892,33 +895,33 @@ import MobileCoreServices
         return self.maximumZoomScale(for: photo, minimumZoomScale: minimumZoomScale, imageSize: imageSize)
     }
     
-    // MARK: - PhotosViewControllerDelegate calls
+    // MARK: - AXPhotosViewControllerDelegate calls
     
-    /// Called when the `PhotosViewController` navigates to a new photo. This is defined as when the swipe percent between pages
+    /// Called when the `AXPhotosViewController` navigates to a new photo. This is defined as when the swipe percent between pages
     /// is greater than the threshold (>0.5).
     ///
     /// If you override this and fail to call super, the corresponding delegate method **will not be called!**
     ///
     /// - Parameters:
-    ///   - photo: The `Photo` that was navigated to.
-    ///   - index: The `index` in the dataSource of the `Photo` being transitioned to.
+    ///   - photo: The `AXPhoto` that was navigated to.
+    ///   - index: The `index` in the dataSource of the `AXPhoto` being transitioned to.
     @objc(didNavigateToPhoto:atIndex:)
-    open func didNavigateTo(photo: PhotoProtocol, at index: Int) {
+    open func didNavigateTo(photo: AXPhotoProtocol, at index: Int) {
         self.delegate?.photosViewController?(self, didNavigateTo: photo, at: index)
     }
     
-    /// Called when the `PhotosViewController` is configuring its `OverlayView` for a new photo. This should be used to update the
+    /// Called when the `AXPhotosViewController` is configuring its `OverlayView` for a new photo. This should be used to update the
     /// the overlay's title or any other overlay-specific properties.
     ///
     /// If you override this and fail to call super, the corresponding delegate method **will not be called!**
     ///
     /// - Parameters:
-    ///   - overlayView: The `OverlayView` that is being updated.
-    ///   - photo: The `Photo` the overlay is being configured for.
-    ///   - index: The index of the `Photo` that the overlay is being configured for.
+    ///   - overlayView: The `AXOverlayView` that is being updated.
+    ///   - photo: The `AXPhoto` the overlay is being configured for.
+    ///   - index: The index of the `AXPhoto` that the overlay is being configured for.
     ///   - totalNumberOfPhotos: The total number of photos in the current `dataSource`.
     @objc(willUpdateOverlayView:forPhoto:atIndex:totalNumberOfPhotos:)
-    open func willUpdate(overlayView: OverlayView, for photo: PhotoProtocol, at index: Int, totalNumberOfPhotos: Int) {
+    open func willUpdate(overlayView: AXOverlayView, for photo: AXPhotoProtocol, at index: Int, totalNumberOfPhotos: Int) {
         self.delegate?.photosViewController?(self,
                                              willUpdate: overlayView,
                                              for: photo,
@@ -936,10 +939,10 @@ import MobileCoreServices
     /// - Parameters:
     ///   - photo: The `Photo` that the zoom scale will affect.
     ///   - minimumZoomScale: The minimum zoom scale that is calculated by the library. This value cannot be changed.
-    ///   - imageSize: The size of the image that belongs to the `Photo`.
+    ///   - imageSize: The size of the image that belongs to the `AXPhoto`.
     /// - Returns: A "maximum" zoom scale that >= `minimumZoomScale`.
     @objc(maximumZoomScaleForPhoto:minimumZoomScale:imageSize:)
-    open func maximumZoomScale(for photo: PhotoProtocol, minimumZoomScale: CGFloat, imageSize: CGSize) -> CGFloat {
+    open func maximumZoomScale(for photo: AXPhotoProtocol, minimumZoomScale: CGFloat, imageSize: CGSize) -> CGFloat {
         return self.delegate?.photosViewController?(self,
                                                     maximumZoomScaleFor: photo,
                                                     minimumZoomScale: minimumZoomScale,
@@ -950,13 +953,13 @@ import MobileCoreServices
     /// delegate method **will not be called!**
     ///
     /// - Parameters:
-    ///   - photo: The related `Photo`.
+    ///   - photo: The related `AXPhoto`.
     /// 
     /// - Returns:
     ///   true if the action button tap was handled, false if the default action button behavior
     ///   should be invoked.
     @objc(handleActionButtonTappedForPhoto:)
-    open func handleActionButtonTapped(photo: PhotoProtocol) -> Bool {
+    open func handleActionButtonTapped(photo: AXPhotoProtocol) -> Bool {
         if let _ = self.delegate?.photosViewController?(self, handleActionButtonTappedFor: photo) {
             return true
         }
@@ -968,23 +971,23 @@ import MobileCoreServices
     /// delegate method **will not be called!**
     ///
     /// - Parameters:
-    ///   - photo: The related `Photo`.
+    ///   - photo: The related `AXPhoto`.
     /// - Note: This is only called for the default action.
     @objc(actionCompletedWithActivityType:forPhoto:)
-    open func actionCompleted(activityType: UIActivityType, for photo: PhotoProtocol) {
+    open func actionCompleted(activityType: UIActivityType, for photo: AXPhotoProtocol) {
         self.delegate?.photosViewController?(self, actionCompletedWith: activityType, for: photo)
     }
     
-    // MARK: - NetworkIntegrationDelegate
-    public func networkIntegration(_ networkIntegration: NetworkIntegrationProtocol, loadDidFinishWith photo: PhotoProtocol) {
+    // MARK: - AXNetworkIntegrationDelegate
+    public func networkIntegration(_ networkIntegration: AXNetworkIntegrationProtocol, loadDidFinishWith photo: AXPhotoProtocol) {
         if let animatedImage = photo.ax_animatedImage {
             photo.ax_loadingState = .loaded
             DispatchQueue.main.async { [weak self] in
                 self?.notificationCenter.post(name: .photoImageUpdate,
                                               object: photo,
                                               userInfo: [
-                                                PhotosViewControllerNotification.AnimatedImageKey: animatedImage,
-                                                PhotosViewControllerNotification.LoadingStateKey: PhotoLoadingState.loaded
+                                                AXPhotosViewControllerNotification.AnimatedImageKey: animatedImage,
+                                                AXPhotosViewControllerNotification.LoadingStateKey: AXPhotoLoadingState.loaded
                                               ])
             }
         } else if let imageData = photo.imageData, let animatedImage = FLAnimatedImage(animatedGIFData: imageData) {
@@ -994,8 +997,8 @@ import MobileCoreServices
                 self?.notificationCenter.post(name: .photoImageUpdate,
                                               object: photo,
                                               userInfo: [
-                                                 PhotosViewControllerNotification.AnimatedImageKey: animatedImage,
-                                                 PhotosViewControllerNotification.LoadingStateKey: PhotoLoadingState.loaded
+                                                 AXPhotosViewControllerNotification.AnimatedImageKey: animatedImage,
+                                                 AXPhotosViewControllerNotification.LoadingStateKey: AXPhotoLoadingState.loaded
                                               ])
             }
         } else if let image = photo.image {
@@ -1004,14 +1007,14 @@ import MobileCoreServices
                 self?.notificationCenter.post(name: .photoImageUpdate,
                                               object: photo,
                                               userInfo: [
-                                                PhotosViewControllerNotification.ImageKey: image,
-                                                PhotosViewControllerNotification.LoadingStateKey: PhotoLoadingState.loaded
+                                                AXPhotosViewControllerNotification.ImageKey: image,
+                                                AXPhotosViewControllerNotification.LoadingStateKey: AXPhotoLoadingState.loaded
                                               ])
             }
         }
     }
     
-    public func networkIntegration(_ networkIntegration: NetworkIntegrationProtocol, loadDidFailWith error: Error, for photo: PhotoProtocol) {
+    public func networkIntegration(_ networkIntegration: AXNetworkIntegrationProtocol, loadDidFailWith error: Error, for photo: AXPhotoProtocol) {
         guard photo.ax_loadingState != .loadingCancelled else {
             return
         }
@@ -1022,18 +1025,18 @@ import MobileCoreServices
             self?.notificationCenter.post(name: .photoImageUpdate,
                                           object: photo,
                                           userInfo: [
-                                            PhotosViewControllerNotification.ErrorKey: error,
-                                            PhotosViewControllerNotification.LoadingStateKey: PhotoLoadingState.loadingFailed
+                                            AXPhotosViewControllerNotification.ErrorKey: error,
+                                            AXPhotosViewControllerNotification.LoadingStateKey: AXPhotoLoadingState.loadingFailed
                                           ])
         }
     }
     
-    public func networkIntegration(_ networkIntegration: NetworkIntegrationProtocol, didUpdateLoadingProgress progress: CGFloat, for photo: PhotoProtocol) {
+    public func networkIntegration(_ networkIntegration: AXNetworkIntegrationProtocol, didUpdateLoadingProgress progress: CGFloat, for photo: AXPhotoProtocol) {
         photo.ax_progress = progress
         DispatchQueue.main.async { [weak self] in
             self?.notificationCenter.post(name: .photoLoadingProgressUpdate,
                                           object: photo,
-                                          userInfo: [PhotosViewControllerNotification.ProgressKey: progress])
+                                          userInfo: [AXPhotosViewControllerNotification.ProgressKey: progress])
         }
     }
 
@@ -1088,34 +1091,34 @@ fileprivate extension UIScrollView {
     
 }
 
-// MARK: - PhotosViewControllerDelegate
-@objc(AXPhotosViewControllerDelegate) public protocol PhotosViewControllerDelegate: AnyObject, NSObjectProtocol {
+// MARK: - AXPhotosViewControllerDelegate
+@objc public protocol AXPhotosViewControllerDelegate: AnyObject, NSObjectProtocol {
     
-    /// Called when the `PhotosViewController` navigates to a new photo. This is defined as when the swipe percent between pages
+    /// Called when the `AXPhotosViewController` navigates to a new photo. This is defined as when the swipe percent between pages
     /// is greater than the threshold (>0.5).
     ///
     /// - Parameters:
-    ///   - photosViewController: The `PhotosViewController` that is navigating.
-    ///   - photo: The `Photo` that was navigated to.
-    ///   - index: The `index` in the dataSource of the `Photo` being transitioned to.
+    ///   - photosViewController: The `AXPhotosViewController` that is navigating.
+    ///   - photo: The `AXPhoto` that was navigated to.
+    ///   - index: The `index` in the dataSource of the `AXPhoto` being transitioned to.
     @objc(photosViewController:didNavigateToPhoto:atIndex:)
-    optional func photosViewController(_ photosViewController: PhotosViewController,
-                                       didNavigateTo photo: PhotoProtocol,
+    optional func photosViewController(_ photosViewController: AXPhotosViewController,
+                                       didNavigateTo photo: AXPhotoProtocol,
                                        at index: Int)
     
-    /// Called when the `PhotosViewController` is configuring its `OverlayView` for a new photo. This should be used to update the
+    /// Called when the `AXPhotosViewController` is configuring its `OverlayView` for a new photo. This should be used to update the
     /// the overlay's title or any other overlay-specific properties.
     ///
     /// - Parameters:
-    ///   - photosViewController: The `PhotosViewController` that is updating the overlay.
-    ///   - overlayView: The `OverlayView` that is being updated.
-    ///   - photo: The `Photo` the overlay is being configured for.
-    ///   - index: The index of the `Photo` that the overlay is being configured for.
+    ///   - photosViewController: The `AXPhotosViewController` that is updating the overlay.
+    ///   - overlayView: The `AXOverlayView` that is being updated.
+    ///   - photo: The `AXPhoto` the overlay is being configured for.
+    ///   - index: The index of the `AXPhoto` that the overlay is being configured for.
     ///   - totalNumberOfPhotos: The total number of photos in the current `dataSource`.
     @objc(photosViewController:willUpdateOverlayView:forPhoto:atIndex:totalNumberOfPhotos:)
-    optional func photosViewController(_ photosViewController: PhotosViewController,
-                                       willUpdate overlayView: OverlayView,
-                                       for photo: PhotoProtocol,
+    optional func photosViewController(_ photosViewController: AXPhotosViewController,
+                                       willUpdate overlayView: AXOverlayView,
+                                       for photo: AXPhotoProtocol,
                                        at index: Int,
                                        totalNumberOfPhotos: Int)
     
@@ -1125,41 +1128,41 @@ fileprivate extension UIScrollView {
     /// If the `minimumZoomScale` is returned (ie. `minimumZoomScale` == `maximumZoomScale`), zooming will be disabled for this image.
     ///
     /// - Parameters:
-    ///   - photosViewController: The `PhotosViewController` that is updating the photo's zoom scale.
-    ///   - photo: The `Photo` that the zoom scale will affect.
+    ///   - photosViewController: The `AXPhotosViewController` that is updating the photo's zoom scale.
+    ///   - photo: The `AXPhoto` that the zoom scale will affect.
     ///   - minimumZoomScale: The minimum zoom scale that is calculated by the library. This value cannot be changed.
-    ///   - imageSize: The size of the image that belongs to the `Photo`.
+    ///   - imageSize: The size of the image that belongs to the `AXPhoto`.
     /// - Returns: A "maximum" zoom scale that >= `minimumZoomScale`.
     @objc(photosViewController:maximumZoomScaleForPhoto:minimumZoomScale:imageSize:)
-    optional func photosViewController(_ photosViewController: PhotosViewController,
-                                       maximumZoomScaleFor photo: PhotoProtocol,
+    optional func photosViewController(_ photosViewController: AXPhotosViewController,
+                                       maximumZoomScaleFor photo: AXPhotoProtocol,
                                        minimumZoomScale: CGFloat,
                                        imageSize: CGSize) -> CGFloat
     
     /// Called when the action button is tapped for a photo. If no implementation is provided, will fall back to default action.
     ///
     /// - Parameters:
-    ///   - photosViewController: The `PhotosViewController` handling the action.
+    ///   - photosViewController: The `AXPhotosViewController` handling the action.
     ///   - photo: The related `Photo`.
     @objc(photosViewController:handleActionButtonTappedForPhoto:)
-    optional func photosViewController(_ photosViewController: PhotosViewController, 
-                                       handleActionButtonTappedFor photo: PhotoProtocol)
+    optional func photosViewController(_ photosViewController: AXPhotosViewController, 
+                                       handleActionButtonTappedFor photo: AXPhotoProtocol)
     
     /// Called when an action button action is completed.
     ///
     /// - Parameters:
-    ///   - photosViewController: The `PhotosViewController` that handled the action.
-    ///   - photo: The related `Photo`.
+    ///   - photosViewController: The `AXPhotosViewController` that handled the action.
+    ///   - photo: The related `AXPhoto`.
     /// - Note: This is only called for the default action.
     @objc(photosViewController:actionCompletedWithActivityType:forPhoto:)
-    optional func photosViewController(_ photosViewController: PhotosViewController, 
+    optional func photosViewController(_ photosViewController: AXPhotosViewController, 
                                        actionCompletedWith activityType: UIActivityType, 
-                                       for photo: PhotoProtocol)
+                                       for photo: AXPhotoProtocol)
 }
 
 // MARK: - Notification definitions
 // Keep Obj-C land happy
-@objc(AXPhotosViewControllerNotification) open class PhotosViewControllerNotification: NSObject {
+@objc open class AXPhotosViewControllerNotification: NSObject {
     @objc static let ProgressUpdate = Notification.Name.photoLoadingProgressUpdate.rawValue
     @objc static let ImageUpdate = Notification.Name.photoImageUpdate.rawValue
     @objc static let ImageKey = "AXPhotosViewControllerImage"

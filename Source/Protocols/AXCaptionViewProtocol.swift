@@ -1,18 +1,18 @@
 //
-//  CaptionViewProtocol.swift
+//  AXCaptionViewProtocol.swift
 //  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/28/17.
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
-@objc(AXCaptionViewProtocol) public protocol CaptionViewProtocol: NSObjectProtocol {
+@objc public protocol AXCaptionViewProtocol: NSObjectProtocol {
     
     /// Whether or not the `CaptionView` should animate caption info changes - using `Constants.frameAnimDuration` as
     /// the animation duration.
     @objc var animateCaptionInfoChanges: Bool { get set }
     
-    /// The `PhotosViewController` will call this method when a new photo is ready to have its information displayed.
+    /// The `AXPhotosViewController` will call this method when a new photo is ready to have its information displayed.
     /// The implementation should update the `captionView` with the attributed parameters. 
     ///
     /// - Parameters:
@@ -23,7 +23,7 @@
                                 attributedDescription: NSAttributedString?,
                                 attributedCredit: NSAttributedString?)
     
-    /// The `PhotosViewController` uses this method to correctly size the caption view for a constrained width.
+    /// The `AXPhotosViewController` uses this method to correctly size the caption view for a constrained width.
     ///
     /// - Parameter size: The constrained size. Use the width of this value to layout subviews.
     /// - Returns: A size that fits all subviews inside a constrained width.

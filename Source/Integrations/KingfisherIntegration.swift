@@ -8,13 +8,13 @@
 
 import Kingfisher
 
-class KingfisherIntegration: NSObject, NetworkIntegrationProtocol {
+class KingfisherIntegration: NSObject, AXNetworkIntegrationProtocol {
 
-    weak public var delegate: NetworkIntegrationDelegate?
+    weak public var delegate: AXNetworkIntegrationDelegate?
 
-    fileprivate var retrieveImageTasks = NSMapTable<PhotoProtocol, RetrieveImageTask>(keyOptions: .strongMemory, valueOptions: .strongMemory)
+    fileprivate var retrieveImageTasks = NSMapTable<AXPhotoProtocol, RetrieveImageTask>(keyOptions: .strongMemory, valueOptions: .strongMemory)
 
-    public func loadPhoto(_ photo: PhotoProtocol) {
+    public func loadPhoto(_ photo: AXPhotoProtocol) {
         if photo.imageData != nil || photo.image != nil {
             delegate?.networkIntegration(self, loadDidFinishWith: photo)
         }
@@ -57,7 +57,7 @@ class KingfisherIntegration: NSObject, NetworkIntegrationProtocol {
         self.retrieveImageTasks.setObject(task, forKey: photo)
     }
 
-    func cancelLoad(for photo: PhotoProtocol) {
+    func cancelLoad(for photo: AXPhotoProtocol) {
         guard let downloadTask = self.retrieveImageTasks.object(forKey: photo) else {
             return
         }

@@ -1,12 +1,12 @@
 //
-//  Constants.swift
+//  AXConstants.swift
 //  Pods
 //
 //  Created by Alex Hill on 8/7/17.
 //
 //
 
-@objc(AXConstants) public class Constants: NSObject {
+@objc public class AXConstants: NSObject {
     
     @objc public static let frameAnimDuration: TimeInterval = 0.25
     @objc public static let overlayBarButtonItemSpacing: CGFloat = 20

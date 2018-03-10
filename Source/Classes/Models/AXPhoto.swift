@@ -1,13 +1,13 @@
 //
-//  Photo.swift
+//  AXPhoto.swift
 //  AXPhotoViewer
 //
 //  Created by Alex Hill on 6/3/17.
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
-/// A simple wrapper class for `PhotoProtocol`.
-@objc(AXPhoto) open class Photo: NSObject, PhotoProtocol {
+/// A simple wrapper class for `AXPhotoProtocol`.
+@objc open class AXPhoto: NSObject, AXPhotoProtocol {
     
     @objc public init(attributedTitle: NSAttributedString? = nil,
                       attributedDescription: NSAttributedString? = nil,

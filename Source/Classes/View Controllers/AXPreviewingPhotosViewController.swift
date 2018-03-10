@@ -1,5 +1,5 @@
 //
-//  PreviewingPhotosViewController.swift
+//  AXPreviewingPhotosViewController.swift
 //  AXPhotoViewer
 //
 //  Created by Alex Hill on 7/16/17.
@@ -10,11 +10,10 @@ import UIKit
 import FLAnimatedImage
 import MobileCoreServices
 
-@objc(AXPreviewingPhotosViewController) open class PreviewingPhotosViewController: UIViewController,
-                                                                                   NetworkIntegrationDelegate {
+@objc open class AXPreviewingPhotosViewController: UIViewController, AXNetworkIntegrationDelegate {
     
     /// The photos to display in the `PhotosPreviewingViewController`.
-    @objc open var dataSource: PhotosDataSource = PhotosDataSource() {
+    @objc open var dataSource: AXPhotosDataSource = AXPhotosDataSource() {
         didSet {
             // this can occur during `commonInit(dataSource:networkIntegration:)`
             if self.networkIntegration == nil {
@@ -28,7 +27,7 @@ import MobileCoreServices
     
     /// The `NetworkIntegration` passed in at initialization. This object is used to fetch images asynchronously from a cache or URL.
     /// - Initialized by the end of `commonInit(dataSource:networkIntegration:)`.
-    @objc public fileprivate(set) var networkIntegration: NetworkIntegrationProtocol!
+    @objc public fileprivate(set) var networkIntegration: AXNetworkIntegrationProtocol!
     
     var imageView: FLAnimatedImageView {
         get {
@@ -38,12 +37,12 @@ import MobileCoreServices
     
     // MARK: - Initialization
     #if AX_SDWEBIMAGE_SUPPORT || AX_PINREMOTEIMAGE_SUPPORT || AX_AFNETWORKING_SUPPORT || AX_KINGFISHER_SUPPORT || AX_LITE_SUPPORT
-    @objc public init(dataSource: PhotosDataSource) {
+    @objc public init(dataSource: AXPhotosDataSource) {
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource)
     }
     #else
-    @objc public init(dataSource: PhotosDataSource,
+    @objc public init(dataSource: AXPhotosDataSource,
                       networkIntegration: NetworkIntegrationProtocol) {
     
         super.init(nibName: nil, bundle: nil)
@@ -56,12 +55,12 @@ import MobileCoreServices
         fatalError("init(coder:) has not been implemented")
     }
     
-    fileprivate func commonInit(dataSource: PhotosDataSource,
-                                networkIntegration: NetworkIntegrationProtocol? = nil) {
+    fileprivate func commonInit(dataSource: AXPhotosDataSource,
+                                networkIntegration: AXNetworkIntegrationProtocol? = nil) {
         
         self.dataSource = dataSource
 
-        var uNetworkIntegration: NetworkIntegrationProtocol!
+        var uNetworkIntegration: AXNetworkIntegrationProtocol!
         if networkIntegration == nil {
             #if AX_SDWEBIMAGE_SUPPORT
                 uNetworkIntegration = SDWebImageIntegration()
@@ -114,8 +113,8 @@ import MobileCoreServices
         self.networkIntegration.loadPhoto(photo)
     }
     
-    // MARK: - NetworkIntegrationDelegate
-    public func networkIntegration(_ networkIntegration: NetworkIntegrationProtocol, loadDidFinishWith photo: PhotoProtocol) {
+    // MARK: - AXNetworkIntegrationDelegate
+    public func networkIntegration(_ networkIntegration: AXNetworkIntegrationProtocol, loadDidFinishWith photo: AXPhotoProtocol) {
         if let animatedImage = photo.ax_animatedImage {
             photo.ax_loadingState = .loaded
             DispatchQueue.main.async { [weak self] in
@@ -138,7 +137,7 @@ import MobileCoreServices
         }
     }
     
-    public func networkIntegration(_ networkIntegration: NetworkIntegrationProtocol, loadDidFailWith error: Error, for photo: PhotoProtocol) {
+    public func networkIntegration(_ networkIntegration: AXNetworkIntegrationProtocol, loadDidFailWith error: Error, for photo: AXPhotoProtocol) {
         guard photo.ax_loadingState != .loadingCancelled else {
             return
         }
@@ -147,7 +146,7 @@ import MobileCoreServices
         photo.ax_error = error
     }
     
-    public func networkIntegration(_ networkIntegration: NetworkIntegrationProtocol, didUpdateLoadingProgress progress: CGFloat, for photo: PhotoProtocol) {
+    public func networkIntegration(_ networkIntegration: AXNetworkIntegrationProtocol, didUpdateLoadingProgress progress: CGFloat, for photo: AXPhotoProtocol) {
         photo.ax_progress = progress
     }
     

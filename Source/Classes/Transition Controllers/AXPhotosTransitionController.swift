@@ -1,5 +1,5 @@
 //
-//  PhotosTransitionController.swift
+//  AXPhotosTransitionController.swift
 //  AXPhotoViewer
 //
 //  Created by Alex Hill on 6/4/17.
@@ -9,13 +9,13 @@
 import UIKit
 import FLAnimatedImage
 
-@objc(AXPhotosTransitionControllerMode) enum PhotosTransitionControllerMode: Int {
+@objc enum AXPhotosTransitionControllerMode: Int {
     case presenting, dismissing
 }
 
-@objc(AXPhotosTransitionController) class PhotosTransitionController: NSObject, UIViewControllerAnimatedTransitioning,
-                                                                      UIViewControllerInteractiveTransitioning,
-                                                                      UIGestureRecognizerDelegate {
+@objc class AXPhotosTransitionController: NSObject, UIViewControllerAnimatedTransitioning,
+                                                    UIViewControllerInteractiveTransitioning,
+                                                    UIGestureRecognizerDelegate {
     
     fileprivate let FadeInOutTransitionRatio: Double = 1/3
     fileprivate let TransitionAnimSpringDampening: CGFloat = 1
@@ -26,11 +26,11 @@ import FLAnimatedImage
                                                                                             .overFullScreen,
                                                                                             .overCurrentContext]
     
-    weak var delegate: PhotosTransitionControllerDelegate?
-    var mode: PhotosTransitionControllerMode = .presenting
-    var transitionInfo: TransitionInfo
+    weak var delegate: AXPhotosTransitionControllerDelegate?
+    var mode: AXPhotosTransitionControllerMode = .presenting
+    var transitionInfo: AXTransitionInfo
     
-    weak var photosViewController: PhotosViewController?
+    weak var photosViewController: AXPhotosViewController?
     weak var containerViewController: UIViewController?
     
     /// The distance threshold at which the interactive controller will dismiss upon end touches.
@@ -59,7 +59,7 @@ import FLAnimatedImage
     fileprivate var imageViewInitialCenter: CGPoint = .zero
     fileprivate var imageViewOriginalSuperview: UIView?
     
-    weak fileprivate var overlayView: OverlayView?
+    weak fileprivate var overlayView: AXOverlayView?
     fileprivate var topStackContainerInitialOriginY: CGFloat = .greatestFiniteMagnitude
     fileprivate var bottomStackContainerInitialOriginY: CGFloat = .greatestFiniteMagnitude
     fileprivate var overlayViewOriginalSuperview: UIView?
@@ -88,7 +88,7 @@ import FLAnimatedImage
         return type(of: self).supportedModalPresentationStyles.contains(modalPresentationStyle)
     }
     
-    init(photosViewController: PhotosViewController, transitionInfo: TransitionInfo) {
+    init(photosViewController: AXPhotosViewController, transitionInfo: AXTransitionInfo) {
         self.photosViewController = photosViewController
         self.transitionInfo = transitionInfo
         
@@ -210,11 +210,11 @@ import FLAnimatedImage
                 return
         }
         
-        var photosViewController: PhotosViewController
-        if let from = from as? PhotosViewController {
+        var photosViewController: AXPhotosViewController
+        if let from = from as? AXPhotosViewController {
             photosViewController = from
         } else {
-            guard let childViewController = from.childViewControllers.filter({ $0 is PhotosViewController }).first as? PhotosViewController else {
+            guard let childViewController = from.childViewControllers.filter({ $0 is AXPhotosViewController }).first as? AXPhotosViewController else {
                 assertionFailure("Could not find AXPhotosViewController in container's children.")
                 return
             }
@@ -384,11 +384,11 @@ import FLAnimatedImage
                 return
         }
         
-        var photosViewController: PhotosViewController
-        if let from = from as? PhotosViewController {
+        var photosViewController: AXPhotosViewController
+        if let from = from as? AXPhotosViewController {
             photosViewController = from
         } else {
-            guard let childViewController = from.childViewControllers.filter({ $0 is PhotosViewController }).first as? PhotosViewController else {
+            guard let childViewController = from.childViewControllers.filter({ $0 is AXPhotosViewController }).first as? AXPhotosViewController else {
                 assertionFailure("Could not find AXPhotosViewController in container's children.")
                 return
             }
@@ -474,11 +474,11 @@ import FLAnimatedImage
                 return
         }
         
-        var photosViewController: PhotosViewController
-        if let from = from as? PhotosViewController {
+        var photosViewController: AXPhotosViewController
+        if let from = from as? AXPhotosViewController {
             photosViewController = from
         } else {
-            guard let childViewController = from.childViewControllers.filter({ $0 is PhotosViewController }).first as? PhotosViewController else {
+            guard let childViewController = from.childViewControllers.filter({ $0 is AXPhotosViewController }).first as? AXPhotosViewController else {
                 assertionFailure("Could not find AXPhotosViewController in container's children.")
                 return
             }
@@ -851,11 +851,11 @@ import FLAnimatedImage
     
 }
 
-@objc(AXPhotosTransitionControllerDelegate) protocol PhotosTransitionControllerDelegate {
+@objc protocol AXPhotosTransitionControllerDelegate {
     
     @objc(transitionController:didFinishAnimatingWithView:animatorMode:)
-    func transitionController(_ transitionController: PhotosTransitionController,
+    func transitionController(_ transitionController: AXPhotosTransitionController,
                               didFinishAnimatingWith view: UIImageView,
-                              transitionControllerMode: PhotosTransitionControllerMode)
+                              transitionControllerMode: AXPhotosTransitionControllerMode)
     
 }

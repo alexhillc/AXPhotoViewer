@@ -1,12 +1,12 @@
 //
-//  TransitionInfo.swift
+//  AXTransitionInfo.swift
 //  AXPhotoViewer
 //
 //  Created by Alex Hill on 6/1/17.
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
-@objc(AXTransitionInfo) open class TransitionInfo: NSObject {
+@objc open class AXTransitionInfo: NSObject {
     
     /// The view the the transition controller should use for contextual animation during the presentation.
     /// If the reference view that is provided is not currently visible, contextual animation will not occur.
@@ -22,9 +22,9 @@
     /// This value determines whether or not the user can dismiss the `PhotosViewController` by panning vertically.
     @objc fileprivate(set) var interactiveDismissalEnabled: Bool = true
     
-    var resolveEndingViewClosure: ((_ photo: PhotoProtocol, _ index: Int) -> Void)?
+    var resolveEndingViewClosure: ((_ photo: AXPhotoProtocol, _ index: Int) -> Void)?
     
-    @objc public init(interactiveDismissalEnabled: Bool, startingView: UIImageView?, endingView: ((_ photo: PhotoProtocol, _ index: Int) -> UIImageView?)?) {
+    @objc public init(interactiveDismissalEnabled: Bool, startingView: UIImageView?, endingView: ((_ photo: AXPhotoProtocol, _ index: Int) -> UIImageView?)?) {
         super.init()
         self.interactiveDismissalEnabled = interactiveDismissalEnabled
         
@@ -62,7 +62,7 @@
         self.init(interactiveDismissalEnabled: true, startingView: nil, endingView: nil)
     }
 
-    @objc public convenience init(startingView: UIImageView?, endingView: ((_ photo: PhotoProtocol, _ index: Int) -> UIImageView?)?) {
+    @objc public convenience init(startingView: UIImageView?, endingView: ((_ photo: AXPhotoProtocol, _ index: Int) -> UIImageView?)?) {
         self.init(interactiveDismissalEnabled: true, startingView: startingView, endingView: endingView)
     }
     

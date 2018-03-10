@@ -9,13 +9,13 @@
 import AFNetworking
 import ImageIO
 
-class AFNetworkingIntegration: NSObject, NetworkIntegrationProtocol {
+class AFNetworkingIntegration: NSObject, AXNetworkIntegrationProtocol {
     
-    weak public var delegate: NetworkIntegrationDelegate?
+    weak public var delegate: AXNetworkIntegrationDelegate?
     
-    fileprivate var downloadTasks = NSMapTable<PhotoProtocol, URLSessionDataTask>(keyOptions: .strongMemory, valueOptions: .strongMemory)
+    fileprivate var downloadTasks = NSMapTable<AXPhotoProtocol, URLSessionDataTask>(keyOptions: .strongMemory, valueOptions: .strongMemory)
     
-    public func loadPhoto(_ photo: PhotoProtocol) {
+    public func loadPhoto(_ photo: AXPhotoProtocol) {
         if photo.imageData != nil || photo.image != nil {
             self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
         }

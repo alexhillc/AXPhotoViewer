@@ -11,9 +11,9 @@ import FLAnimatedImage
 
 fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
 
-@objc(AXZoomingImageView) class ZoomingImageView: UIScrollView, UIScrollViewDelegate {
+@objc class AXZoomingImageView: UIScrollView, UIScrollViewDelegate {
     
-    weak var zoomScaleDelegate: ZoomingImageViewDelegate?
+    weak var zoomScaleDelegate: AXZoomingImageViewDelegate?
     
     var image: UIImage? {
         set(value) {
@@ -187,9 +187,9 @@ fileprivate let ZoomScaleEpsilon: CGFloat = 0.01
 
 }
 
-@objc(AXZoomingImageViewDelegate) protocol ZoomingImageViewDelegate: AnyObject, NSObjectProtocol {
+@objc protocol AXZoomingImageViewDelegate: AnyObject, NSObjectProtocol {
     
     @objc(zoomingImageView:maximumZoomScaleForImageSize:)
-    func zoomingImageView(_ zoomingImageView: ZoomingImageView, maximumZoomScaleFor imageSize: CGSize) -> CGFloat
+    func zoomingImageView(_ zoomingImageView: AXZoomingImageView, maximumZoomScaleFor imageSize: CGSize) -> CGFloat
     
 }

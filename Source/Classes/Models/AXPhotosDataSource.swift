@@ -1,14 +1,14 @@
 //
-//  PhotosConfiguration.swift
+//  AXPhotosDataSource.swift
 //  AXPhotoViewer
 //
 //  Created by Alex Hill on 6/1/17.
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
-@objc(AXPhotosDataSource) open class PhotosDataSource: NSObject {
+@objc open class AXPhotosDataSource: NSObject {
     
-    @objc(AXPhotosPrefetchBehavior) public enum PhotosPrefetchBehavior: Int {
+    @objc public enum AXPhotosPrefetchBehavior: Int {
         case conservative = 0
         case regular      = 2
         case aggressive   = 4
@@ -18,16 +18,16 @@
     /// Setting this property to `conservative`, only the current photo will be loaded.
     /// Setting this property to `regular` (default), the current photo, the previous photo, and the next photo will be loaded.
     /// Setting this property to `aggressive`, the current photo, the previous two photos, and the next two photos will be loaded.
-    @objc fileprivate(set) var prefetchBehavior: PhotosPrefetchBehavior
+    @objc fileprivate(set) var prefetchBehavior: AXPhotosPrefetchBehavior
     
     /// The photos to display in the PhotosViewController.
-    fileprivate var photos: [PhotoProtocol]
+    fileprivate var photos: [AXPhotoProtocol]
     
     // The initial photo index to display upon presentation.
     @objc fileprivate(set) var initialPhotoIndex: Int = 0
     
     // MARK: - Initialization
-    @objc public init(photos: [PhotoProtocol], initialPhotoIndex: Int, prefetchBehavior: PhotosPrefetchBehavior) {
+    @objc public init(photos: [AXPhotoProtocol], initialPhotoIndex: Int, prefetchBehavior: AXPhotosPrefetchBehavior) {
         self.photos = photos
         self.prefetchBehavior = prefetchBehavior
         
@@ -43,11 +43,11 @@
         self.init(photos: [], initialPhotoIndex: 0, prefetchBehavior: .regular)
     }
     
-    @objc public convenience init(photos: [PhotoProtocol]) {
+    @objc public convenience init(photos: [AXPhotoProtocol]) {
         self.init(photos: photos, initialPhotoIndex: 0, prefetchBehavior: .regular)
     }
     
-    @objc public convenience init(photos: [PhotoProtocol], initialPhotoIndex: Int) {
+    @objc public convenience init(photos: [AXPhotoProtocol], initialPhotoIndex: Int) {
         self.init(photos: photos, initialPhotoIndex: initialPhotoIndex, prefetchBehavior: .regular)
     }
     
@@ -57,7 +57,7 @@
     }
     
     @objc(photoAtIndex:)
-    public func photo(at index: Int) -> PhotoProtocol? {
+    public func photo(at index: Int) -> AXPhotoProtocol? {
         if index < self.photos.count {
             return self.photos[index]
         }

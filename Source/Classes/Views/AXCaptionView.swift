@@ -1,5 +1,5 @@
 //
-//  CaptionView.swift
+//  AXCaptionView.swift
 //  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/28/17.
@@ -8,7 +8,7 @@
 
 import UIKit
 
-@objc(AXCaptionView) open class CaptionView: UIView, CaptionViewProtocol {
+@objc open class AXCaptionView: UIView, AXCaptionViewProtocol {
         
     @objc public var animateCaptionInfoChanges: Bool = true
     
@@ -266,7 +266,7 @@ import UIKit
                 }
                 
                 self.isCaptionAnimatingOut = true
-                UIView.animate(withDuration: Constants.frameAnimDuration / 2,
+                UIView.animate(withDuration: AXConstants.frameAnimDuration / 2,
                                delay: 0,
                                options: [.beginFromCurrentState, .curveEaseOut],
                                animations: animateOut) { (finished) in
@@ -276,7 +276,7 @@ import UIKit
                     }
                     
                     animateOutCompletion(finished)
-                    UIView.animate(withDuration: Constants.frameAnimDuration / 2,
+                    UIView.animate(withDuration: AXConstants.frameAnimDuration / 2,
                                    delay: 0,
                                    options: [.beginFromCurrentState, .curveEaseIn],
                                    animations: animateIn,

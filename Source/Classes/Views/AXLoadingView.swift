@@ -1,5 +1,5 @@
 //
-//  LoadingView.swift
+//  AXLoadingView.swift
 //  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/7/17.
@@ -8,7 +8,7 @@
 
 import AXStateButton
 
-@objc(AXLoadingView) open class LoadingView: UIView, LoadingViewProtocol {
+@objc open class AXLoadingView: UIView, AXLoadingViewProtocol {
     
     @objc open fileprivate(set) lazy var indicatorView: UIView = UIActivityIndicatorView(activityIndicatorStyle: .white)
     
@@ -17,8 +17,7 @@ import AXStateButton
     /// The image to show in the `errorImageView` when displaying an error.
     @objc open var errorImage: UIImage? {
         get {
-            let bundle = Bundle(for: LoadingView.self)
-            return UIImage(named: "error", in: bundle, compatibleWith: nil)
+            return UIImage(named: "axphotoviewer-error", in: AXBundle.frameworkBundle, compatibleWith: nil)
         }
     }
     

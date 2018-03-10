@@ -11,7 +11,7 @@ AXPhotoViewer is an iOS photo viewer that is useful for viewing a very large (or
 While AXPhotoViewer has many configurable properties on each of its modules, it is easy to throw down some initialization code and get started:
 
 ```swift
-let dataSource = PhotosDataSource(photos: self.photos)
+let dataSource = AXPhotosDataSource(photos: self.photos)
 let photosViewController = PhotosViewController(dataSource: dataSource)
 self.present(photosViewController, animated: true)
 ```
@@ -31,7 +31,7 @@ func previewingContext(_ previewingContext: UIViewControllerPreviewing,
 
     previewingContext.sourceRect = self.tableView.convert(imageView.frame, from: imageView.superview)
 
-    let dataSource = PhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row)
+    let dataSource = AXPhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row)
     let previewingPhotosViewController = PreviewingPhotosViewController(dataSource: dataSource)
 
     return previewingPhotosViewController
@@ -65,19 +65,19 @@ For example, on the `AXPhotoDataSource` object, you may set up the data source w
 
 ```swift
 let photos = [first, second]
-let dataSource = PhotosDataSource(photos: photos, initialPhotoIndex: 1, prefetchBehavior: .aggressive)
+let dataSource = AXPhotosDataSource(photos: photos, initialPhotoIndex: 1, prefetchBehavior: .aggressive)
 ```
 
 On the `AXPagingConfig` object, you may set up the configuration with a different navigation orientation (horizontal vs vertical scrolling between pages), inter-photo spacing (the spacing, in points, between each photo), and/or a custom loading view class that will be instantiated by the library as needed.
 
 ```swift
-let pagingConfig = PagingConfig(navigationOrientation: .horizontal, interPhotoSpacing: 20, loadingViewClass: CustomLoadingView.self)
+let pagingConfig = AXPagingConfig(navigationOrientation: .horizontal, interPhotoSpacing: 20, loadingViewClass: CustomLoadingView.self)
 ```
 
 Lastly, but surely not least, is the `AXTransitionInfo` configuration. This can be used to customize all things related to the presentation and dismissal of your `AXPhotosViewController`, including the starting reference view, the ending reference view, the duration of the animations, and a flag to disable/enable interactive dismissals.
 
 ```swift
-let transitionInfo = TransitionInfo(interactiveDismissalEnabled: false, startingView: self.startingImageView) { [weak self] (photo, index) -> UIImageView? in
+let transitionInfo = AXTransitionInfo(interactiveDismissalEnabled: false, startingView: self.startingImageView) { [weak self] (photo, index) -> UIImageView? in
     // this closure can be used to adjust your UI before returning an `endingImageView`.
     return self?.endingImageView
 }
@@ -120,7 +120,7 @@ pod install 'AXPhotoViewer/Core'
 ```
 ```swift
 let customNetworkIntegration = CustomNetworkIntegration() // instantiate your custom network integration
-let dataSource = PhotosDataSource(photos: self.photos)
+let dataSource = AXPhotosDataSource(photos: self.photos)
 let photosViewController = PhotosViewController(dataSource: dataSource, networkIntegration: customNetworkIntegration)
 ```
 
@@ -128,7 +128,7 @@ let photosViewController = PhotosViewController(dataSource: dataSource, networkI
 As mentioned earlier, there are many configurable properties on each of the modules of the photo viewer, and you can access those modules through the `AXPhotosViewController`. For instance, you may replace the default loading view, caption view, and/or overlay title view with your own. These views must be self sizing, and conform to the `AXLoadingViewProtocol`, `AXCaptionViewProtocol`, and `AXOverlayTitleViewProtocol` respectively.
 
 ```swift
-let pagingConfig = PagingConfig(loadingViewClass: CustomLoadingView.self) // custom loading view class to be instantiated as necessary
+let pagingConfig = AXPagingConfig(loadingViewClass: CustomLoadingView.self) // custom loading view class to be instantiated as necessary
 ```
 ```swift
 ...

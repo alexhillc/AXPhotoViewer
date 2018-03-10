@@ -1,5 +1,5 @@
 //
-//  OverlayView.swift
+//  AXOverlayView.swift
 //  AXPhotoViewer
 //
 //  Created by Alex Hill on 5/28/17.
@@ -8,10 +8,10 @@
 
 import UIKit
 
-@objc(AXOverlayView) open class OverlayView: UIView, StackableViewContainerDelegate {
+@objc open class AXOverlayView: UIView, AXStackableViewContainerDelegate {
     
     /// The caption view to be used in the overlay.
-    @objc open var captionView: CaptionViewProtocol = CaptionView() {
+    @objc open var captionView: AXCaptionViewProtocol = AXCaptionView() {
         didSet {
             guard let oldCaptionView = oldValue as? UIView else {
                 assertionFailure("`oldCaptionView` must be a UIView.")
@@ -39,7 +39,7 @@ import UIKit
     
     /// The title view displayed in the toolbar. This view is sized and centered between the `leftBarButtonItems` and `rightBarButtonItems`.
     /// This is prioritized over `title`.
-    @objc public var titleView: OverlayTitleViewProtocol? {
+    @objc public var titleView: AXOverlayTitleViewProtocol? {
         didSet {
             assert(self.titleView == nil ? true : self.titleView is UIView, "`titleView` must be a UIView.")
             
@@ -143,11 +143,11 @@ import UIKit
     
     /// Container to embed all content anchored at the top of the `overlayView`.
     /// Add custom subviews to the top container in the order that you wish to stack them. These must be self-sizing views.
-    @objc public var topStackContainer: StackableViewContainer!
+    @objc public var topStackContainer: AXStackableViewContainer!
     
     /// Container to embed all content anchored at the bottom of the `overlayView`.
     /// Add custom subviews to the bottom container in the order that you wish to stack them. These must be self-sizing views.
-    @objc public var bottomStackContainer: StackableViewContainer!
+    @objc public var bottomStackContainer: AXStackableViewContainer!
     
     /// A flag that is set at the beginning and end of `OverlayView.setShowInterface(_:alongside:completion:)`
     fileprivate var isShowInterfaceAnimating = false
@@ -163,13 +163,13 @@ import UIKit
         self.toolbar.backgroundColor = .clear
         self.toolbar.setBackgroundImage(UIImage(), forToolbarPosition: .any, barMetrics: .default)
         
-        self.topStackContainer = StackableViewContainer(views: [self.toolbar], anchoredAt: .top)
-        self.topStackContainer.backgroundColor = Constants.overlayForegroundColor
+        self.topStackContainer = AXStackableViewContainer(views: [self.toolbar], anchoredAt: .top)
+        self.topStackContainer.backgroundColor = AXConstants.overlayForegroundColor
         self.topStackContainer.delegate = self
         self.addSubview(self.topStackContainer)
         
-        self.bottomStackContainer = StackableViewContainer(views: [], anchoredAt: .bottom)
-        self.bottomStackContainer.backgroundColor = Constants.overlayForegroundColor
+        self.bottomStackContainer = AXStackableViewContainer(views: [], anchoredAt: .bottom)
+        self.bottomStackContainer.backgroundColor = AXConstants.overlayForegroundColor
         self.bottomStackContainer.delegate = self
         self.addSubview(self.bottomStackContainer)
         
@@ -274,7 +274,7 @@ import UIKit
         }
         
         if animated {
-            UIView.animate(withDuration: Constants.frameAnimDuration,
+            UIView.animate(withDuration: AXConstants.frameAnimDuration,
                            animations: animations,
                            completion: internalCompletion)
         } else {
@@ -287,7 +287,7 @@ import UIKit
     func updateToolbarBarButtonItems() {
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         let fixedSpace = UIBarButtonItem(barButtonSystemItem: .fixedSpace, target: nil, action: nil)
-        fixedSpace.width = Constants.overlayBarButtonItemSpacing
+        fixedSpace.width = AXConstants.overlayBarButtonItemSpacing
         
         var barButtonItems = [UIBarButtonItem]()
         if let leftBarButtonItems = self.leftBarButtonItems {
@@ -371,8 +371,8 @@ import UIKit
         }
     }
     
-    // MARK: - CaptionViewProtocol
-    func updateCaptionView(photo: PhotoProtocol) {
+    // MARK: - AXCaptionViewProtocol
+    func updateCaptionView(photo: AXPhotoProtocol) {
         self.captionView.applyCaptionInfo(attributedTitle: photo.attributedTitle ?? nil,
                                           attributedDescription: photo.attributedDescription ?? nil,
                                           attributedCredit: photo.attributedCredit ?? nil)
@@ -394,18 +394,18 @@ import UIKit
         }
         
         if self.animateCaptionViewChanges {
-            UIView.animate(withDuration: Constants.frameAnimDuration, animations: animations)
+            UIView.animate(withDuration: AXConstants.frameAnimDuration, animations: animations)
         } else {
             animations()
         }
     }
     
-    // MARK: - StackableViewContainerDelegate
-    func stackableViewContainer(_ stackableViewContainer: StackableViewContainer, didAddSubview: UIView) {
+    // MARK: - AXStackableViewContainerDelegate
+    func stackableViewContainer(_ stackableViewContainer: AXStackableViewContainer, didAddSubview: UIView) {
         self.setNeedsLayout()
     }
     
-    func stackableViewContainer(_ stackableViewContainer: StackableViewContainer, willRemoveSubview: UIView) {
+    func stackableViewContainer(_ stackableViewContainer: AXStackableViewContainer, willRemoveSubview: UIView) {
         DispatchQueue.main.async { [weak self] in
             self?.setNeedsLayout()
         }

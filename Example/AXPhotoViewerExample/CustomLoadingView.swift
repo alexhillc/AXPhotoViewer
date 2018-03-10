@@ -10,7 +10,7 @@ import UIKit
 import AXPhotoViewer
 import DRPLoadingSpinner
 
-class CustomLoadingView: LoadingView {
+class CustomLoadingView: AXLoadingView {
     
     fileprivate lazy var _indicatorView = DRPLoadingSpinner()
     override var indicatorView: UIView {

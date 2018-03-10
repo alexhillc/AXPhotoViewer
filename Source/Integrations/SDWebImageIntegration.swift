@@ -8,13 +8,13 @@
 
 import SDWebImage
 
-class SDWebImageIntegration: NSObject, NetworkIntegrationProtocol {
+class SDWebImageIntegration: NSObject, AXNetworkIntegrationProtocol {
     
-    weak var delegate: NetworkIntegrationDelegate?
+    weak var delegate: AXNetworkIntegrationDelegate?
     
-    fileprivate var downloadOperations = NSMapTable<PhotoProtocol, SDWebImageOperation>(keyOptions: .strongMemory, valueOptions: .strongMemory)
+    fileprivate var downloadOperations = NSMapTable<AXPhotoProtocol, SDWebImageOperation>(keyOptions: .strongMemory, valueOptions: .strongMemory)
     
-    func loadPhoto(_ photo: PhotoProtocol) {
+    func loadPhoto(_ photo: AXPhotoProtocol) {
         if photo.imageData != nil || photo.image != nil {
             self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
         }
@@ -61,7 +61,7 @@ class SDWebImageIntegration: NSObject, NetworkIntegrationProtocol {
         self.downloadOperations.setObject(operation, forKey: photo)
     }
     
-    func cancelLoad(for photo: PhotoProtocol) {
+    func cancelLoad(for photo: AXPhotoProtocol) {
         guard let downloadOperation = self.downloadOperations.object(forKey: photo) else {
             return
         }
