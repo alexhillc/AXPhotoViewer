@@ -6,6 +6,8 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+#if canImport(SDWebImage)
+
 import SDWebImage
 
 class SDWebImageIntegration: NSObject, AXNetworkIntegrationProtocol {
@@ -38,19 +40,19 @@ class SDWebImageIntegration: NSObject, AXNetworkIntegrationProtocol {
             
             self.downloadOperations.removeObject(forKey: photo)
             
-            if let error = error {
-                self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
-            } else {
-                if let image = image {
-                    if image.isGIF() {
-                        photo.imageData = data
-                    }
-                    photo.image = image
-                } else if let imageData = data {
-                    photo.imageData = imageData
-                }
-                
+            if let data = data, data.containsGIF() {
+                photo.imageData = data
                 self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+            } else if let image = image {
+                photo.image = image
+                self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+            } else {
+                let error = NSError(
+                    domain: AXNetworkIntegrationErrorDomain,
+                    code: AXNetworkIntegrationFailedToLoadErrorCode,
+                    userInfo: nil
+                )
+                self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
             }
         }
         
@@ -80,3 +82,5 @@ class SDWebImageIntegration: NSObject, AXNetworkIntegrationProtocol {
     }
     
 }
+
+#endif

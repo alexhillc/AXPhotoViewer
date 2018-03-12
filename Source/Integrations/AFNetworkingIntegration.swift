@@ -6,6 +6,8 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+#if canImport(AFNetworking)
+
 import AFNetworking
 import ImageIO
 
@@ -41,11 +43,18 @@ class AFNetworkingIntegration: NSObject, AXNetworkIntegrationProtocol {
             
             if let responseGIFData = responseObject as? Data {
                 photo.imageData = responseGIFData
+                self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
             } else if let responseImage = responseObject as? UIImage {
                 photo.image = responseImage
-            }
-            
-            self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+                self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+            } else {
+                let error = NSError(
+                    domain: AXNetworkIntegrationErrorDomain,
+                    code: AXNetworkIntegrationFailedToLoadErrorCode,
+                    userInfo: nil
+                )
+                self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
+            }            
         }
         
         let failure: (_ dataTask: URLSessionDataTask?, _ error: Error) -> Void = { [weak self] (dataTask, error) in
@@ -54,17 +63,23 @@ class AFNetworkingIntegration: NSObject, AXNetworkIntegrationProtocol {
             }
             
             self.downloadTasks.removeObject(forKey: photo)
+            
+            let error = NSError(
+                domain: AXNetworkIntegrationErrorDomain,
+                code: AXNetworkIntegrationFailedToLoadErrorCode,
+                userInfo: nil
+            )
             self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
         }
         
-        guard let dataTask = AXAFHTTPSessionManager.shared.get(url.absoluteString, parameters: nil, progress: progress, success: success, failure: failure) else {
+        guard let dataTask = AXHTTPSessionManager.shared.get(url.absoluteString, parameters: nil, progress: progress, success: success, failure: failure) else {
             return
         }
         
         self.downloadTasks.setObject(dataTask, forKey: photo)
     }
     
-    func cancelLoad(for photo: PhotoProtocol) {
+    func cancelLoad(for photo: AXPhotoProtocol) {
         guard let dataTask = self.downloadTasks.object(forKey: photo) else {
             return
         }
@@ -86,13 +101,13 @@ class AFNetworkingIntegration: NSObject, AXNetworkIntegrationProtocol {
 }
 
 /// An `AFHTTPSesssionManager` with our subclassed `AXAFImageResponseSerializer`.
-class AXAFHTTPSessionManager: AFHTTPSessionManager {
+class AXHTTPSessionManager: AFHTTPSessionManager {
     
-    static let shared = AXAFHTTPSessionManager()
+    static let shared = AXHTTPSessionManager()
     
     init() {
         super.init(baseURL: nil, sessionConfiguration: .default)
-        self.responseSerializer = AXAFImageResponseSerializer()
+        self.responseSerializer = AXImageResponseSerializer()
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -102,14 +117,16 @@ class AXAFHTTPSessionManager: AFHTTPSessionManager {
 }
 
 /// A subclassed `AFImageResponseSerializer` that returns GIF data if it exists.
-class AXAFImageResponseSerializer: AFImageResponseSerializer {
+class AXImageResponseSerializer: AFImageResponseSerializer {
     
     override func responseObject(for response: URLResponse?, data: Data?, error: NSErrorPointer) -> Any? {
-        if let uData = data, uData.containsGIF() {
-            return uData
+        if let `data` = data, data.containsGIF() {
+            return data
         }
         
         return super.responseObject(for: response, data: data, error: error)
     }
     
 }
+
+#endif

@@ -6,6 +6,8 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+#if canImport(PINRemoteImage)
+    
 import PINRemoteImage
 
 class PINRemoteImageIntegration: NSObject, AXNetworkIntegrationProtocol {
@@ -38,9 +40,7 @@ class PINRemoteImageIntegration: NSObject, AXNetworkIntegrationProtocol {
             
             self.downloadUUIDs.removeObject(forKey: photo)
             
-            if let error = result.error {
-                self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
-            } else if let animatedImage = result.alternativeRepresentation as? FLAnimatedImage {
+            if let animatedImage = result.alternativeRepresentation as? FLAnimatedImage {
                 // this is not great, as `PINRemoteImage` already creates the `FLAnimatedImage` that we need.
                 // something to fix in the future.
                 photo.imageData = animatedImage.data
@@ -48,6 +48,13 @@ class PINRemoteImageIntegration: NSObject, AXNetworkIntegrationProtocol {
             } else if let image = result.image {
                 photo.image = image
                 self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+            } else {
+                let error = NSError(
+                    domain: AXNetworkIntegrationErrorDomain,
+                    code: AXNetworkIntegrationFailedToLoadErrorCode,
+                    userInfo: nil
+                )
+                self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
             }
         }
         
@@ -77,3 +84,5 @@ class PINRemoteImageIntegration: NSObject, AXNetworkIntegrationProtocol {
     }
     
 }
+
+#endif

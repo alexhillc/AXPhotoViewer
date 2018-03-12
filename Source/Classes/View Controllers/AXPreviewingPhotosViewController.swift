@@ -36,20 +36,18 @@ import MobileCoreServices
     }
     
     // MARK: - Initialization
-    #if AX_SDWEBIMAGE_SUPPORT || AX_PINREMOTEIMAGE_SUPPORT || AX_AFNETWORKING_SUPPORT || AX_KINGFISHER_SUPPORT || AX_LITE_SUPPORT
     @objc public init(dataSource: AXPhotosDataSource) {
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource)
     }
-    #else
+    
     @objc public init(dataSource: AXPhotosDataSource,
-                      networkIntegration: NetworkIntegrationProtocol) {
+                      networkIntegration: AXNetworkIntegrationProtocol) {
     
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource,
                         networkIntegration: networkIntegration)
     }
-    #endif
     
     @objc public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -60,24 +58,22 @@ import MobileCoreServices
         
         self.dataSource = dataSource
 
-        var uNetworkIntegration: AXNetworkIntegrationProtocol!
+        var `networkIntegration` = networkIntegration
         if networkIntegration == nil {
-            #if AX_SDWEBIMAGE_SUPPORT
-                uNetworkIntegration = SDWebImageIntegration()
-            #elseif AX_PINREMOTEIMAGE_SUPPORT
-                uNetworkIntegration = PINRemoteImageIntegration()
-            #elseif AX_AFNETWORKING_SUPPORT
-                uNetworkIntegration = AFNetworkingIntegration()
-            #elseif AX_KINGFISHER_SUPPORT
-                uNetworkIntegration = KingfisherIntegration()
-            #elseif AX_LITE_SUPPORT
-                uNetworkIntegration = SimpleNetworkIntegration()
+            #if canImport(SDWebImage)
+            networkIntegration = SDWebImageIntegration()
+            #elseif canImport(PINRemoteImage)
+            networkIntegration = PINRemoteImageIntegration()
+            #elseif canImport(AFNetworking)
+            networkIntegration = AFNetworkingIntegration()
+            #elseif canImport(Kingfisher)
+            networkIntegration = KingfisherIntegration()
             #else
-                fatalError("Must be using one of the network integration subspecs if no `NetworkIntegration` is going to be provided.")
+            networkIntegration = SimpleNetworkIntegration()
             #endif
         }
         
-        self.networkIntegration = uNetworkIntegration
+        self.networkIntegration = networkIntegration
         self.networkIntegration.delegate = self
     }
     

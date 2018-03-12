@@ -6,9 +6,12 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+let AXNetworkIntegrationErrorDomain = "AXNetworkIntegrationErrorDomain"
+let AXNetworkIntegrationFailedToLoadErrorCode = 6
+
 @objc public protocol AXNetworkIntegrationProtocol: AnyObject, NSObjectProtocol {
     
-    @objc weak var delegate: AXNetworkIntegrationDelegate? { get set }
+    @objc var delegate: AXNetworkIntegrationDelegate? { get set }
     
     /// This function should load a provided photo, calling all necessary `AXNetworkIntegrationDelegate` delegate methods.
     ///

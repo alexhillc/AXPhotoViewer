@@ -134,7 +134,6 @@ import MobileCoreServices
     }
     
     // MARK: - Initialization
-    #if AX_SDWEBIMAGE_SUPPORT || AX_PINREMOTEIMAGE_SUPPORT || AX_AFNETWORKING_SUPPORT || AX_KINGFISHER_SUPPORT || AX_LITE_SUPPORT
     @objc public init() {
         super.init(nibName: nil, bundle: nil)
         self.commonInit()
@@ -170,14 +169,14 @@ import MobileCoreServices
                         pagingConfig: pagingConfig,
                         transitionInfo: transitionInfo)
     }
-    #else
-    @objc public init(networkIntegration: NetworkIntegrationProtocol) {
+    
+    @objc public init(networkIntegration: AXNetworkIntegrationProtocol) {
         super.init(nibName: nil, bundle: nil)
         self.commonInit(networkIntegration: networkIntegration)
     }
     
     @objc public init(dataSource: AXPhotosDataSource?,
-                      networkIntegration: NetworkIntegrationProtocol) {
+                      networkIntegration: AXNetworkIntegrationProtocol) {
     
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource,
@@ -186,7 +185,7 @@ import MobileCoreServices
     
     @objc public init(dataSource: AXPhotosDataSource?,
                       pagingConfig: AXPagingConfig?,
-                      networkIntegration: NetworkIntegrationProtocol) {
+                      networkIntegration: AXNetworkIntegrationProtocol) {
     
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource,
@@ -196,7 +195,7 @@ import MobileCoreServices
     
     @objc public init(pagingConfig: AXPagingConfig?,
                       transitionInfo: AXTransitionInfo?,
-                      networkIntegration: NetworkIntegrationProtocol) {
+                      networkIntegration: AXNetworkIntegrationProtocol) {
     
         super.init(nibName: nil, bundle: nil)
         self.commonInit(pagingConfig: pagingConfig,
@@ -207,7 +206,7 @@ import MobileCoreServices
     @objc public init(dataSource: AXPhotosDataSource?,
                       pagingConfig: AXPagingConfig?,
                       transitionInfo: AXTransitionInfo?,
-                      networkIntegration: NetworkIntegrationProtocol) {
+                      networkIntegration: AXNetworkIntegrationProtocol) {
 
         super.init(nibName: nil, bundle: nil)
         self.commonInit(dataSource: dataSource,
@@ -215,7 +214,6 @@ import MobileCoreServices
                         transitionInfo: transitionInfo,
                         networkIntegration: networkIntegration)
     }
-    #endif
     
     @objc(initFromPreviewingPhotosViewController:)
     public init(from previewingPhotosViewController: AXPreviewingPhotosViewController) {
@@ -292,36 +290,34 @@ import MobileCoreServices
                                 transitionInfo: AXTransitionInfo? = nil,
                                 networkIntegration: AXNetworkIntegrationProtocol? = nil) {
         
-        if let uDataSource = dataSource {
-            self.dataSource = uDataSource
+        if let dataSource = dataSource {
+            self.dataSource = dataSource
         }
         
-        if let uPagingConfig = pagingConfig {
-            self.pagingConfig = uPagingConfig
+        if let pagingConfig = pagingConfig {
+            self.pagingConfig = pagingConfig
         }
         
-        if let uTransitionInfo = transitionInfo {
-            self.transitionInfo = uTransitionInfo
+        if let transitionInfo = transitionInfo {
+            self.transitionInfo = transitionInfo
         }
         
-        var uNetworkIntegration = networkIntegration
+        var `networkIntegration` = networkIntegration
         if networkIntegration == nil {
-            #if AX_SDWEBIMAGE_SUPPORT
-                uNetworkIntegration = SDWebImageIntegration()
-            #elseif AX_PINREMOTEIMAGE_SUPPORT
-                uNetworkIntegration = PINRemoteImageIntegration()
-            #elseif AX_AFNETWORKING_SUPPORT
-                uNetworkIntegration = AFNetworkingIntegration()
-            #elseif AX_KINGFISHER_SUPPORT
-                uNetworkIntegration = KingfisherIntegration()
-            #elseif AX_LITE_SUPPORT
-                uNetworkIntegration = SimpleNetworkIntegration()
+            #if canImport(SDWebImage)
+            networkIntegration = SDWebImageIntegration()
+            #elseif canImport(PINRemoteImage)
+            networkIntegration = PINRemoteImageIntegration()
+            #elseif canImport(AFNetworking)
+            networkIntegration = AFNetworkingIntegration()
+            #elseif canImport(Kingfisher)
+            networkIntegration = KingfisherIntegration()
             #else
-                fatalError("Must be using one of the network integration subspecs if no `NetworkIntegration` is going to be provided.")
+            networkIntegration = SimpleNetworkIntegration()
             #endif
         }
         
-        self.networkIntegration = uNetworkIntegration
+        self.networkIntegration = networkIntegration
         self.networkIntegration.delegate = self
         
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,

@@ -6,6 +6,8 @@
 //  Copyright © 2017 Matt Lamont. All rights reserved.
 //
 
+#if canImport(Kingfisher)
+
 import Kingfisher
 
 class KingfisherIntegration: NSObject, AXNetworkIntegrationProtocol {
@@ -38,18 +40,19 @@ class KingfisherIntegration: NSObject, AXNetworkIntegrationProtocol {
 
             self.retrieveImageTasks.removeObject(forKey: photo)
 
-            if let error = error {
-                self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
-            } else {
-                if let image = image {
-                    if let imageData = image.kf.gifRepresentation() {
-                        photo.imageData = imageData
-                    }
-                    
-                    photo.image = image
-                }
-
+            if let imageData = image?.kf.gifRepresentation() {
+                photo.imageData = imageData
                 self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+            } else if let image = image {
+                photo.image = image
+                self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+            } else {
+                let error = NSError(
+                    domain: AXNetworkIntegrationErrorDomain,
+                    code: AXNetworkIntegrationFailedToLoadErrorCode,
+                    userInfo: nil
+                )
+                self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
             }
         }
 
@@ -76,3 +79,5 @@ class KingfisherIntegration: NSObject, AXNetworkIntegrationProtocol {
     }
     
 }
+
+#endif
