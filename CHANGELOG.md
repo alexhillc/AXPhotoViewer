@@ -1,3 +1,6 @@
+# 1.4.2
+- Revert to Swift 4.0
+
 # 1.4.1
 - Small changes to insets in AXCaptionView on tvOS
 - Removes invalid initializer on AXTransitionInfo on tvOS
