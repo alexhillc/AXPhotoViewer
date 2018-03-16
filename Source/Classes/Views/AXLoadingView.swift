@@ -6,9 +6,43 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
-import AXStateButton
-
 @objc open class AXLoadingView: UIView, AXLoadingViewProtocol {
+    
+    #if os(iOS)
+    @objc open fileprivate(set) var retryButton: AXButton?
+    
+    /// The error text to show inside of the `retryButton` when displaying an error.
+    @objc open var retryText: String {
+        return NSLocalizedString("Try again", comment: "AXLoadingView - retry text")
+    }
+    
+    /// The attributes that will get applied to the `retryText` when displaying an error.
+    @objc open var retryAttributes: [NSAttributedStringKey: Any] {
+        get {
+            var fontDescriptor: UIFontDescriptor
+            if #available(iOS 10.0, tvOS 10.0, *) {
+                fontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body,
+                                                                          compatibleWith: self.traitCollection)
+            } else {
+                fontDescriptor = UIFont.preferredFont(forTextStyle: .body).fontDescriptor
+            }
+            
+            var font: UIFont
+            if #available(iOS 8.2, *) {
+                font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFont.Weight.light)
+            } else {
+                font = UIFont(name: "HelveticaNeue-Light", size: fontDescriptor.pointSize)!
+            }
+            
+            return [
+                NSAttributedStringKey.font: font,
+                NSAttributedStringKey.foregroundColor: UIColor.white
+            ]
+        }
+    }
+    
+    @objc public fileprivate(set) var retryHandler: (() -> Void)?
+    #endif
     
     @objc open fileprivate(set) lazy var indicatorView: UIView = UIActivityIndicatorView(activityIndicatorStyle: .white)
     
@@ -34,7 +68,7 @@ import AXStateButton
     @objc open var errorAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
-            if #available(iOS 10.0, *) {
+            if #available(iOS 10.0, tvOS 10.0, *) {
                 fontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body,
                                                                           compatibleWith: self.traitCollection)
             } else {
@@ -54,40 +88,6 @@ import AXStateButton
             ]
         }
     }
-    
-    @objc open fileprivate(set) var retryButton: StateButton?
-    
-    /// The error text to show inside of the `retryButton` when displaying an error.
-    @objc open var retryText: String {
-        return NSLocalizedString("Try again", comment: "AXLoadingView - retry text")
-    }
-    
-    /// The attributes that will get applied to the `retryText` when displaying an error.
-    @objc open var retryAttributes: [NSAttributedStringKey: Any] {
-        get {
-            var fontDescriptor: UIFontDescriptor
-            if #available(iOS 10.0, *) {
-                fontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body,
-                                                                          compatibleWith: self.traitCollection)
-            } else {
-                fontDescriptor = UIFont.preferredFont(forTextStyle: .body).fontDescriptor
-            }
-            
-            var font: UIFont
-            if #available(iOS 8.2, *) {
-                font = UIFont.systemFont(ofSize: fontDescriptor.pointSize, weight: UIFont.Weight.light)
-            } else {
-                font = UIFont(name: "HelveticaNeue-Light", size: fontDescriptor.pointSize)!
-            }
-            
-            return [
-                NSAttributedStringKey.font: font,
-                NSAttributedStringKey.foregroundColor: UIColor.white
-            ]
-        }
-    }
-    
-    @objc public fileprivate(set) var retryHandler: (() -> Void)?
     
     @objc public init() {
         super.init(frame: .zero)
@@ -134,7 +134,7 @@ import AXStateButton
         var errorImageViewSize: CGSize = .zero
         var errorLabelSize: CGSize = .zero
         var retryButtonSize: CGSize = .zero
-        if let errorLabel = self.errorLabel, let retryButton = self.retryButton {
+        if let errorLabel = self.errorLabel {
             if let errorImageView = self.errorImageView {
                 errorImageViewSize = errorImageView.sizeThatFits(constrainedSize)
                 totalHeight += errorImageViewSize.height
@@ -146,16 +146,22 @@ import AXStateButton
             errorLabelSize = errorLabel.sizeThatFits(constrainedSize)
             totalHeight += errorLabelSize.height
             
-            retryButton.setAttributedTitle(makeAttributedStringWithAttributes(self.retryAttributes,
-                                                                              for: retryButton.attributedTitle(for: .normal)),
-                                           for: .normal)
-            
-            let RetryButtonLabelPadding: CGFloat = 10.0
-            retryButtonSize = retryButton.titleLabel?.sizeThatFits(constrainedSize) ?? .zero
-            retryButtonSize.width += RetryButtonLabelPadding
-            retryButtonSize.height += RetryButtonLabelPadding
-            totalHeight += retryButtonSize.height
-            totalHeight += VerticalPadding
+            // on iOS, we want the button to be sized to its label,
+            // on tvOS, we want the button to be sized to its original size for the focus effect
+            #if os(iOS)
+            if let retryButton = self.retryButton {
+                retryButton.setAttributedTitle(makeAttributedStringWithAttributes(self.retryAttributes,
+                                                                                  for: retryButton.attributedTitle(for: .normal)),
+                                               for: .normal)
+                
+                let RetryButtonLabelPadding: CGFloat = 10.0
+                retryButtonSize = retryButton.titleLabel?.sizeThatFits(constrainedSize) ?? .zero
+                retryButtonSize.width += RetryButtonLabelPadding
+                retryButtonSize.height += RetryButtonLabelPadding
+                totalHeight += retryButtonSize.height
+                totalHeight += VerticalPadding
+            }
+            #endif
         } else {
             indicatorViewSize = self.indicatorView.sizeThatFits(constrainedSize)
             totalHeight += indicatorViewSize.height
@@ -164,7 +170,7 @@ import AXStateButton
         if applySizingLayout {
             var yOffset: CGFloat = (constrainedSize.height - totalHeight) / 2.0
             
-            if let errorLabel = self.errorLabel, let retryButton = self.retryButton {
+            if let errorLabel = self.errorLabel {
                 if let errorImageView = self.errorImageView {
                     errorImageView.frame = CGRect(origin: CGPoint(x: floor((constrainedSize.width - errorImageViewSize.width) / 2),
                                                                   y: floor(yOffset)),
@@ -177,13 +183,17 @@ import AXStateButton
                                                           y: floor(yOffset)),
                                           size: errorLabelSize)
                 
-                yOffset += errorLabelSize.height
-                yOffset += VerticalPadding
-                
-                retryButton.frame = CGRect(origin: CGPoint(x: floor((constrainedSize.width - retryButtonSize.width) / 2),
-                                                           y: floor(yOffset)),
-                                           size: retryButtonSize)
-                retryButton.setCornerRadius(retryButtonSize.height / 4.0, for: .normal)
+                #if os(iOS)
+                if let retryButton = self.retryButton {
+                    yOffset += errorLabelSize.height
+                    yOffset += VerticalPadding
+                    
+                    retryButton.frame = CGRect(origin: CGPoint(x: floor((constrainedSize.width - retryButtonSize.width) / 2),
+                                                               y: floor(yOffset)),
+                                               size: retryButtonSize)
+                    retryButton.setCornerRadius(retryButtonSize.height / 4.0, for: .normal)
+                }
+                #endif
             } else {
                 self.indicatorView.frame = CGRect(origin: CGPoint(x: floor((constrainedSize.width - indicatorViewSize.width) / 2),
                                                                   y: floor(yOffset)),
@@ -218,8 +228,6 @@ import AXStateButton
     open func showError(_ error: Error, retryHandler: @escaping () -> Void) {
         self.stopLoading()
         
-        self.retryHandler = retryHandler
-        
         if let errorImage = self.errorImage {
             self.errorImageView = UIImageView(image: errorImage)
             self.errorImageView?.tintColor = .white
@@ -236,19 +244,15 @@ import AXStateButton
         self.errorLabel?.textColor = .white
         self.addSubview(self.errorLabel!)
         
-        self.retryButton = StateButton()
-        self.retryButton?.controlStateAnimationTimingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionLinear)
-        self.retryButton?.controlStateAnimationDuration = 0.1
+        #if os(iOS)
+        self.retryHandler = retryHandler
+        	
+        self.retryButton = AXButton()
         self.retryButton?.setAttributedTitle(NSAttributedString(string: self.retryText, attributes: self.retryAttributes),
                                              for: .normal)
-        self.retryButton?.setBorderWidth(1.0, for: .normal)
-        self.retryButton?.setBorderColor(.white, for: .normal)
-        self.retryButton?.setAlpha(1.0, for: .normal)
-        self.retryButton?.setAlpha(0.3, for: .highlighted)
-        self.retryButton?.setTransformScale(1.0, for: .normal)
-        self.retryButton?.setTransformScale(0.95, for: .highlighted)
         self.retryButton?.addTarget(self, action: #selector(retryButtonAction(_:)), for: .touchUpInside)
         self.addSubview(self.retryButton!)
+        #endif
         
         self.setNeedsLayout()
     }
@@ -264,18 +268,22 @@ import AXStateButton
             self.errorLabel = nil
         }
         
+        #if os(iOS)
         if let retryButton = self.retryButton {
             retryButton.removeFromSuperview()
             self.retryButton = nil
         }
         
         self.retryHandler = nil
+        #endif
     }
     
+    #if os(iOS)
     // MARK: - Button actions
-    @objc fileprivate func retryButtonAction(_ sender: StateButton) {
+    @objc fileprivate func retryButtonAction(_ sender: AXButton) {
         self.retryHandler?()
         self.retryHandler = nil
     }
+    #endif
     
 }

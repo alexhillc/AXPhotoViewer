@@ -10,32 +10,9 @@ import UIKit
 
 @objc open class AXOverlayView: UIView, AXStackableViewContainerDelegate {
     
-    /// The caption view to be used in the overlay.
-    @objc open var captionView: AXCaptionViewProtocol = AXCaptionView() {
-        didSet {
-            guard let oldCaptionView = oldValue as? UIView else {
-                assertionFailure("`oldCaptionView` must be a UIView.")
-                return
-            }
-            
-            guard let captionView = self.captionView as? UIView else {
-                assertionFailure("`captionView` must be a UIView.")
-                return
-            }
-            
-            let index = self.bottomStackContainer.subviews.index(of: oldCaptionView)
-            oldCaptionView.removeFromSuperview()
-            self.bottomStackContainer.insertSubview(captionView, at: index ?? 0)
-            self.setNeedsLayout()
-        }
-    }
-    
-    /// Whether or not to animate `captionView` changes. Defaults to true.
-    @objc public var animateCaptionViewChanges: Bool = true {
-        didSet {
-            self.captionView.animateCaptionInfoChanges = self.animateCaptionViewChanges
-        }
-    }
+    #if os(iOS)
+    /// The toolbar used to set the `titleView`, `leftBarButtonItems`, `rightBarButtonItems`
+    @objc public let toolbar = UIToolbar(frame: CGRect(origin: .zero, size: CGSize(width: 320, height: 44)))
     
     /// The title view displayed in the toolbar. This view is sized and centered between the `leftBarButtonItems` and `rightBarButtonItems`.
     /// This is prioritized over `title`.
@@ -104,7 +81,7 @@ import UIKit
             self.updateToolbarBarButtonItems()
         }
     }
-
+    
     /// The bar button item that appears in the top right corner of the overlay.
     @objc public var rightBarButtonItem: UIBarButtonItem? {
         set(value) {
@@ -129,9 +106,34 @@ import UIKit
             self.updateToolbarBarButtonItems()
         }
     }
+    #endif
     
-    /// The toolbar used to set the `titleView`, `leftBarButtonItems`, `rightBarButtonItems`
-    @objc public let toolbar = UIToolbar(frame: CGRect(origin: .zero, size: CGSize(width: 320, height: 44)))
+    /// The caption view to be used in the overlay.
+    @objc open var captionView: AXCaptionViewProtocol = AXCaptionView() {
+        didSet {
+            guard let oldCaptionView = oldValue as? UIView else {
+                assertionFailure("`oldCaptionView` must be a UIView.")
+                return
+            }
+            
+            guard let captionView = self.captionView as? UIView else {
+                assertionFailure("`captionView` must be a UIView.")
+                return
+            }
+            
+            let index = self.bottomStackContainer.subviews.index(of: oldCaptionView)
+            oldCaptionView.removeFromSuperview()
+            self.bottomStackContainer.insertSubview(captionView, at: index ?? 0)
+            self.setNeedsLayout()
+        }
+    }
+    
+    /// Whether or not to animate `captionView` changes. Defaults to true.
+    @objc public var animateCaptionViewChanges: Bool = true {
+        didSet {
+            self.captionView.animateCaptionInfoChanges = self.animateCaptionViewChanges
+        }
+    }
     
     /// The inset of the contents of the `OverlayView`. Use this property to adjust layout for things such as status bar height.
     /// For internal use only.
@@ -160,13 +162,16 @@ import UIKit
     @objc public init() {
         super.init(frame: .zero)
         
-        self.toolbar.backgroundColor = .clear
-        self.toolbar.setBackgroundImage(UIImage(), forToolbarPosition: .any, barMetrics: .default)
-        
-        self.topStackContainer = AXStackableViewContainer(views: [self.toolbar], anchoredAt: .top)
+        self.topStackContainer = AXStackableViewContainer(views: [], anchoredAt: .top)
         self.topStackContainer.backgroundColor = AXConstants.overlayForegroundColor
         self.topStackContainer.delegate = self
         self.addSubview(self.topStackContainer)
+        
+        #if os(iOS)
+        self.toolbar.backgroundColor = .clear
+        self.toolbar.setBackgroundImage(UIImage(), forToolbarPosition: .any, barMetrics: .default)
+        self.topStackContainer.addSubview(self.toolbar)
+        #endif
         
         self.bottomStackContainer = AXStackableViewContainer(views: [], anchoredAt: .bottom)
         self.bottomStackContainer.backgroundColor = AXConstants.overlayForegroundColor
@@ -194,9 +199,11 @@ import UIKit
     open override func didMoveToWindow() {
         super.didMoveToWindow()
         
+        #if os(iOS)
         if self.window != nil {
             self.updateToolbarBarButtonItems()
         }
+        #endif
     }
     
     open override func layoutSubviews() {
@@ -283,6 +290,47 @@ import UIKit
         }
     }
     
+    // MARK: - AXCaptionViewProtocol
+    func updateCaptionView(photo: AXPhotoProtocol) {
+        self.captionView.applyCaptionInfo(attributedTitle: photo.attributedTitle ?? nil,
+                                          attributedDescription: photo.attributedDescription ?? nil,
+                                          attributedCredit: photo.attributedCredit ?? nil)
+        
+        if self.isFirstLayout {
+            self.setNeedsLayout()
+            return
+        }
+        
+        let size = self.bottomStackContainer.sizeThatFits(self.frame.size)
+        let animations = { [weak self] in
+            guard let `self` = self else {
+                return
+            }
+            
+            self.bottomStackContainer.frame = CGRect(origin: CGPoint(x: 0, y: self.frame.size.height - size.height), size: size)
+            self.bottomStackContainer.setNeedsLayout()
+            self.bottomStackContainer.layoutIfNeeded()
+        }
+        
+        if self.animateCaptionViewChanges {
+            UIView.animate(withDuration: AXConstants.frameAnimDuration, animations: animations)
+        } else {
+            animations()
+        }
+    }
+    
+    // MARK: - AXStackableViewContainerDelegate
+    func stackableViewContainer(_ stackableViewContainer: AXStackableViewContainer, didAddSubview: UIView) {
+        self.setNeedsLayout()
+    }
+    
+    func stackableViewContainer(_ stackableViewContainer: AXStackableViewContainer, willRemoveSubview: UIView) {
+        DispatchQueue.main.async { [weak self] in
+            self?.setNeedsLayout()
+        }
+    }
+    
+    #if os(iOS)
     // MARK: - UIToolbar convenience
     func updateToolbarBarButtonItems() {
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
@@ -370,45 +418,7 @@ import UIKit
             }
         }
     }
+    #endif
     
-    // MARK: - AXCaptionViewProtocol
-    func updateCaptionView(photo: AXPhotoProtocol) {
-        self.captionView.applyCaptionInfo(attributedTitle: photo.attributedTitle ?? nil,
-                                          attributedDescription: photo.attributedDescription ?? nil,
-                                          attributedCredit: photo.attributedCredit ?? nil)
-        
-        if self.isFirstLayout {
-            self.setNeedsLayout()
-            return
-        }
-        
-        let size = self.bottomStackContainer.sizeThatFits(self.frame.size)
-        let animations = { [weak self] in
-            guard let `self` = self else {
-                return
-            }
-            
-            self.bottomStackContainer.frame = CGRect(origin: CGPoint(x: 0, y: self.frame.size.height - size.height), size: size)
-            self.bottomStackContainer.setNeedsLayout()
-            self.bottomStackContainer.layoutIfNeeded()
-        }
-        
-        if self.animateCaptionViewChanges {
-            UIView.animate(withDuration: AXConstants.frameAnimDuration, animations: animations)
-        } else {
-            animations()
-        }
-    }
-    
-    // MARK: - AXStackableViewContainerDelegate
-    func stackableViewContainer(_ stackableViewContainer: AXStackableViewContainer, didAddSubview: UIView) {
-        self.setNeedsLayout()
-    }
-    
-    func stackableViewContainer(_ stackableViewContainer: AXStackableViewContainer, willRemoveSubview: UIView) {
-        DispatchQueue.main.async { [weak self] in
-            self?.setNeedsLayout()
-        }
-    }
 }
 

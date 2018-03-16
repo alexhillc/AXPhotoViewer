@@ -7,7 +7,12 @@
 //
 
 import UIKit
+
+#if os(iOS)
 import FLAnimatedImage
+#elseif os(tvOS)
+import FLAnimatedImage_tvOS
+#endif
 
 @objc enum AXPhotosTransitionControllerMode: Int {
     case presenting, dismissing
@@ -17,8 +22,37 @@ import FLAnimatedImage
                                                     UIViewControllerInteractiveTransitioning,
                                                     UIGestureRecognizerDelegate {
     
+    #if os(iOS)
+    fileprivate var panGestureRecognizer: UIPanGestureRecognizer?
+    
+    /// The distance threshold at which the interactive controller will dismiss upon end touches.
+    fileprivate let DismissalPercentThreshold: CGFloat = 0.14
+    
+    /// The velocity threshold at which the interactive controller will dismiss upon end touches.
+    fileprivate let DismissalVelocityYThreshold: CGFloat = 400
+    
+    /// The velocity threshold at which the interactive controller will dismiss in any direction the user is swiping.
+    fileprivate let DismissalVelocityAnyDirectionThreshold: CGFloat = 1000
+    
+    // Interactive dismissal transition tracking
+    fileprivate var dismissalPercent: CGFloat = 0
+    fileprivate var directionalDismissalPercent: CGFloat = 0
+    fileprivate var dismissalVelocityY: CGFloat = 1
+    fileprivate var forceImmediateInteractiveDismissal = false
+    fileprivate var completeInteractiveDismissal = false
+    
+    fileprivate var imageViewInitialCenter: CGPoint = .zero
+    fileprivate var imageViewOriginalSuperview: UIView?
+    
+    weak fileprivate var overlayView: AXOverlayView?
+    fileprivate var topStackContainerInitialOriginY: CGFloat = .greatestFiniteMagnitude
+    fileprivate var bottomStackContainerInitialOriginY: CGFloat = .greatestFiniteMagnitude
+    fileprivate var overlayViewOriginalSuperview: UIView?
+    #endif
+    
     fileprivate let FadeInOutTransitionRatio: Double = 1/3
     fileprivate let TransitionAnimSpringDampening: CGFloat = 1
+    fileprivate var fadeView: UIView?
     
     fileprivate static let supportedModalPresentationStyles: [UIModalPresentationStyle] =  [.fullScreen,
                                                                                             .currentContext,
@@ -33,38 +67,13 @@ import FLAnimatedImage
     weak var photosViewController: AXPhotosViewController?
     weak var containerViewController: UIViewController?
     
-    /// The distance threshold at which the interactive controller will dismiss upon end touches.
-    fileprivate let DismissalPercentThreshold: CGFloat = 0.14
-    
-    /// The velocity threshold at which the interactive controller will dismiss upon end touches.
-    fileprivate let DismissalVelocityYThreshold: CGFloat = 400
-    
-    /// The velocity threshold at which the interactive controller will dismiss in any direction the user is swiping.
-    fileprivate let DismissalVelocityAnyDirectionThreshold: CGFloat = 1000
-    
     /// Pending animations that can occur when interactive dismissal has not been triggered by the system, 
     /// but our pan gesture recognizer is receiving touch events. Processed as soon as the interactive dismissal has been set up.
     fileprivate var pendingAnimations = [() -> Void]()
     
-    // Interactive dismissal transition tracking
-    fileprivate var dismissalPercent: CGFloat = 0
-    fileprivate var directionalDismissalPercent: CGFloat = 0
-    fileprivate var dismissalVelocityY: CGFloat = 1
-    fileprivate var forceImmediateInteractiveDismissal = false
-    fileprivate var completeInteractiveDismissal = false
-    
     weak fileprivate var dismissalTransitionContext: UIViewControllerContextTransitioning?
     
     weak fileprivate var imageView: UIImageView?
-    fileprivate var imageViewInitialCenter: CGPoint = .zero
-    fileprivate var imageViewOriginalSuperview: UIView?
-    
-    weak fileprivate var overlayView: AXOverlayView?
-    fileprivate var topStackContainerInitialOriginY: CGFloat = .greatestFiniteMagnitude
-    fileprivate var bottomStackContainerInitialOriginY: CGFloat = .greatestFiniteMagnitude
-    fileprivate var overlayViewOriginalSuperview: UIView?
-    
-    fileprivate var panGestureRecognizer: UIPanGestureRecognizer?
     
     var supportsContextualPresentation: Bool {
         get {
@@ -80,7 +89,11 @@ import FLAnimatedImage
     
     var supportsInteractiveDismissal: Bool {
         get {
+            #if os(iOS)
             return self.transitionInfo.interactiveDismissalEnabled
+            #else
+            return false
+            #endif
         }
     }
     
@@ -94,6 +107,7 @@ import FLAnimatedImage
         
         super.init()
         
+        #if os(iOS)
         if transitionInfo.interactiveDismissalEnabled {
             let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(panAction(_:)))
             panGestureRecognizer.maximumNumberOfTouches = 1
@@ -101,12 +115,15 @@ import FLAnimatedImage
             photosViewController.view.addGestureRecognizer(panGestureRecognizer)
             self.panGestureRecognizer = panGestureRecognizer
         }
+        #endif
     }
     
     deinit {
+        #if os(iOS)
         if let panGestureRecognizer = self.panGestureRecognizer {
             self.photosViewController?.view.removeGestureRecognizer(panGestureRecognizer)
-        }        
+        }
+        #endif
     }
     
     // MARK: - UIViewControllerAnimatedTransitioning
@@ -130,6 +147,13 @@ import FLAnimatedImage
                 assertionFailure("No. ಠ_ಠ")
                 return
         }
+        
+        let fadeView = UIView()
+        fadeView.backgroundColor = .black
+        fadeView.alpha = 0
+        fadeView.frame = transitionContext.finalFrame(for: to)
+        transitionContext.containerView.addSubview(fadeView)
+        self.fadeView = fadeView
         
         to.view.alpha = 0
         to.view.frame = transitionContext.finalFrame(for: to)
@@ -175,14 +199,15 @@ import FLAnimatedImage
             self.delegate?.transitionController(self, didFinishAnimatingWith: referenceViewCopy, transitionControllerMode: .presenting)
             
             to.view.alpha = 1
-            from.view.alpha = 1
             referenceView.alpha = 1
             referenceViewCopy.removeFromSuperview()
+            self.fadeView?.removeFromSuperview()
+            self.fadeView = nil
             transitionContext.completeTransition(true)
         }
         
-        let fadeAnimations = {
-            from.view.alpha = 0
+        let fadeAnimations: () -> Void = { [weak self] in
+            self?.fadeView?.alpha = 1
         }
         
         UIView.animate(withDuration: self.transitionDuration(using: transitionContext),
@@ -227,14 +252,18 @@ import FLAnimatedImage
             return
         }
         
-        if !transitionContext.isInteractive {
-            to.view.alpha = 0
-        }
-        
         let presentersViewRemoved = from.presentationController?.shouldRemovePresentersView ?? false
         if to.view.superview != transitionContext.containerView && presentersViewRemoved {
             to.view.frame = transitionContext.finalFrame(for: to)
             transitionContext.containerView.addSubview(to.view)
+        }
+        
+        if self.fadeView == nil {
+            let fadeView = UIView()
+            fadeView.backgroundColor = .black
+            fadeView.frame = transitionContext.finalFrame(for: from)
+            transitionContext.containerView.insertSubview(fadeView, aboveSubview: to.view)
+            self.fadeView = fadeView
         }
         
         if from.view.superview != transitionContext.containerView {
@@ -257,7 +286,7 @@ import FLAnimatedImage
         
         if self.canPerformContextualDismissal() {
             guard let referenceView = self.transitionInfo.endingView else {
-                assertionFailure("No. ಠ_ಠ")
+                assertionFailure("Expected non-nil endingView!")
                 return
             }
             
@@ -275,19 +304,16 @@ import FLAnimatedImage
             
             if self.canPerformContextualDismissal() {
                 guard let referenceView = self.transitionInfo.endingView else {
-                    assertionFailure("No. ಠ_ಠ")
+                    assertionFailure("Expected non-nil endingView!")
                     return
                 }
                 
                 imageView.transform = .identity
                 imageView.frame = transitionContext.containerView.convert(referenceView.frame, from: referenceView.superview)
             } else {
-                guard let uOffscreenImageViewCenter = offscreenImageViewCenter else {
-                    assertionFailure("No. ಠ_ಠ")
-                    return
+                if let offscreenImageViewCenter = offscreenImageViewCenter {
+                    imageView.center = offscreenImageViewCenter
                 }
-                
-                imageView.center = uOffscreenImageViewCenter
             }
         }
         
@@ -300,7 +326,7 @@ import FLAnimatedImage
             
             if self.canPerformContextualDismissal() {
                 guard let referenceView = self.transitionInfo.endingView else {
-                    assertionFailure("No. ಠ_ಠ")
+                    assertionFailure("Expected non-nil endingView!")
                     return
                 }
                 
@@ -320,9 +346,14 @@ import FLAnimatedImage
             transitionContext.completeTransition(true)
         }
         
-        let fadeAnimations = {
-            to.view.alpha = 1
+        let fadeAnimations = { [weak self] in
+            self?.fadeView?.alpha = 0
             from.view.alpha = 0
+        }
+        
+        let fadeCompletion = { [weak self] (_ finished: Bool) in
+            self?.fadeView?.removeFromSuperview()
+            self?.fadeView = nil
         }
         
         var scaleAnimationOptions: UIViewAnimationOptions
@@ -332,6 +363,7 @@ import FLAnimatedImage
             scaleAnimationOptions = [.curveEaseInOut, .beginFromCurrentState, .allowAnimatedContent]
             scaleInitialSpringVelocity = 0
         } else {
+            #if os(iOS)
             let extrapolated = self.extrapolateFinalCenter(for: imageView, in: transitionContext.containerView)
             offscreenImageViewCenter = extrapolated.center
             
@@ -350,6 +382,10 @@ import FLAnimatedImage
                 scaleAnimationOptions = [.curveLinear, .beginFromCurrentState, .allowAnimatedContent]
                 scaleInitialSpringVelocity = abs(self.dismissalVelocityY / divisor)
             }
+            #else
+            scaleAnimationOptions = [.curveEaseInOut, .beginFromCurrentState, .allowAnimatedContent]
+            scaleInitialSpringVelocity = 0
+            #endif
         }
 
         UIView.animate(withDuration: self.transitionDuration(using: transitionContext),
@@ -363,7 +399,8 @@ import FLAnimatedImage
         UIView.animate(withDuration: self.transitionDuration(using: transitionContext) * FadeInOutTransitionRatio,
                        delay: 0,
                        options: [.curveEaseInOut],
-                       animations: fadeAnimations)
+                       animations: fadeAnimations,
+                       completion: fadeCompletion)
         
         if self.canPerformContextualDismissal() {
             guard let referenceView = self.transitionInfo.endingView else {
@@ -377,95 +414,9 @@ import FLAnimatedImage
         }
     }
     
-    fileprivate func cancelTransition(using transitionContext: UIViewControllerContextTransitioning) {
-        guard let to = transitionContext.viewController(forKey: .to),
-            let from = transitionContext.viewController(forKey: .from) else {
-                assertionFailure("No. ಠ_ಠ")
-                return
-        }
-        
-        var photosViewController: AXPhotosViewController
-        if let from = from as? AXPhotosViewController {
-            photosViewController = from
-        } else {
-            guard let childViewController = from.childViewControllers.filter({ $0 is AXPhotosViewController }).first as? AXPhotosViewController else {
-                assertionFailure("Could not find AXPhotosViewController in container's children.")
-                return
-            }
-            
-            photosViewController = childViewController
-        }
-        
-        guard let imageView = photosViewController.currentPhotoViewController?.zoomingImageView.imageView as UIImageView? else {
-            assertionFailure("No. ಠ_ಠ")
-            return
-        }
-        
-        let overlayView = photosViewController.overlayView
-        let animations = { [weak self] () in
-            guard let `self` = self else {
-                return
-            }
-            
-            imageView.center.y = self.imageViewInitialCenter.y
-            overlayView.topStackContainer.frame.origin.y = self.topStackContainerInitialOriginY
-            overlayView.bottomStackContainer.frame.origin.y = self.bottomStackContainerInitialOriginY
-            
-            to.view.alpha = 0
-        }
-        
-        let completion = { [weak self] (_ finished: Bool) in
-            guard let `self` = self else {
-                return
-            }
-
-            if self.canPerformContextualDismissal() {
-                guard let referenceView = self.transitionInfo.endingView else {
-                    assertionFailure("No. ಠ_ಠ")
-                    return
-                }
-                
-                referenceView.alpha = 1
-            }
-            
-            to.view.alpha = 1
-            from.view.alpha = 1
-            
-            imageView.frame = transitionContext.containerView.convert(imageView.frame, to: self.imageViewOriginalSuperview)
-            self.imageViewOriginalSuperview?.addSubview(imageView)
-            overlayView.frame = transitionContext.containerView.convert(overlayView.frame, to: self.overlayViewOriginalSuperview)
-            self.overlayViewOriginalSuperview?.addSubview(overlayView)
-            
-            self.imageViewInitialCenter = .zero
-            self.imageViewOriginalSuperview = nil
-            
-            self.topStackContainerInitialOriginY = .greatestFiniteMagnitude
-            self.bottomStackContainerInitialOriginY = .greatestFiniteMagnitude
-            self.overlayViewOriginalSuperview = nil
-            
-            self.dismissalPercent = 0
-            self.directionalDismissalPercent = 0
-            self.dismissalVelocityY = 1
-            
-            if transitionContext.isInteractive {
-                transitionContext.cancelInteractiveTransition()
-            }
-            
-            transitionContext.completeTransition(false)
-            self.dismissalTransitionContext = nil
-        }
-        
-        UIView.animate(withDuration: self.transitionDuration(using: transitionContext),
-                       delay: 0,
-                       usingSpringWithDamping: TransitionAnimSpringDampening,
-                       initialSpringVelocity: 0,
-                       options: [.curveEaseInOut, .beginFromCurrentState, .allowAnimatedContent],
-                       animations: animations,
-                       completion: completion)
-    }
-    
     // MARK: - UIViewControllerInteractiveTransitioning
     func startInteractiveTransition(_ transitionContext: UIViewControllerContextTransitioning) {
+        #if os(iOS)
         self.dismissalTransitionContext = transitionContext
         
         guard let to = transitionContext.viewController(forKey: .to),
@@ -501,13 +452,17 @@ import FLAnimatedImage
             return
         }
         
-        to.view.alpha = 0
-        
         let presentersViewRemoved = from.presentationController?.shouldRemovePresentersView ?? false
         if presentersViewRemoved {
             to.view.frame = transitionContext.finalFrame(for: to)
             transitionContext.containerView.addSubview(to.view)
         }
+        
+        let fadeView = UIView()
+        fadeView.backgroundColor = .black
+        fadeView.frame = transitionContext.finalFrame(for: from)
+        transitionContext.containerView.insertSubview(fadeView, aboveSubview: to.view)
+        self.fadeView = fadeView
         
         from.view.frame = transitionContext.finalFrame(for: from)
         transitionContext.containerView.addSubview(from.view)
@@ -539,8 +494,118 @@ import FLAnimatedImage
         }
         
         self.processPendingAnimations()
+        #else
+        fatalError("Interactive animations are not supported on tvOS.")
+        #endif
     }
     
+    #if os(iOS)
+    fileprivate func cancelTransition(using transitionContext: UIViewControllerContextTransitioning) {
+        guard let to = transitionContext.viewController(forKey: .to),
+            let from = transitionContext.viewController(forKey: .from) else {
+                assertionFailure("No. ಠ_ಠ")
+                return
+        }
+        
+        var photosViewController: AXPhotosViewController
+        if let from = from as? AXPhotosViewController {
+            photosViewController = from
+        } else {
+            guard let childViewController = from.childViewControllers.filter({ $0 is AXPhotosViewController }).first as? AXPhotosViewController else {
+                assertionFailure("Could not find AXPhotosViewController in container's children.")
+                return
+            }
+            
+            photosViewController = childViewController
+        }
+        
+        guard let imageView = photosViewController.currentPhotoViewController?.zoomingImageView.imageView as UIImageView? else {
+            assertionFailure("No. ಠ_ಠ")
+            return
+        }
+        
+        let overlayView = photosViewController.overlayView
+        let animations = { [weak self] () in
+            guard let `self` = self else {
+                return
+            }
+            
+            imageView.center.y = self.imageViewInitialCenter.y
+            overlayView.topStackContainer.frame.origin.y = self.topStackContainerInitialOriginY
+            overlayView.bottomStackContainer.frame.origin.y = self.bottomStackContainerInitialOriginY
+            
+            self.fadeView?.alpha = 1
+        }
+        
+        let completion = { [weak self] (_ finished: Bool) in
+            guard let `self` = self else {
+                return
+            }
+
+            if self.canPerformContextualDismissal() {
+                guard let referenceView = self.transitionInfo.endingView else {
+                    assertionFailure("No. ಠ_ಠ")
+                    return
+                }
+                
+                referenceView.alpha = 1
+            }
+            
+            self.fadeView?.removeFromSuperview()
+            from.view.alpha = 1
+            
+            imageView.frame = transitionContext.containerView.convert(imageView.frame, to: self.imageViewOriginalSuperview)
+            self.imageViewOriginalSuperview?.addSubview(imageView)
+            overlayView.frame = transitionContext.containerView.convert(overlayView.frame, to: self.overlayViewOriginalSuperview)
+            self.overlayViewOriginalSuperview?.addSubview(overlayView)
+            
+            self.imageViewInitialCenter = .zero
+            self.imageViewOriginalSuperview = nil
+            
+            self.topStackContainerInitialOriginY = .greatestFiniteMagnitude
+            self.bottomStackContainerInitialOriginY = .greatestFiniteMagnitude
+            self.overlayViewOriginalSuperview = nil
+            
+            self.dismissalPercent = 0
+            self.directionalDismissalPercent = 0
+            self.dismissalVelocityY = 1
+            
+            if transitionContext.isInteractive {
+                transitionContext.cancelInteractiveTransition()
+            }
+            
+            transitionContext.completeTransition(false)
+            self.dismissalTransitionContext = nil
+        }
+        
+        UIView.animate(withDuration: self.transitionDuration(using: transitionContext),
+                       delay: 0,
+                       usingSpringWithDamping: TransitionAnimSpringDampening,
+                       initialSpringVelocity: 0,
+                       options: [.curveEaseInOut, .beginFromCurrentState, .allowAnimatedContent],
+                       animations: animations,
+                       completion: completion)
+    }
+    #endif
+    
+    // MARK: - Helpers
+    fileprivate func processPendingAnimations() {
+        for animation in self.pendingAnimations {
+            animation()
+        }
+        
+        self.pendingAnimations.removeAll()
+    }
+    
+    fileprivate func canPerformContextualDismissal() -> Bool {
+        guard let endingView = self.transitionInfo.endingView, let endingViewSuperview = endingView.superview else {
+            return false
+        }
+        
+        return UIScreen.main.bounds.intersects(endingViewSuperview.convert(endingView.frame, to: nil))
+    }
+    
+    #if os(iOS)
     // MARK: - Interaction handling
     @objc fileprivate func panAction(_ sender: UIPanGestureRecognizer) {
         var containingViewController: UIViewController?
@@ -582,8 +647,6 @@ import FLAnimatedImage
         case .changed:
             let animation = { [weak self] in
                 guard let `self` = self,
-                    let transitionContext = self.dismissalTransitionContext,
-                    let to = transitionContext.viewController(forKey: .to),
                     let topStackContainer = self.overlayView?.topStackContainer,
                     let bottomStackContainer = self.overlayView?.bottomStackContainer else {
                         assertionFailure("No. ಠ_ಠ")
@@ -611,7 +674,7 @@ import FLAnimatedImage
                     self.imageView?.center.y = imageViewCenterY
                 }
                 
-                to.view.alpha = 1 * min(1, dismissalRatio)
+                self.fadeView?.alpha = 1 - (1 * min(1, dismissalRatio))
             }
             
             if self.imageView == nil || self.overlayView == nil {
@@ -650,23 +713,6 @@ import FLAnimatedImage
         default:
             break
         }
-    }
-    
-    // MARK: - Helpers
-    fileprivate func processPendingAnimations() {
-        for animation in self.pendingAnimations {
-            animation()
-        }
-        
-        self.pendingAnimations.removeAll()
-    }
-    
-    fileprivate func canPerformContextualDismissal() -> Bool {
-        guard let endingView = self.transitionInfo.endingView, let endingViewSuperview = endingView.superview else {
-            return false
-        }
-        
-        return UIScreen.main.bounds.intersects(endingViewSuperview.convert(endingView.frame, to: nil))
     }
         
     /// Extrapolate the "final" offscreen center value for an image view in a view given the starting and ending orientations.
@@ -848,6 +894,7 @@ import FLAnimatedImage
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer) -> Bool {
         return true
     }
+    #endif
     
 }
 

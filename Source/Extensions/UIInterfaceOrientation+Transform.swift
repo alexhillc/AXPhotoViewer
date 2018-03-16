@@ -6,6 +6,7 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+#if os(iOS)
 extension UIInterfaceOrientation {
     
     func by(transforming transform: CGAffineTransform) -> UIInterfaceOrientation {
@@ -49,3 +50,4 @@ extension UIInterfaceOrientation {
     }
     
 }
+#endif

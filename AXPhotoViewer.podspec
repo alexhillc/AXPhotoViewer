@@ -16,7 +16,8 @@ Pod::Spec.new do |s|
 
   s.subspec 'Core' do |cs|
     cs.ios.dependency  'AXStateButton', '>= 1.1.3'
-    cs.dependency      'FLAnimatedImage', '>= 1.0.0'
+    cs.ios.dependency  'FLAnimatedImage', '>= 1.0.0'
+    cs.tvos.dependency 'FLAnimatedImage-tvOS', '>= 1.0.16'
     cs.resources     = 'Assets/*.{xcassets}'
     cs.source_files  = 'Source/*.{swift,h,m}',
                        'Source/Classes/**/*.{swift,h,m}',

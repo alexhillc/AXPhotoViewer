@@ -32,7 +32,7 @@ import UIKit
     @objc open var defaultTitleAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
-            if #available(iOS 10.0, *) {
+            if #available(iOS 10.0, tvOS 10.0, *) {
                 fontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body,
                                                                           compatibleWith: self.traitCollection)
             } else {
@@ -56,7 +56,7 @@ import UIKit
     @objc open var defaultDescriptionAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
-            if #available(iOS 10.0, *) {
+            if #available(iOS 10.0, tvOS 10.0, *) {
                 fontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body,
                                                                           compatibleWith: self.traitCollection)
             } else {
@@ -80,7 +80,7 @@ import UIKit
     @objc open var defaultCreditAttributes: [NSAttributedStringKey: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
-            if #available(iOS 10.0, *) {
+            if #available(iOS 10.0, tvOS 10.0, *) {
                 fontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .caption1,
                                                                           compatibleWith: self.traitCollection)
             } else {
@@ -311,7 +311,7 @@ import UIKit
                 }
                 
                 var newFontDescriptor: UIFontDescriptor
-                if #available(iOS 10.0, *) {
+                if #available(iOS 10.0, tvOS 10.0, *) {
                     newFontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: fontTextStyle,
                                                                                  compatibleWith: self?.traitCollection)
                 } else {

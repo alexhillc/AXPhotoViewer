@@ -6,7 +6,11 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+#if TARGET_OS_IOS
 @import FLAnimatedImage.FLAnimatedImageView;
+#elif TARGET_OS_TV
+@import FLAnimatedImage_tvOS.FLAnimatedImageView;
+#endif
 
 @interface FLAnimatedImageView (AXExtensions)
 

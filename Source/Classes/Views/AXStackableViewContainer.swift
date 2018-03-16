@@ -59,11 +59,19 @@ import UIKit
             }
             
             // special cases
+            #if os(iOS)
             if subview is UIToolbar || subview is UINavigationBar {
                 frame = CGRect(x: xOffset, y: yOffset, width: constrainedInsetSize.width, height: size.height)
             } else {
                 frame = CGRect(origin: CGPoint(x: xOffset, y: yOffset), size: size)
             }
+            #else
+            if subview is UINavigationBar {
+                frame = CGRect(x: xOffset, y: yOffset, width: constrainedInsetSize.width, height: size.height)
+            } else {
+                frame = CGRect(origin: CGPoint(x: xOffset, y: yOffset), size: size)
+            }
+            #endif
             
             yOffset += frame.size.height
             

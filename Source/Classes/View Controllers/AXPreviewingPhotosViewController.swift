@@ -6,9 +6,10 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+#if os(iOS)
 import UIKit
-import FLAnimatedImage
 import MobileCoreServices
+import FLAnimatedImage
 
 @objc open class AXPreviewingPhotosViewController: UIViewController, AXNetworkIntegrationDelegate {
     
@@ -147,3 +148,4 @@ import MobileCoreServices
     }
     
 }
+#endif

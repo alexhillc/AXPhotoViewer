@@ -16,6 +16,39 @@ import MobileCoreServices
                                                            AXNetworkIntegrationDelegate,
                                                            AXPhotosTransitionControllerDelegate {
     
+    #if os(iOS)
+    /// The close bar button item that is initially set in the overlay's toolbar. Any 'target' or 'action' provided to this button will be overwritten.
+    /// Overriding this is purely for customizing the look and feel of the button.
+    /// Alternatively, you may create your own `UIBarButtonItem`s and directly set them _and_ their actions on the `overlayView` property.
+    @objc open var closeBarButtonItem: UIBarButtonItem {
+        get {
+            return UIBarButtonItem(barButtonSystemItem: .stop, target: nil, action: nil)
+        }
+    }
+    
+    /// The action bar button item that is initially set in the overlay's toolbar. Any 'target' or 'action' provided to this button will be overwritten.
+    /// Overriding this is purely for customizing the look and feel of the button.
+    /// Alternatively, you may create your own `UIBarButtonItem`s and directly set them _and_ their actions on the `overlayView` property.
+    @objc open var actionBarButtonItem: UIBarButtonItem {
+        get {
+            return UIBarButtonItem(barButtonSystemItem: .action, target: nil, action: nil)
+        }
+    }
+    
+    fileprivate var ax_prefersStatusBarHidden: Bool = false
+    open override var prefersStatusBarHidden: Bool {
+        get {
+            return super.prefersStatusBarHidden || self.ax_prefersStatusBarHidden
+        }
+    }
+    
+    open override var preferredStatusBarStyle: UIStatusBarStyle {
+        get {
+            return .lightContent
+        }
+    }
+    #endif
+    
     @objc open weak var delegate: AXPhotosViewControllerDelegate?
     
     /// The underlying `OverlayView` that is used for displaying photo captions, titles, and actions.
@@ -39,6 +72,14 @@ import MobileCoreServices
     /// The configuration object applied to the internal pager at initialization.
     @objc open fileprivate(set) var pagingConfig = AXPagingConfig()
     
+    /// The `AXTransitionInfo` passed in at initialization. This object is used to define functionality for the presentation and dismissal
+    /// of the `PhotosViewController`.
+    @objc open fileprivate(set) var transitionInfo = AXTransitionInfo()
+    
+    /// The `NetworkIntegration` passed in at initialization. This object is used to fetch images asynchronously from a cache or URL.
+    /// - Initialized by the end of `commonInit(dataSource:pagingConfig:transitionInfo:networkIntegration:)`.
+    @objc public fileprivate(set) var networkIntegration: AXNetworkIntegrationProtocol!
+    
     /// The underlying UIPageViewController that is used for swiping horizontally and vertically.
     /// - Important: `AXPhotosViewController` is this page view controller's `UIPageViewControllerDelegate`, `UIPageViewControllerDataSource`.
     ///              Changing these values will result in breakage.
@@ -47,32 +88,6 @@ import MobileCoreServices
     
     /// The internal tap gesture recognizer that is used to hide/show the overlay interface.
     @objc public let singleTapGestureRecognizer = UITapGestureRecognizer()
-    
-    /// The close bar button item that is initially set in the overlay's toolbar. Any 'target' or 'action' provided to this button will be overwritten.
-    /// Overriding this is purely for customizing the look and feel of the button.
-    /// Alternatively, you may create your own `UIBarButtonItem`s and directly set them _and_ their actions on the `overlayView` property.
-    @objc open var closeBarButtonItem: UIBarButtonItem {
-        get {
-            return UIBarButtonItem(barButtonSystemItem: .stop, target: nil, action: nil)
-        }
-    }
-    
-    /// The action bar button item that is initially set in the overlay's toolbar. Any 'target' or 'action' provided to this button will be overwritten.
-    /// Overriding this is purely for customizing the look and feel of the button.
-    /// Alternatively, you may create your own `UIBarButtonItem`s and directly set them _and_ their actions on the `overlayView` property.
-    @objc open var actionBarButtonItem: UIBarButtonItem {
-        get {
-            return UIBarButtonItem(barButtonSystemItem: .action, target: nil, action: nil)
-        }
-    }
-    
-    /// The `AXTransitionInfo` passed in at initialization. This object is used to define functionality for the presentation and dismissal
-    /// of the `PhotosViewController`.
-    @objc open fileprivate(set) var transitionInfo = AXTransitionInfo()
-    
-    /// The `NetworkIntegration` passed in at initialization. This object is used to fetch images asynchronously from a cache or URL.
-    /// - Initialized by the end of `commonInit(dataSource:pagingConfig:transitionInfo:networkIntegration:)`.
-    @objc public fileprivate(set) var networkIntegration: AXNetworkIntegrationProtocol!
     
     /// The view controller containing the photo currently being shown.
     @objc public var currentPhotoViewController: AXPhotoViewController? {
@@ -119,19 +134,6 @@ import MobileCoreServices
     
     fileprivate var transitionController: AXPhotosTransitionController?
     fileprivate let notificationCenter = NotificationCenter()
-    
-    fileprivate var ax_prefersStatusBarHidden: Bool = false
-    open override var prefersStatusBarHidden: Bool {
-        get {
-            return super.prefersStatusBarHidden || self.ax_prefersStatusBarHidden
-        }
-    }
-    
-    open override var preferredStatusBarStyle: UIStatusBarStyle {
-        get {
-            return .lightContent
-        }
-    }
     
     // MARK: - Initialization
     @objc public init() {
@@ -215,6 +217,7 @@ import MobileCoreServices
                         networkIntegration: networkIntegration)
     }
     
+    #if os(iOS)
     @objc(initFromPreviewingPhotosViewController:)
     public init(from previewingPhotosViewController: AXPreviewingPhotosViewController) {
         super.init(nibName: nil, bundle: nil)
@@ -267,6 +270,7 @@ import MobileCoreServices
         
         self.currentPhotoViewController?.zoomingImageView.imageView.ax_syncFrames(with: previewingPhotosViewController.imageView)
     }
+    #endif
     
     @objc public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -332,6 +336,9 @@ import MobileCoreServices
         self.singleTapGestureRecognizer.addTarget(self, action: #selector(singleTapAction(_:)))
         
         self.overlayView.tintColor = .white
+        self.overlayView.setShowInterface(false, animated: false)
+        
+        #if os(iOS)
         let closeBarButtonItem = self.closeBarButtonItem
         closeBarButtonItem.target = self
         closeBarButtonItem.action = #selector(closeAction(_:))
@@ -341,8 +348,7 @@ import MobileCoreServices
         actionBarButtonItem.target = self
         actionBarButtonItem.action = #selector(shareAction(_:))
         self.overlayView.rightBarButtonItem = actionBarButtonItem
-        
-        self.overlayView.setShowInterface(false, animated: false)
+        #endif
     }
     
     deinit {
@@ -393,9 +399,13 @@ import MobileCoreServices
         super.viewDidAppear(animated)
         
         if self.isFirstAppearance {
+            #if os(iOS)
             self.overlayView.setShowInterface(true, animated: true, alongside: { [weak self] in
                 self?.updateStatusBarAppearance(show: true)
             })
+            #else
+            self.overlayView.setShowInterface(true, animated: true)
+            #endif
             self.isFirstAppearance = false
         }
     }
@@ -492,7 +502,10 @@ import MobileCoreServices
         func configure(with viewController: UIViewController, pageIndex: Int) {
             self.pageViewController.setViewControllers([viewController], direction: .forward, animated: false, completion: nil)
             self.currentPhotoIndex = pageIndex
+            
+            #if os(iOS)
             self.overlayView.titleView?.tweenBetweenLowIndex?(pageIndex, highIndex: pageIndex + 1, percent: 0)
+            #endif
         }
         
         guard let photoViewController = self.makePhotoViewController(for: self.dataSource.initialPhotoIndex) else {
@@ -512,24 +525,32 @@ import MobileCoreServices
         
         self.willUpdate(overlayView: self.overlayView, for: photo, at: photoIndex, totalNumberOfPhotos: self.dataSource.numberOfPhotos)
         
+        #if os(iOS)
         if self.dataSource.numberOfPhotos > 1 {
             self.overlayView.internalTitle = String.localizedStringWithFormat("%d of %d", photoIndex + 1, self.dataSource.numberOfPhotos)
         } else {
             self.overlayView.internalTitle = nil
         }
+        #endif
         
         self.overlayView.updateCaptionView(photo: photo)
     }
     
     fileprivate func updateOverlayInsets() {
         var contentInset: UIEdgeInsets
-        if #available(iOS 11.0, *) {
+        if #available(iOS 11.0, tvOS 11.0, *) {
             contentInset = self.view.safeAreaInsets
         } else {
-            contentInset = UIEdgeInsets(top: (UIApplication.shared.statusBarFrame.size.height > 0) ? 20 : 0,
-                                        left: 0,
-                                        bottom: 0,
-                                        right: 0)
+            #if os(iOS)
+            contentInset = UIEdgeInsets(
+                top: (UIApplication.shared.statusBarFrame.size.height > 0) ? 20 : 0,
+                left: 0,
+                bottom: 0,
+                right: 0
+            )
+            #else
+            contentInset = .zero
+            #endif
         }
         
         self.overlayView.contentInset = contentInset
@@ -537,11 +558,17 @@ import MobileCoreServices
     
     @objc fileprivate func singleTapAction(_ sender: UITapGestureRecognizer) {
         let show = (self.overlayView.alpha == 0)
+        
+        #if os(iOS)
         self.overlayView.setShowInterface(show, animated: true, alongside: { [weak self] in
             self?.updateStatusBarAppearance(show: show)
         })
+        #else
+        self.overlayView.setShowInterface(show, animated: true)
+        #endif
     }
     
+    #if os(iOS)
     fileprivate func updateStatusBarAppearance(show: Bool) {
         self.ax_prefersStatusBarHidden = !show
         self.setNeedsStatusBarAppearanceUpdate()
@@ -598,6 +625,7 @@ import MobileCoreServices
         self.isForcingNonInteractiveDismissal = true
         self.presentingViewController?.dismiss(animated: true)
     }
+    #endif
     
     // MARK: - Loading helpers
     fileprivate func loadPhotos(at index: Int) {
@@ -668,16 +696,16 @@ import MobileCoreServices
             photoViewController.addLifecycleObserver(self)
             photoViewController.delegate = self
             
+            #if os(iOS)
             self.singleTapGestureRecognizer.require(toFail: photoViewController.zoomingImageView.doubleTapGestureRecognizer)
+            #endif
         }
         
         photoViewController.pageIndex = pageIndex
         photoViewController.applyPhoto(photo)
         
         let insertionIndex = self.orderedViewControllers.insertionIndex(of: photoViewController, isOrderedBefore: { $0.pageIndex < $1.pageIndex })
-        if !insertionIndex.alreadyExists {
-            self.orderedViewControllers.insert(photoViewController, at: insertionIndex.index)
-        }
+        self.orderedViewControllers.insert(photoViewController, at: insertionIndex.index)
         
         return photoViewController
     }
@@ -697,9 +725,8 @@ import MobileCoreServices
             return
         }
         
-        let insertionIndex = self.orderedViewControllers.insertionIndex(of: photoViewController, isOrderedBefore: { $0.pageIndex < $1.pageIndex })
-        if insertionIndex.alreadyExists {
-            self.orderedViewControllers.remove(at: insertionIndex.index)
+        if let index = self.orderedViewControllers.index(of: photoViewController) {
+            self.orderedViewControllers.remove(at: index)
         }
         
         self.recycledViewControllers.append(photoViewController)
@@ -796,7 +823,10 @@ import MobileCoreServices
             }
         }
         
+        
+        #if os(iOS)
         self.overlayView.titleView?.tweenBetweenLowIndex?(lowIndex, highIndex: highIndex, percent: percent)
+        #endif
     }
     
     fileprivate func computeVisibleViewControllers(in referenceView: UIScrollView) -> [AXPhotoViewController] {
@@ -817,7 +847,7 @@ import MobileCoreServices
                                                                                self.pagingConfig.interPhotoSpacing : 0))
             let conversionRect = CGRect(origin: origin, size: size)
             
-            if referenceView.convert(conversionRect, from: viewController.view.superview).intersects(referenceView.bounds) {
+            if let fromView = viewController.view.superview, referenceView.convert(conversionRect, from: fromView).intersects(referenceView.bounds) {
                 visibleViewControllers.append(viewController)
             }
         }

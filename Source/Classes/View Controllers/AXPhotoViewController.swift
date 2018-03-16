@@ -7,7 +7,12 @@
 //
 
 import UIKit
+
+#if os(iOS)
 import FLAnimatedImage
+#elseif os(tvOS)
+import FLAnimatedImage_tvOS
+#endif
 
 @objc open class AXPhotoViewController: UIViewController, AXPageableViewControllerProtocol, AXZoomingImageViewDelegate {
     
@@ -68,7 +73,7 @@ import FLAnimatedImage
         super.viewWillLayoutSubviews()
         
         var adjustedSize = self.view.bounds.size
-        if #available(iOS 11.0, *) {
+        if #available(iOS 11.0, tvOS 11.0, *) {
             adjustedSize.width -= (self.view.safeAreaInsets.left + self.view.safeAreaInsets.right)
             adjustedSize.height -= (self.view.safeAreaInsets.left + self.view.safeAreaInsets.right)
         }
