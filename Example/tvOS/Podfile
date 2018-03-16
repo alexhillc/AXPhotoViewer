@@ -1,0 +1,12 @@
+platform :tvos, '10.0'
+
+target 'AXPhotoViewerExample' do
+
+  use_frameworks!
+
+  pod 'Reveal-SDK'
+
+  # AXPhotoViewer
+  pod 'AXPhotoViewer/PINRemoteImage', :path => '../../AXPhotoViewer.podspec'
+
+end

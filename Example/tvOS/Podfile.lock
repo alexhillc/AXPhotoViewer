@@ -1,0 +1,46 @@
+PODS:
+  - AXPhotoViewer/Core (1.3.6):
+    - AXStateButton (>= 1.1.3)
+    - FLAnimatedImage (>= 1.0.0)
+    - FLAnimatedImage-tvOS (>= 1.0.16)
+  - AXPhotoViewer/PINRemoteImage (1.3.6):
+    - AXPhotoViewer/Core
+    - PINRemoteImage (~> 3.0.0-beta.9)
+  - FLAnimatedImage-tvOS (1.0.16)
+  - PINCache (3.0.1-beta.6):
+    - PINCache/Arc-exception-safe (= 3.0.1-beta.6)
+    - PINCache/Core (= 3.0.1-beta.6)
+  - PINCache/Arc-exception-safe (3.0.1-beta.6):
+    - PINCache/Core
+  - PINCache/Core (3.0.1-beta.6):
+    - PINOperation (~> 1.1.0)
+  - PINOperation (1.1.1)
+  - PINRemoteImage (3.0.0-beta.13):
+    - PINRemoteImage/FLAnimatedImage (= 3.0.0-beta.13)
+    - PINRemoteImage/PINCache (= 3.0.0-beta.13)
+  - PINRemoteImage/Core (3.0.0-beta.13):
+    - PINOperation
+  - PINRemoteImage/PINCache (3.0.0-beta.13):
+    - PINCache (= 3.0.1-beta.6)
+    - PINRemoteImage/Core
+  - Reveal-SDK (13)
+
+DEPENDENCIES:
+  - AXPhotoViewer/PINRemoteImage (from `../../AXPhotoViewer.podspec`)
+  - Reveal-SDK
+
+EXTERNAL SOURCES:
+  AXPhotoViewer:
+    :path: ../../AXPhotoViewer.podspec
+
+SPEC CHECKSUMS:
+  AXPhotoViewer: ecca040236c2b7e2535018a183aa0997302d72a1
+  FLAnimatedImage-tvOS: 9848762c9480db5a4334e11782e747fc8fc07baf
+  PINCache: d195fdba255283f7e9900a55e3cced377f431f9b
+  PINOperation: a6219e6fc9db9c269eb7a7b871ac193bcf400aac
+  PINRemoteImage: d6d51c5d2adda55f1ce30c96e850b6c4ebd2856a
+  Reveal-SDK: ccc2b0f8014965ea448b7534a7c2c8da232b75e8
+
+PODFILE CHECKSUM: 687fcbcaff7d8aba8c9a3dace926da7f0e72ff43
+
+COCOAPODS: 1.4.0
