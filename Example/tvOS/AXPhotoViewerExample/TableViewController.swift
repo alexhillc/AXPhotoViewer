@@ -16,12 +16,14 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
     let ReuseIdentifier = "AXReuseIdentifier"
     
     var urlSession = URLSession(configuration: .default)
-    var content = [Int: Data]()
+    var content = [Int: Any]()
     
     weak var photosViewController: AXPhotosViewController?
     weak var customView: UILabel?
     
     let photos = [
+        AXPhoto(attributedTitle: NSAttributedString(string: "Niagara Falls"),
+                image: UIImage(named: "niagara-falls")),
         AXPhoto(attributedTitle: NSAttributedString(string: "The Flash Poster"),
                 attributedDescription: NSAttributedString(string: "Season 3"),
                 attributedCredit: NSAttributedString(string: "Vignette"),
@@ -95,13 +97,13 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
         imageView.image = nil
         imageView.animatedImage = nil
         
-        let emptyHeight: CGFloat = 600
-        let emptyWidth: CGFloat = 450
+        let emptyHeight: CGFloat = 200
+        let emptyWidth: CGFloat = 150
         imageView.frame = CGRect(x: floor((cell.frame.size.width - emptyWidth)) / 2, y: 0, width: emptyWidth, height: emptyHeight)
         
         let maxSize = cell.frame.size.height
         
-        self.loadContent(at: indexPath) { (uData) in
+        self.loadContent(at: indexPath) { (image, data) in
             func onMainQueue(_ block: @escaping () -> Void) {
                 if Thread.isMainThread {
                     block()
@@ -113,18 +115,30 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
             }
             
             var imageViewSize: CGSize
-            if let animatedImage = FLAnimatedImage(animatedGIFData: uData) {
-                imageViewSize = (animatedImage.size.width > animatedImage.size.height) ?
-                    CGSize(width: maxSize,height: (maxSize * animatedImage.size.height / animatedImage.size.width)) :
-                    CGSize(width: maxSize * animatedImage.size.width / animatedImage.size.height, height: maxSize)
-                
-                onMainQueue {
-                    imageView.animatedImage = animatedImage
-                    imageView.frame.size = imageViewSize
-                    imageView.center = cell.contentView.center
+            if let data = data {
+                if let animatedImage = FLAnimatedImage(animatedGIFData: data) {
+                    imageViewSize = (animatedImage.size.width > animatedImage.size.height) ?
+                        CGSize(width: maxSize,height: (maxSize * animatedImage.size.height / animatedImage.size.width)) :
+                        CGSize(width: maxSize * animatedImage.size.width / animatedImage.size.height, height: maxSize)
+                    
+                    onMainQueue {
+                        imageView.animatedImage = animatedImage
+                        imageView.frame.size = imageViewSize
+                        imageView.center = cell.contentView.center
+                    }
+                    
+                } else if let image = UIImage(data: data) {
+                    imageViewSize = (image.size.width > image.size.height) ?
+                        CGSize(width: maxSize, height: (maxSize * image.size.height / image.size.width)) :
+                        CGSize(width: maxSize * image.size.width / image.size.height, height: maxSize)
+                    
+                    onMainQueue {
+                        imageView.image = image
+                        imageView.frame.size = imageViewSize
+                        imageView.center = cell.contentView.center
+                    }
                 }
-                
-            } else if let image = UIImage(data: uData) {
+            } else if let image = image {
                 imageViewSize = (image.size.width > image.size.height) ?
                     CGSize(width: maxSize, height: (maxSize * image.size.height / image.size.width)) :
                     CGSize(width: maxSize * image.size.width / image.size.height, height: maxSize)
@@ -189,20 +203,31 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
     }
     
     // MARK: - Loading
-    func loadContent(at indexPath: IndexPath, completion: ((_ data: Data) -> Void)?) {
-        if let data = self.content[indexPath.row] {
-            completion?(data)
+    func loadContent(at indexPath: IndexPath, completion: ((_ image: UIImage?, _ data: Data?) -> Void)?) {
+        if let data = self.content[indexPath.row] as? Data {
+            completion?(nil, data)
+            return
+        } else if let image = self.content[indexPath.row] as? UIImage {
+            completion?(image, nil)
             return
         }
         
-        self.urlSession.dataTask(with: self.photos[indexPath.row].url!) { [weak self] (data, response, error) in
-            guard let uData = data else {
-                return
-            }
-            
-            self?.content[indexPath.row] = uData
-            completion?(uData)
+        if let imageData = self.photos[indexPath.row].imageData {
+            self.content[indexPath.row] = imageData
+            completion?(nil, imageData)
+        } else if let image = self.photos[indexPath.row].image {
+            self.content[indexPath.row] = image
+            completion?(image, nil)
+        } else if let url = self.photos[indexPath.row].url {
+            self.urlSession.dataTask(with: url) { [weak self] (data, response, error) in
+                guard let `data` = data else {
+                    return
+                }
+                
+                self?.content[indexPath.row] = data
+                completion?(nil, data)
             }.resume()
+        }
     }
     
     // MARK: - AXPhotosViewControllerDelegate
