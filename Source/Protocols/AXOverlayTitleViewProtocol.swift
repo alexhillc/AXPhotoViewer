@@ -6,6 +6,7 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+#if os(iOS)
 @objc public protocol AXOverlayTitleViewProtocol: NSObjectProtocol {
     
     /// This method is called by the `AXOverlayView`'s toolbar in order to size the view appropriately for display.
@@ -21,3 +22,4 @@
     @objc optional func tweenBetweenLowIndex(_ low: Int, highIndex high: Int, percent: CGFloat)
 
 }
+#endif

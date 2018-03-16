@@ -11,6 +11,7 @@ import MobileCoreServices
 
 @objc open class AXPhotosViewController: UIViewController, UIPageViewControllerDelegate,
                                                            UIPageViewControllerDataSource,
+                                                           UIGestureRecognizerDelegate,
                                                            UIViewControllerTransitioningDelegate,
                                                            AXPhotoViewControllerDelegate,
                                                            AXNetworkIntegrationDelegate,
@@ -34,6 +35,9 @@ import MobileCoreServices
             return UIBarButtonItem(barButtonSystemItem: .action, target: nil, action: nil)
         }
     }
+    
+    /// The internal tap gesture recognizer that is used to initiate and pan interactive dismissals.
+    fileprivate var panGestureRecognizer: UIPanGestureRecognizer?
     
     fileprivate var ax_prefersStatusBarHidden: Bool = false
     open override var prefersStatusBarHidden: Bool {
@@ -117,10 +121,8 @@ import MobileCoreServices
             if let containerViewController = self.containerViewController {
                 containerViewController.transitioningDelegate = self
                 self.transitioningDelegate = nil
-                self.transitionController?.containerViewController = containerViewController
             } else {
                 self.transitioningDelegate = self
-                self.transitionController?.containerViewController = nil
             }
         }
     }
@@ -304,6 +306,14 @@ import MobileCoreServices
         
         if let transitionInfo = transitionInfo {
             self.transitionInfo = transitionInfo
+            
+            #if os(iOS)
+            if transitionInfo.interactiveDismissalEnabled {
+                self.panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(didPanWithGestureRecognizer(_:)))
+                self.panGestureRecognizer?.maximumNumberOfTouches = 1
+                self.panGestureRecognizer?.delegate = self
+            }
+            #endif
         }
         
         var `networkIntegration` = networkIntegration
@@ -333,7 +343,7 @@ import MobileCoreServices
         self.configurePageViewController()
         
         self.singleTapGestureRecognizer.numberOfTapsRequired = 1
-        self.singleTapGestureRecognizer.addTarget(self, action: #selector(singleTapAction(_:)))
+        self.singleTapGestureRecognizer.addTarget(self, action: #selector(didSingleTapWithGestureRecognizer(_:)))
         
         self.overlayView.tintColor = .white
         self.overlayView.setShowInterface(false, animated: false)
@@ -371,15 +381,19 @@ import MobileCoreServices
         
         self.view.backgroundColor = .black
         
-        self.transitionController = AXPhotosTransitionController(photosViewController: self, transitionInfo: self.transitionInfo)
+        self.transitionController = AXPhotosTransitionController(transitionInfo: self.transitionInfo)
         self.transitionController?.delegate = self
+        
+        #if os(iOS)
+        if let panGestureRecognizer = self.panGestureRecognizer {
+            self.pageViewController.view.addGestureRecognizer(panGestureRecognizer)
+        }
+        #endif
         
         if let containerViewController = self.containerViewController {
             containerViewController.transitioningDelegate = self
-            self.transitionController?.containerViewController = containerViewController
         } else {
             self.transitioningDelegate = self
-            self.transitionController?.containerViewController = nil
         }
         
         if self.pageViewController.view.superview == nil {
@@ -497,6 +511,53 @@ import MobileCoreServices
         }
     }
     
+    open override func dismiss(animated flag: Bool, completion: (() -> Void)? = nil) {
+        if self.presentedViewController != nil {
+            super.dismiss(animated: flag, completion: completion)
+            return
+        }
+        
+        self.delegate?.photosViewControllerWillDismiss?(self)
+        super.dismiss(animated: flag) { [unowned self] in
+            let canceled = (self.view.window != nil)
+            
+            if canceled {
+                self.isForcingNonInteractiveDismissal = false
+                #if os(iOS)
+                self.panGestureRecognizer?.isEnabled = true
+                #endif
+            } else {
+                self.delegate?.photosViewControllerDidDismiss?(self)
+            }
+            
+            completion?()
+        }
+    }
+    
+    // MARK: - Navigation
+    
+    /// Convenience method to programmatically navigate to a photo
+    ///
+    /// - Parameters:
+    ///   - photoIndex: The index of the photo to navigate to
+    ///   - animated: Whether or not to animate the transition
+    @objc public func navigateToPhotoIndex(_ photoIndex: Int, animated: Bool) {
+        if photoIndex < 0 || photoIndex > (self.dataSource.numberOfPhotos - 1) {
+            return
+        }
+        
+        guard let photoViewController = self.makePhotoViewController(for: photoIndex) else {
+            return
+        }
+        
+        let forward = (photoIndex > self.currentPhotoIndex)
+        self.pageViewController.setViewControllers([photoViewController],
+                                                   direction: forward ? .forward : .reverse,
+                                                   animated: animated,
+                                                   completion: nil)
+        self.loadPhotos(at: photoIndex)
+    }
+    
     // MARK: - Page VC Configuration
     fileprivate func configurePageViewController() {
         func configure(with viewController: UIViewController, pageIndex: Int) {
@@ -555,8 +616,9 @@ import MobileCoreServices
         
         self.overlayView.contentInset = contentInset
     }
-    
-    @objc fileprivate func singleTapAction(_ sender: UITapGestureRecognizer) {
+
+    // MARK: - Gesture recognizers
+    @objc fileprivate func didSingleTapWithGestureRecognizer(_ sender: UITapGestureRecognizer) {
         let show = (self.overlayView.alpha == 0)
         
         #if os(iOS)
@@ -569,6 +631,15 @@ import MobileCoreServices
     }
     
     #if os(iOS)
+    @objc fileprivate func didPanWithGestureRecognizer(_ sender: UIPanGestureRecognizer) {
+        if sender.state == .began {
+            self.isForcingNonInteractiveDismissal = false
+            self.dismiss(animated: true, completion: nil)
+        }
+        
+        self.transitionController?.didPanWithGestureRecognizer(sender, in: self.containerViewController ?? self)
+    }
+    
     fileprivate func updateStatusBarAppearance(show: Bool) {
         self.ax_prefersStatusBarHidden = !show
         self.setNeedsStatusBarAppearanceUpdate()
@@ -618,12 +689,8 @@ import MobileCoreServices
     }
     
     @objc public func closeAction(_ sender: UIBarButtonItem) {
-        if self.isBeingDismissed {
-            return
-        }
-        
         self.isForcingNonInteractiveDismissal = true
-        self.presentingViewController?.dismiss(animated: true)
+        self.dismiss(animated: true)
     }
     #endif
     
@@ -1065,6 +1132,46 @@ import MobileCoreServices
                                           userInfo: [AXPhotosViewControllerNotification.ProgressKey: progress])
         }
     }
+    
+    // MARK: - UIGestureRecognizerDelegate
+    public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        let currentPhotoIndex = self.currentPhotoIndex
+        let dataSource = self.dataSource
+        let zoomingImageView = self.currentPhotoViewController?.zoomingImageView
+        let pagingConfig = self.pagingConfig
+        
+        guard !(zoomingImageView?.isScrollEnabled ?? true)
+            && (pagingConfig.navigationOrientation == .horizontal
+            || (pagingConfig.navigationOrientation == .vertical
+            && (currentPhotoIndex == 0 || currentPhotoIndex == dataSource.numberOfPhotos - 1))) else {
+            return false
+        }
+        
+        if let panGestureRecognizer = gestureRecognizer as? UIPanGestureRecognizer {
+            let velocity = panGestureRecognizer.velocity(in: gestureRecognizer.view)
+            
+            let isVertical = abs(velocity.y) > abs(velocity.x)
+            guard isVertical else {
+                return false
+            }
+            
+            if pagingConfig.navigationOrientation == .horizontal {
+                return true
+            } else {
+                if currentPhotoIndex == 0 {
+                    return velocity.y > 0
+                } else {
+                    return velocity.y < 0
+                }
+            }
+        }
+        
+        return false
+    }
+    
+    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
+    }
 
 }
 
@@ -1184,6 +1291,18 @@ fileprivate extension UIScrollView {
     optional func photosViewController(_ photosViewController: AXPhotosViewController, 
                                        actionCompletedWith activityType: UIActivityType, 
                                        for photo: AXPhotoProtocol)
+    
+    /// Called just before the `AXPhotosViewController` begins its dismissal
+    ///
+    /// - Parameter photosViewController: The view controller being dismissed
+    @objc(photosViewControllerWillDismiss:)
+    optional func photosViewControllerWillDismiss(_ photosViewController: AXPhotosViewController)
+    
+    /// Called after the `AXPhotosViewController` completes its dismissal
+    ///
+    /// - Parameter photosViewController: The dismissed view controller
+    @objc(photosViewControllerDidDismiss:)
+    optional func photosViewControllerDidDismiss(_ photosViewController: AXPhotosViewController)
 }
 
 // MARK: - Notification definitions

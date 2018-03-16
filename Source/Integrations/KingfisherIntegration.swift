@@ -18,7 +18,8 @@ class KingfisherIntegration: NSObject, AXNetworkIntegrationProtocol {
 
     public func loadPhoto(_ photo: AXPhotoProtocol) {
         if photo.imageData != nil || photo.image != nil {
-            delegate?.networkIntegration(self, loadDidFinishWith: photo)
+            self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+            return
         }
 
         guard let url = photo.url else {

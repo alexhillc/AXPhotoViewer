@@ -19,12 +19,9 @@ import FLAnimatedImage_tvOS
 }
 
 @objc class AXPhotosTransitionController: NSObject, UIViewControllerAnimatedTransitioning,
-                                                    UIViewControllerInteractiveTransitioning,
-                                                    UIGestureRecognizerDelegate {
+                                                    UIViewControllerInteractiveTransitioning {
     
     #if os(iOS)
-    fileprivate var panGestureRecognizer: UIPanGestureRecognizer?
-    
     /// The distance threshold at which the interactive controller will dismiss upon end touches.
     fileprivate let DismissalPercentThreshold: CGFloat = 0.14
     
@@ -64,9 +61,6 @@ import FLAnimatedImage_tvOS
     var mode: AXPhotosTransitionControllerMode = .presenting
     var transitionInfo: AXTransitionInfo
     
-    weak var photosViewController: AXPhotosViewController?
-    weak var containerViewController: UIViewController?
-    
     /// Pending animations that can occur when interactive dismissal has not been triggered by the system, 
     /// but our pan gesture recognizer is receiving touch events. Processed as soon as the interactive dismissal has been set up.
     fileprivate var pendingAnimations = [() -> Void]()
@@ -101,29 +95,9 @@ import FLAnimatedImage_tvOS
         return type(of: self).supportedModalPresentationStyles.contains(modalPresentationStyle)
     }
     
-    init(photosViewController: AXPhotosViewController, transitionInfo: AXTransitionInfo) {
-        self.photosViewController = photosViewController
+    init(transitionInfo: AXTransitionInfo) {
         self.transitionInfo = transitionInfo
-        
         super.init()
-        
-        #if os(iOS)
-        if transitionInfo.interactiveDismissalEnabled {
-            let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(panAction(_:)))
-            panGestureRecognizer.maximumNumberOfTouches = 1
-            panGestureRecognizer.delegate = self
-            photosViewController.view.addGestureRecognizer(panGestureRecognizer)
-            self.panGestureRecognizer = panGestureRecognizer
-        }
-        #endif
-    }
-    
-    deinit {
-        #if os(iOS)
-        if let panGestureRecognizer = self.panGestureRecognizer {
-            self.photosViewController?.view.removeGestureRecognizer(panGestureRecognizer)
-        }
-        #endif
     }
     
     // MARK: - UIViewControllerAnimatedTransitioning
@@ -210,22 +184,28 @@ import FLAnimatedImage_tvOS
             self?.fadeView?.alpha = 1
         }
         
-        UIView.animate(withDuration: self.transitionDuration(using: transitionContext),
-                       delay: 0,
-                       usingSpringWithDamping: TransitionAnimSpringDampening,
-                       initialSpringVelocity: 0,
-                       options: [.curveEaseInOut, .beginFromCurrentState, .allowAnimatedContent],
-                       animations: scaleAnimations,
-                       completion: scaleCompletion)
+        UIView.animate(
+            withDuration: self.transitionDuration(using: transitionContext),
+            delay: 0,
+            usingSpringWithDamping: TransitionAnimSpringDampening,
+            initialSpringVelocity: 0,
+            options: [.curveEaseInOut, .beginFromCurrentState, .allowAnimatedContent],
+            animations: scaleAnimations,
+            completion: scaleCompletion
+        )
         
-        UIView.animate(withDuration: self.transitionDuration(using: transitionContext) * FadeInOutTransitionRatio,
-                       delay: 0,
-                       options: [.curveEaseInOut],
-                       animations: fadeAnimations)
+        UIView.animate(
+            withDuration: self.transitionDuration(using: transitionContext) * FadeInOutTransitionRatio,
+            delay: 0,
+            options: [.curveEaseInOut],
+            animations: fadeAnimations
+        )
         
-        UIView.animateCornerRadii(withDuration: self.transitionDuration(using: transitionContext) * FadeInOutTransitionRatio,
-                                  to: 0,
-                                  views: [referenceViewCopy])
+        UIView.animateCornerRadii(
+            withDuration: self.transitionDuration(using: transitionContext) * FadeInOutTransitionRatio,
+            to: 0,
+            views: [referenceViewCopy]
+        )
     }
     
     fileprivate func animateDismissal(using transitionContext: UIViewControllerContextTransitioning) {
@@ -388,19 +368,23 @@ import FLAnimatedImage_tvOS
             #endif
         }
 
-        UIView.animate(withDuration: self.transitionDuration(using: transitionContext),
-                       delay: 0,
-                       usingSpringWithDamping: TransitionAnimSpringDampening,
-                       initialSpringVelocity: scaleInitialSpringVelocity,
-                       options: scaleAnimationOptions,
-                       animations: scaleAnimations,
-                       completion: scaleCompletion)
+        UIView.animate(
+            withDuration: self.transitionDuration(using: transitionContext),
+            delay: 0,
+            usingSpringWithDamping: TransitionAnimSpringDampening,
+            initialSpringVelocity: scaleInitialSpringVelocity,
+            options: scaleAnimationOptions,
+            animations: scaleAnimations,
+            completion: scaleCompletion
+        )
         
-        UIView.animate(withDuration: self.transitionDuration(using: transitionContext) * FadeInOutTransitionRatio,
-                       delay: 0,
-                       options: [.curveEaseInOut],
-                       animations: fadeAnimations,
-                       completion: fadeCompletion)
+        UIView.animate(
+            withDuration: self.transitionDuration(using: transitionContext) * FadeInOutTransitionRatio,
+            delay: 0,
+            options: [.curveEaseInOut],
+            animations: fadeAnimations,
+            completion: fadeCompletion
+        )
         
         if self.canPerformContextualDismissal() {
             guard let referenceView = self.transitionInfo.endingView else {
@@ -408,9 +392,11 @@ import FLAnimatedImage_tvOS
                 return
             }
             
-            UIView.animateCornerRadii(withDuration: self.transitionDuration(using: transitionContext) * FadeInOutTransitionRatio,
-                                      to: referenceView.layer.cornerRadius,
-                                      views: [imageView])
+            UIView.animateCornerRadii(
+                withDuration: self.transitionDuration(using: transitionContext) * FadeInOutTransitionRatio,
+                to: referenceView.layer.cornerRadius,
+                views: [imageView]
+            )
         }
     }
     
@@ -501,8 +487,7 @@ import FLAnimatedImage_tvOS
     
     #if os(iOS)
     fileprivate func cancelTransition(using transitionContext: UIViewControllerContextTransitioning) {
-        guard let to = transitionContext.viewController(forKey: .to),
-            let from = transitionContext.viewController(forKey: .from) else {
+        guard let from = transitionContext.viewController(forKey: .from) else {
                 assertionFailure("No. ಠ_ಠ")
                 return
         }
@@ -578,13 +563,15 @@ import FLAnimatedImage_tvOS
             self.dismissalTransitionContext = nil
         }
         
-        UIView.animate(withDuration: self.transitionDuration(using: transitionContext),
-                       delay: 0,
-                       usingSpringWithDamping: TransitionAnimSpringDampening,
-                       initialSpringVelocity: 0,
-                       options: [.curveEaseInOut, .beginFromCurrentState, .allowAnimatedContent],
-                       animations: animations,
-                       completion: completion)
+        UIView.animate(
+            withDuration: self.transitionDuration(using: transitionContext),
+            delay: 0,
+            usingSpringWithDamping: TransitionAnimSpringDampening,
+            initialSpringVelocity: 0,
+            options: [.curveEaseInOut, .beginFromCurrentState, .allowAnimatedContent],
+            animations: animations,
+            completion: completion
+        )
     }
     #endif
     
@@ -607,18 +594,7 @@ import FLAnimatedImage_tvOS
     
     #if os(iOS)
     // MARK: - Interaction handling
-    @objc fileprivate func panAction(_ sender: UIPanGestureRecognizer) {
-        var containingViewController: UIViewController?
-        if let containerViewController = self.containerViewController {
-            containingViewController = containerViewController
-        } else if let photosViewController = self.photosViewController {
-            containingViewController = photosViewController
-        }
-        
-        guard let uContainingViewController = containingViewController,
-            self.supportsModalPresentationStyle(uContainingViewController.modalPresentationStyle) else {
-            return
-        }
+    public func didPanWithGestureRecognizer(_ sender: UIPanGestureRecognizer, in viewController: UIViewController) {
         
         self.dismissalVelocityY = sender.velocity(in: sender.view).y
         let translation = sender.translation(in: sender.view?.superview)
@@ -626,12 +602,9 @@ import FLAnimatedImage_tvOS
         switch sender.state {
         case .began:
             self.overlayView = nil
-            uContainingViewController.presentingViewController?.dismiss(animated: true, completion: {
-                sender.isEnabled = true
-            })
-            
+
             let endingOrientation = UIApplication.shared.statusBarOrientation
-            let startingOrientation = endingOrientation.by(transforming: uContainingViewController.view.transform)
+            let startingOrientation = endingOrientation.by(transforming: viewController.view.transform)
             
             let shouldForceImmediateInteractiveDismissal = (startingOrientation != endingOrientation)
             if shouldForceImmediateInteractiveDismissal {
@@ -849,50 +822,6 @@ import FLAnimatedImage_tvOS
         } else {
             return (imageViewCenter, imageViewCenter.y)
         }
-    }
-    
-    // MARK: - UIGestureRecognizerDelegate
-    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        guard let photosViewController = self.photosViewController else {
-            return false
-        }
-        
-        let currentPhotoIndex = photosViewController.currentPhotoIndex
-        let dataSource = photosViewController.dataSource
-        let zoomingImageView = photosViewController.currentPhotoViewController?.zoomingImageView
-        let pagingConfig = photosViewController.pagingConfig
-        
-        guard !(zoomingImageView?.isScrollEnabled ?? true) &&
-            (pagingConfig.navigationOrientation == .horizontal ||
-            (pagingConfig.navigationOrientation == .vertical &&
-            (currentPhotoIndex == 0 || currentPhotoIndex == dataSource.numberOfPhotos - 1))) else {
-            return false
-        }
-        
-        if let panGestureRecognizer = gestureRecognizer as? UIPanGestureRecognizer {
-            let velocity = panGestureRecognizer.velocity(in: gestureRecognizer.view)
-            
-            let isVertical = abs(velocity.y) > abs(velocity.x)
-            guard isVertical else {
-                return false
-            }
-            
-            if pagingConfig.navigationOrientation == .horizontal {
-                return true
-            } else {
-                if currentPhotoIndex == 0 {
-                    return velocity.y > 0
-                } else {
-                    return velocity.y < 0
-                }
-            }
-        }
-        
-        return false
-    }
-    
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        return true
     }
     #endif
     
