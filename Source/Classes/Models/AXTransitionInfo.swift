@@ -26,8 +26,31 @@
     
     var resolveEndingViewClosure: ((_ photo: AXPhotoProtocol, _ index: Int) -> Void)?
     
+    #if os(iOS)
     @objc public init(interactiveDismissalEnabled: Bool, startingView: UIImageView?, endingView: ((_ photo: AXPhotoProtocol, _ index: Int) -> UIImageView?)?) {
         super.init()
+        self.commonInit(interactiveDismissalEnabled: interactiveDismissalEnabled, startingView: startingView, endingView: endingView)
+    }
+    
+    @objc public convenience init(startingView: UIImageView?, endingView: ((_ photo: AXPhotoProtocol, _ index: Int) -> UIImageView?)?) {
+        self.init(interactiveDismissalEnabled: true, startingView: startingView, endingView: endingView)
+    }
+    
+    @objc public convenience override init() {
+        self.init(interactiveDismissalEnabled: true, startingView: nil, endingView: nil)
+    }
+    #else
+    @objc public init(startingView: UIImageView?, endingView: ((_ photo: AXPhotoProtocol, _ index: Int) -> UIImageView?)?) {
+        super.init()
+        self.commonInit(interactiveDismissalEnabled: false, startingView: startingView, endingView: endingView)
+    }
+    
+    @objc public convenience override init() {
+        self.init(startingView: nil, endingView: nil)
+    }
+    #endif
+    
+    fileprivate func commonInit(interactiveDismissalEnabled: Bool, startingView: UIImageView?, endingView: ((_ photo: AXPhotoProtocol, _ index: Int) -> UIImageView?)?) {
         
         #if os(iOS)
         self.interactiveDismissalEnabled = interactiveDismissalEnabled
@@ -61,14 +84,6 @@
                 }
             }
         }
-    }
-    
-    @objc public convenience override init() {
-        self.init(interactiveDismissalEnabled: true, startingView: nil, endingView: nil)
-    }
-
-    @objc public convenience init(startingView: UIImageView?, endingView: ((_ photo: AXPhotoProtocol, _ index: Int) -> UIImageView?)?) {
-        self.init(interactiveDismissalEnabled: true, startingView: startingView, endingView: endingView)
     }
     
 }

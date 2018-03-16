@@ -160,7 +160,7 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
         let cell = tableView.cellForRow(at: indexPath)
         let imageView = cell?.contentView.viewWithTag(666) as? FLAnimatedImageView
         
-        let transitionInfo = AXTransitionInfo(interactiveDismissalEnabled: true, startingView: imageView) { [weak self] (photo, index) -> UIImageView? in
+        let transitionInfo = AXTransitionInfo(startingView: imageView) { [weak self] (photo, index) -> UIImageView? in
             guard let `self` = self else {
                 return nil
             }

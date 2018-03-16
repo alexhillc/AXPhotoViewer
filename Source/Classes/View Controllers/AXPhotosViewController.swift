@@ -610,7 +610,12 @@ import MobileCoreServices
                 right: 0
             )
             #else
-            contentInset = .zero
+            contentInset = UIEdgeInsets(
+                top: 60,
+                left: 90,
+                bottom: 60,
+                right: 90
+            )
             #endif
         }
         

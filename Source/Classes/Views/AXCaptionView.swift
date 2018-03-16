@@ -333,9 +333,17 @@ import UIKit
         self.creditSizingLabel.attributedText = makeFontAdjustedAttributedString(for: self.creditSizingLabel.attributedText, 
                                                                                  fontTextStyle: .caption1)
         
-        let VerticalPadding: CGFloat = 10
+        #if os(iOS)
+        let TopPadding: CGFloat = 10
+        let BottomPadding: CGFloat = 10
         let HorizontalPadding: CGFloat = 15
         let InterLabelSpacing: CGFloat = 2
+        #else
+        let TopPadding: CGFloat = 30
+        let BottomPadding: CGFloat = 0
+        let HorizontalPadding: CGFloat = 0
+        let InterLabelSpacing: CGFloat = 2
+        #endif
         var yOffset: CGFloat = 0
         
         for (index, label) in self.visibleSizingLabels.enumerated() {
@@ -345,7 +353,7 @@ import UIKit
             let labelSize = label.sizeThatFits(constrainedLabelSize)
             
             if index == 0 {
-                yOffset += VerticalPadding
+                yOffset += TopPadding
             } else {
                 yOffset += InterLabelSpacing
             }
@@ -356,7 +364,7 @@ import UIKit
             
             yOffset += labelFrame.size.height
             if index == (self.visibleSizingLabels.count - 1) {
-                yOffset += VerticalPadding
+                yOffset += BottomPadding
             }
             
             if applySizingLayout {
