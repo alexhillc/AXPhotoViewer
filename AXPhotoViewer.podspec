@@ -2,7 +2,7 @@ Pod::Spec.new do |s|
   s.name            = "AXPhotoViewer"
   s.version         = "1.4.1"
   s.license         = { :type  => 'MIT', :file => 'LICENSE.md' }
-  s.summary         = "An iPhone/iPad photo gallery viewer, useful for viewing a large number of photos."
+  s.summary         = "An iOS/tvOS photo gallery viewer, useful for viewing a large number of photos."
   s.homepage        = "https://github.com/alexhillc/AXPhotoViewer"
   s.author          = { "Alex Hill" => "alexhill.c@gmail.com" }
   s.source          = { :git => "https://github.com/alexhillc/AXPhotoViewer.git", :tag => "v#{s.version}" }
