@@ -1,3 +1,13 @@
+# 1.4.0
+- **[NEW]** tvOS Support has been added
+- **[NEW]** Swift 4.1 usage requires **Xcode 9.3**
+- **[NEW]** All classes are now namespaced with 'AX' in order to be more subclass-friendly
+- **[NEW]** Delegate methods: `photosViewControllerWillDismiss:` and `photosViewControllerDidDismiss:`, which are called for both interactive and non-interactive dismissals [#29](https://github.com/alexhillc/AXPhotoViewer/issues/29)
+- **[NEW]** `navigateToPhotoIndex(_:animated:)` to allow developers to navigate between photos programmatically
+- **[FIXED]** Localization is now much easier for the `internalTitle` property [#31](https://github.com/alexhillc/AXPhotoViewer/issues/31)
+- **[FIXED]** Example project crashes when loading local assets [#25](https://github.com/alexhillc/AXPhotoViewer/issues/25)
+- **[CHANGED]** The library now depends on Cocoapods a lot less, opening up the possibility for Carthage support
+
 # 1.3.6
 - **[FIXED]** 'CaptionView' sometimes improperly sizing its labels
 
