@@ -10,11 +10,21 @@
     
 import PINRemoteImage
 
-class PINRemoteImageIntegration: NSObject, AXNetworkIntegrationProtocol {
+class PINRemoteImageIntegration: NSObject, AXNetworkIntegrationProtocol, PINRemoteImageManagerAlternateRepresentationProvider {
 
     weak var delegate: AXNetworkIntegrationDelegate?
     
     fileprivate var downloadUUIDs = NSMapTable<AXPhotoProtocol, NSUUID>(keyOptions: .strongMemory, valueOptions: .strongMemory)
+    fileprivate(set) var imageManager: PINRemoteImageManager!
+    
+    override init() {
+        super.init()
+        self.imageManager = PINRemoteImageManager(
+            sessionConfiguration: .default,
+            alternativeRepresentationProvider: self,
+            imageCache: PINRemoteImageManager.shared().cache // PINRemoteImageManager cache is thread safe, so we should be able to use the same cache instance as our shared counterpart
+        )
+    }
     
     func loadPhoto(_ photo: AXPhotoProtocol) {
         if photo.imageData != nil || photo.image != nil {
@@ -40,10 +50,8 @@ class PINRemoteImageIntegration: NSObject, AXNetworkIntegrationProtocol {
             
             self.downloadUUIDs.removeObject(forKey: photo)
             
-            if let animatedImage = result.alternativeRepresentation as? FLAnimatedImage {
-                // this is not great, as `PINRemoteImage` already creates the `FLAnimatedImage` that we need.
-                // something to fix in the future.
-                photo.imageData = animatedImage.data
+            if let data = result.alternativeRepresentation as? Data {
+                photo.imageData = data
                 self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
             } else if let image = result.image {
                 photo.image = image
@@ -58,7 +66,7 @@ class PINRemoteImageIntegration: NSObject, AXNetworkIntegrationProtocol {
             }
         }
         
-        guard let uuid = PINRemoteImageManager.shared().downloadImage(with: url, options: [], progressDownload: progress, completion: completion) else {
+        guard let uuid = self.imageManager.downloadImage(with: url, options: [], progressDownload: progress, completion: completion) else {
             return
         }
         
@@ -70,17 +78,26 @@ class PINRemoteImageIntegration: NSObject, AXNetworkIntegrationProtocol {
             return
         }
         
-        PINRemoteImageManager.shared().cancelTask(with: uuid as UUID, storeResumeData: true)
+        self.imageManager.cancelTask(with: uuid as UUID, storeResumeData: true)
     }
     
     func cancelAllLoads() {
         let enumerator = self.downloadUUIDs.objectEnumerator()
         
         while let uuid  = enumerator?.nextObject() as? NSUUID {
-            PINRemoteImageManager.shared().cancelTask(with: uuid as UUID, storeResumeData: true)
+            self.imageManager.cancelTask(with: uuid as UUID, storeResumeData: true)
         }
         
         self.downloadUUIDs.removeAllObjects()
+    }
+    
+    // MARK: - PINRemoteImageManagerAlternateRepresentationProvider
+    func alternateRepresentation(with data: Data!, options: PINRemoteImageManagerDownloadOptions = []) -> Any! {
+        guard let `data` = data else {
+            return nil
+        }
+        
+        return data.containsGIF() ? data : nil
     }
     
 }
