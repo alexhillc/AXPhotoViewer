@@ -1,3 +1,7 @@
+# 1.4.1
+- Small changes to insets in AXCaptionView on tvOS
+- Removes invalid initializer on AXTransitionInfo on tvOS
+
 # 1.4.0
 - **[NEW]** tvOS Support has been added
 - **[NEW]** Swift 4.1 usage requires **Xcode 9.3**
