@@ -6,8 +6,6 @@
 //  Copyright © 2017 Matt Lamont. All rights reserved.
 //
 
-#if canImport(Kingfisher)
-
 import Kingfisher
 
 class KingfisherIntegration: NSObject, AXNetworkIntegrationProtocol {
@@ -80,5 +78,3 @@ class KingfisherIntegration: NSObject, AXNetworkIntegrationProtocol {
     }
     
 }
-
-#endif

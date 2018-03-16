@@ -6,8 +6,6 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
-#if canImport(SDWebImage)
-
 import SDWebImage
 
 class SDWebImageIntegration: NSObject, AXNetworkIntegrationProtocol {
@@ -83,5 +81,3 @@ class SDWebImageIntegration: NSObject, AXNetworkIntegrationProtocol {
     }
     
 }
-
-#endif
