@@ -5,7 +5,7 @@
   <img src="http://i.imgur.com/CCs0TzM.gif" alt="Demo GIF #2"/>
 </p>
 
-AXPhotoViewer is an iOS photo viewer that is useful for viewing a very large (or very small!) amount of images and GIFs. This library supports contextual presentation and dismissal, interactive "flick-to-dismiss" behavior, and easily integrates with many third party async image downloading/caching libraries.
+AXPhotoViewer is an iOS/tvOS photo viewer that is useful for viewing a very large (or very small!) amount of images and GIFs. This library supports contextual presentation and dismissal, interactive "flick-to-dismiss" behavior, and easily integrates with many third party async image downloading/caching libraries.
 
 ### How to use
 While AXPhotoViewer has many configurable properties on each of its modules, it is easy to throw down some initialization code and get started:
