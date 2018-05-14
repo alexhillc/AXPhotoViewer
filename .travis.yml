@@ -1,6 +1,6 @@
 language: swift
-osx_image: xcode9.0
+osx_image: xcode9.2
 
-before_install: pod repo update && pod install --project-directory=Example/iOS && pod install --project-directory=Example/tvOS
-script: xcodebuild -workspace Example/iOS/AXPhotoViewerExample.xcworkspace -scheme AXPhotoViewerExample build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO PROVISIONING_PROFILE="" | xcpretty && xcodebuild -workspace Example/tvOS/AXPhotoViewerExample.xcworkspace -scheme AXPhotoViewerExample build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO PROVISIONING_PROFILE="" | xcpretty && exit ${PIPESTATUS[0]}
+before_install: pod repo update
+script: pod lib lint --allow-warnings --verbose
 
