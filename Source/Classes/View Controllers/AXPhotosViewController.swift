@@ -415,13 +415,18 @@ import MobileCoreServices
         super.viewDidAppear(animated)
         
         if self.isFirstAppearance {
-            #if os(iOS)
-            self.overlayView.setShowInterface(true, animated: true, alongside: { [weak self] in
-                self?.updateStatusBarAppearance(show: true)
+            let visible: Bool = true
+            self.overlayView.setShowInterface(visible, animated: true, alongside: { [weak self] in
+                guard let `self` = self else {
+                    return
+                }
+                
+                #if os(iOS)
+                self.updateStatusBarAppearance(show: visible)
+                #endif
+                
+                self.overlayView(self.overlayView, visibilityWillChange: visible)
             })
-            #else
-            self.overlayView.setShowInterface(true, animated: true)
-            #endif
             self.isFirstAppearance = false
         }
     }
@@ -627,14 +632,17 @@ import MobileCoreServices
     // MARK: - Gesture recognizers
     @objc fileprivate func didSingleTapWithGestureRecognizer(_ sender: UITapGestureRecognizer) {
         let show = (self.overlayView.alpha == 0)
-        
-        #if os(iOS)
         self.overlayView.setShowInterface(show, animated: true, alongside: { [weak self] in
-            self?.updateStatusBarAppearance(show: show)
+            guard let `self` = self else {
+                return
+            }
+            
+            #if os(iOS)
+            self.updateStatusBarAppearance(show: show)
+            #endif
+            
+            self.overlayView(self.overlayView, visibilityWillChange: show)
         })
-        #else
-        self.overlayView.setShowInterface(show, animated: true)
-        #endif
     }
     
     #if os(iOS)
@@ -1029,6 +1037,21 @@ import MobileCoreServices
                                              totalNumberOfPhotos: totalNumberOfPhotos)
     }
     
+    /// Called when the `AXPhotoViewController` will show/hide its `OverlayView`. This method will be called inside of an
+    /// animation context, so perform any coordinated animations here.
+    ///
+    /// If you override this and fail to call super, the corresponding delegate method **will not be called!**
+    ///
+    /// - Parameters:
+    ///   - overlayView: The `AXOverlayView` whose visibility is changing.
+    ///   - visible: A boolean that denotes whether or not the overlay will be visible or invisible.
+    @objc
+    open func overlayView(_ overlayView: AXOverlayView, visibilityWillChange visible: Bool) {
+        self.delegate?.photosViewController?(self,
+                                             overlayView: overlayView,
+                                             visibilityWillChange: visible)
+    }
+    
     /// If implemented and returns a valid zoom scale for the photo (valid meaning >= the photo's minimum zoom scale), the underlying
     /// zooming image view will adopt the returned `maximumZoomScale` instead of the default calculated by the library. A good implementation
     /// of this method will use a combination of the provided `minimumZoomScale` and `imageSize` to extrapolate a `maximumZoomScale` to return.
@@ -1261,6 +1284,18 @@ fileprivate extension UIScrollView {
                                        for photo: AXPhotoProtocol,
                                        at index: Int,
                                        totalNumberOfPhotos: Int)
+    
+    /// Called when the `AXPhotoViewController` will show/hide its `OverlayView`. This method will be called inside of an
+    /// animation context, so perform any coordinated animations here.
+    ///
+    /// - Parameters:
+    ///   - photosViewController: The `AXPhotosViewController` that is updating the overlay visibility.
+    ///   - overlayView: The `AXOverlayView` whose visibility is changing.
+    ///   - visible: A boolean that denotes whether or not the overlay will be visible or invisible.
+    @objc
+    optional func photosViewController(_ photosViewController: AXPhotosViewController,
+                                       overlayView: AXOverlayView,
+                                       visibilityWillChange visible: Bool)
     
     /// If implemented and returns a valid zoom scale for the photo (valid meaning >= the photo's minimum zoom scale), the underlying
     /// zooming image view will adopt the returned `maximumZoomScale` instead of the default calculated by the library. A good implementation
