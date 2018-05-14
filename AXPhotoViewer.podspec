@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name            = "AXPhotoViewer"
-  s.version         = "1.4.2"
+  s.version         = "1.4.3"
   s.license         = { :type  => 'MIT', :file => 'LICENSE.md' }
   s.summary         = "An iOS/tvOS photo gallery viewer, useful for viewing a large number of photos."
   s.homepage        = "https://github.com/alexhillc/AXPhotoViewer"

@@ -1,3 +1,6 @@
+# 1.4.3
+- [**NEW**] Delegate method: `photosViewController(_:overlayView:visibilityWillChange:)` in order to coordinate overlayView visiblity changes with other animations
+
 # 1.4.2
 - Revert to Swift 4.0
 
