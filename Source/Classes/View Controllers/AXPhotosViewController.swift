@@ -326,6 +326,8 @@ import MobileCoreServices
             networkIntegration = AFNetworkingIntegration()
             #elseif USE_KINGFISHER
             networkIntegration = KingfisherIntegration()
+            #elseif USE_NUKE
+            networkIntegration = NukeIntegration()
             #elseif USE_DEFAULT
             networkIntegration = SimpleNetworkIntegration()
             #else
