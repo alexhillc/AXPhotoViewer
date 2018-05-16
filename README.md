@@ -100,20 +100,10 @@ Some pre-defined `AXNetworkIntegrations` have already been made as Cocoapod subs
 
 ```ruby
 pod install 'AXPhotoViewer/Lite'
-```
-```ruby
 pod install 'AXPhotoViewer/SDWebImage'
-```
-```ruby
 pod install 'AXPhotoViewer/PINRemoteImage'
-```
-```ruby
 pod install 'AXPhotoViewer/AFNetworking'
-```
-```ruby
 pod install 'AXPhotoViewer/Kingfisher'
-```
-```ruby
 pod install 'AXPhotoViewer/Nuke'
 ```
 
@@ -128,7 +118,7 @@ let photosViewController = PhotosViewController(dataSource: dataSource, networkI
 ```
 
 #### Enabling Nuke's support for GIFs
-The Nuke's support for download GIFs is disabled by default. If you want support for GIFs, you have to enabled it.
+Nuke's support for downloadomg GIFs is disabled by default. If you want support for GIFs, you have to enabled it.
 
 ```swift
 ImagePipeline.Configuration.isAnimatedImageDataEnabled = true
