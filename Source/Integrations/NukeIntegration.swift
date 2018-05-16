@@ -54,7 +54,6 @@ class NukeIntegration: NSObject, AXNetworkIntegrationProtocol {
             }
         }
         
-        ImagePipeline.Configuration.isAnimatedImageDataEnabled = true
         let task = ImagePipeline.shared.loadImage(with: url, progress: progress, completion: completion)
         self.retrieveImageTasks.setObject(task, forKey: photo)
     }
