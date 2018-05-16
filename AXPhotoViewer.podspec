@@ -62,12 +62,11 @@ Pod::Spec.new do |s|
     ks.source_files  = 'Source/Integrations/KingfisherIntegration.swift'
   end
 
-  s.subspec 'Nuke' do |ks|
-    ks.ios.deployment_target = '9.0'
-    ks.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D USE_NUKE' }
-    ks.dependency      'AXPhotoViewer/Core'
-    ks.dependency      'Nuke', '>= 7.0'
-    ks.dependency      'Nuke-FLAnimatedImage-Plugin', '>= 5.0'
-    ks.source_files  = 'Source/Integrations/NukeIntegration.swift'
+  s.subspec 'Nuke' do |nk|
+    nk.ios.deployment_target = '9.0'
+    nk.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D USE_NUKE' }
+    nk.dependency      'AXPhotoViewer/Core'
+    nk.dependency      'Nuke', '>= 7.0'
+    nk.source_files  = 'Source/Integrations/NukeIntegration.swift'
   end
 end
