@@ -118,7 +118,7 @@ let photosViewController = PhotosViewController(dataSource: dataSource, networkI
 ```
 
 #### Enabling Nuke's support for GIFs
-Nuke's support for downloadomg GIFs is disabled by default. If you want support for GIFs, you have to enabled it.
+Nuke's support for downloading GIFs is disabled by default. If you want support for GIFs, you have to enabled it.
 
 ```swift
 ImagePipeline.Configuration.isAnimatedImageDataEnabled = true
