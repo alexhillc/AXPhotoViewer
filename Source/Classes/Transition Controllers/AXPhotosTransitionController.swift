@@ -113,6 +113,17 @@ import FLAnimatedImage_tvOS
         }
     }
     
+    fileprivate func transitionFadeView() -> UIView {
+        if let fadeView = transitionInfo.fadeView {
+            return fadeView
+        }
+        
+        let fadeView = UIView()
+        fadeView.backgroundColor = .black
+        
+        return fadeView
+    }
+    
     fileprivate func animatePresentation(using transitionContext: UIViewControllerContextTransitioning) {
         guard let to = transitionContext.viewController(forKey: .to),
             let from = transitionContext.viewController(forKey: .from),
@@ -122,8 +133,7 @@ import FLAnimatedImage_tvOS
                 return
         }
         
-        let fadeView = UIView()
-        fadeView.backgroundColor = .black
+        let fadeView = transitionFadeView()
         fadeView.alpha = 0
         fadeView.frame = transitionContext.finalFrame(for: to)
         transitionContext.containerView.addSubview(fadeView)
@@ -239,8 +249,7 @@ import FLAnimatedImage_tvOS
         }
         
         if self.fadeView == nil {
-            let fadeView = UIView()
-            fadeView.backgroundColor = .black
+            let fadeView = transitionFadeView()
             fadeView.frame = transitionContext.finalFrame(for: from)
             transitionContext.containerView.insertSubview(fadeView, aboveSubview: to.view)
             self.fadeView = fadeView
@@ -444,8 +453,7 @@ import FLAnimatedImage_tvOS
             transitionContext.containerView.addSubview(to.view)
         }
         
-        let fadeView = UIView()
-        fadeView.backgroundColor = .black
+        let fadeView = transitionFadeView()
         fadeView.frame = transitionContext.finalFrame(for: from)
         transitionContext.containerView.insertSubview(fadeView, aboveSubview: to.view)
         self.fadeView = fadeView

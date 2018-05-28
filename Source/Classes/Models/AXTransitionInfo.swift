@@ -24,6 +24,8 @@
     /// The duration of the transition.
     @objc public var duration: TimeInterval = 0.3
     
+    @objc public var fadeView: UIView?
+    
     var resolveEndingViewClosure: ((_ photo: AXPhotoProtocol, _ index: Int) -> Void)?
     
     #if os(iOS)
