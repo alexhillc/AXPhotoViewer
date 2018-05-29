@@ -193,6 +193,9 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
             return cell.contentView.viewWithTag(666) as? FLAnimatedImageView
         }
         
+        transitionInfo.fadeView = UIView()
+        transitionInfo.fadeView?.backgroundColor = .black
+        
         let container = UIViewController()
         
         let dataSource = AXPhotosDataSource(photos: self.photos, initialPhotoIndex: indexPath.row)
