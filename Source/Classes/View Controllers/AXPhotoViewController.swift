@@ -84,13 +84,19 @@ import FLAnimatedImage_tvOS
                                                       size: loadingViewSize)
     }
     
-    @objc public func applyPhoto(_ photo: AXPhotoProtocol) {
+    @objc public func applyPhoto(_ photo: AXPhotoProtocol, placeholder: Any? = nil) {
         self.photo = photo
         
         weak var weakSelf = self
         func resetImageView() {
-            weakSelf?.zoomingImageView.image = nil
-            weakSelf?.zoomingImageView.animatedImage = nil
+            if let placeholder = placeholder as? UIImage {
+                 weakSelf?.zoomingImageView.image = placeholder
+            } else if let placeholder = placeholder as? FLAnimatedImage {
+                weakSelf?.zoomingImageView.animatedImage = placeholder
+            } else {
+                weakSelf?.zoomingImageView.image = nil
+                weakSelf?.zoomingImageView.animatedImage = nil
+            }
         }
         
         self.loadingView?.removeError()
@@ -166,11 +172,14 @@ import FLAnimatedImage_tvOS
         guard photo === self.photo, let userInfo = notification.userInfo else {
             return
         }
-        
+
         if userInfo[AXPhotosViewControllerNotification.AnimatedImageKey] != nil || userInfo[AXPhotosViewControllerNotification.ImageKey] != nil {
             self.applyPhoto(photo)
         } else if let referenceView = userInfo[AXPhotosViewControllerNotification.ReferenceViewKey] as? FLAnimatedImageView {
+            self.applyPhoto(photo, placeholder: referenceView.animatedImage ?? referenceView.image)
             self.zoomingImageView.imageView.ax_syncFrames(with: referenceView)
+        } else if let referenceView = userInfo[AXPhotosViewControllerNotification.ReferenceViewKey] as? UIImageView {
+            self.applyPhoto(photo, placeholder: referenceView.image)
         } else if let error = userInfo[AXPhotosViewControllerNotification.ErrorKey] as? Error {
             self.loadingView?.showError(error, retryHandler: { [weak self] in
                 guard let `self` = self, let photo = self.photo else {
