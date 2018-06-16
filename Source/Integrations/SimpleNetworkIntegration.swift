@@ -25,7 +25,13 @@ open class SimpleNetworkIntegration: NSObject, AXNetworkIntegrationProtocol, Sim
     
     public func loadPhoto(_ photo: AXPhotoProtocol) {
         if photo.imageData != nil || photo.image != nil {
-            self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+            AXDispatchUtils.executeInBackground { [weak self] in
+                guard let `self` = self else {
+                    return
+                }
+                
+                self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+            }
             return
         }
         
@@ -67,9 +73,15 @@ open class SimpleNetworkIntegration: NSObject, AXNetworkIntegrationProtocol, Sim
             return
         }
         
-        self.delegate?.networkIntegration?(self,
-                                           didUpdateLoadingProgress: progress,
-                                           for: photo)
+        AXDispatchUtils.executeInBackground { [weak self] in
+            guard let `self` = self else {
+                return
+            }
+            
+            self.delegate?.networkIntegration?(self,
+                                               didUpdateLoadingProgress: progress,
+                                               for: photo)
+        }
     }
     
     fileprivate func urlSessionWrapper(_ urlSessionWrapper: SimpleNetworkIntegrationURLSessionWrapper,
@@ -88,8 +100,14 @@ open class SimpleNetworkIntegration: NSObject, AXNetworkIntegrationProtocol, Sim
         }
         
         if let error = error {
-            self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
             removeDataTask()
+            AXDispatchUtils.executeInBackground { [weak self] in
+                guard let `self` = self else {
+                    return
+                }
+                
+                self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
+            }
             return
         }
         
@@ -104,7 +122,13 @@ open class SimpleNetworkIntegration: NSObject, AXNetworkIntegrationProtocol, Sim
         }
         
         removeDataTask()
-        self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+        AXDispatchUtils.executeInBackground { [weak self] in
+            guard let `self` = self else {
+                return
+            }
+            
+            self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+        }
     }
 
 }
