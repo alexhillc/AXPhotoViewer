@@ -65,19 +65,24 @@ class AXPhotosTransitionController: NSObject, UIViewControllerTransitioningDeleg
     
     // MARK: - UIViewControllerTransitioningDelegate
     public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        guard let dismissed = dismissed as? AXPhotosViewController else {
-            assertionFailure("Dismissed VC should always be an AXPhotosViewController!")
+        var photosViewController: AXPhotosViewController
+        if let dismissed = dismissed as? AXPhotosViewController {
+            photosViewController = dismissed
+        } else if let childViewController = dismissed.childViewControllers.filter({ $0 is AXPhotosViewController }).first as? AXPhotosViewController {
+            photosViewController = childViewController
+        } else {
+            assertionFailure("Could not find AXPhotosViewController in container's children.")
             return nil
         }
         
-        guard let photo = dismissed.dataSource.photo(at: dismissed.currentPhotoIndex) else {
+        guard let photo = photosViewController.dataSource.photo(at: photosViewController.currentPhotoIndex) else {
             return nil
         }
         
         // resolve transitionInfo's endingView
-        self.transitionInfo.resolveEndingViewClosure?(photo, dismissed.currentPhotoIndex)
+        self.transitionInfo.resolveEndingViewClosure?(photo, photosViewController.currentPhotoIndex)
         
-        if !type(of: self).supportedModalPresentationStyles.contains(dismissed.modalPresentationStyle) {
+        if !type(of: self).supportedModalPresentationStyles.contains(photosViewController.modalPresentationStyle) {
             return nil
         }
         
@@ -95,12 +100,17 @@ class AXPhotosTransitionController: NSObject, UIViewControllerTransitioningDeleg
                                     presenting: UIViewController,
                                     source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         
-        guard let presented = presented as? AXPhotosViewController else {
-            assertionFailure("Presented VC should always be an AXPhotosViewController!")
+        var photosViewController: AXPhotosViewController
+        if let presented = presented as? AXPhotosViewController {
+            photosViewController = presented
+        } else if let childViewController = presented.childViewControllers.filter({ $0 is AXPhotosViewController }).first as? AXPhotosViewController {
+            photosViewController = childViewController
+        } else {
+            assertionFailure("Could not find AXPhotosViewController in container's children.")
             return nil
         }
         
-        if !type(of: self).supportedModalPresentationStyles.contains(presented.modalPresentationStyle) {
+        if !type(of: self).supportedModalPresentationStyles.contains(photosViewController.modalPresentationStyle) {
             return nil
         }
         
