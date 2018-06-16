@@ -24,11 +24,10 @@ Pod::Spec.new do |s|
                        'Source/Protocols/*.{swift,h,m}',
                        'Source/Extensions/*.{swift,h,m}',
                        'Source/Utilities/*.{swift,h,m}'
-    cs.frameworks    = 'MobileCoreServices', 'UIKit', 'QuartzCore'
+    cs.frameworks    = 'MobileCoreServices', 'ImageIO', 'UIKit', 'QuartzCore'
   end
 
   s.subspec 'Lite' do |ls|
-    ls.frameworks    = 'ImageIO'
     ls.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D USE_DEFAULT' }
     ls.dependency      'AXPhotoViewer/Core'
     ls.source_files  = 'Source/Integrations/SimpleNetworkIntegration.swift'
@@ -49,7 +48,6 @@ Pod::Spec.new do |s|
   end
 
   s.subspec 'AFNetworking' do |as|
-    as.frameworks    = 'ImageIO'
     as.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D USE_AFNETWORKING' }
     as.dependency      'AXPhotoViewer/Core'
     as.dependency      'AFNetworking/NSURLSession', '>= 3.1.0'
