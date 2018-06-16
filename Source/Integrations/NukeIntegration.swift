@@ -15,7 +15,13 @@ class NukeIntegration: NSObject, AXNetworkIntegrationProtocol {
 
     public func loadPhoto(_ photo: AXPhotoProtocol) {
         if photo.imageData != nil || photo.image != nil {
-            self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+            AXDispatchUtils.executeInBackground { [weak self] in
+                guard let `self` = self else {
+                    return
+                }
+                
+                self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+            }
             return
         }
 
@@ -28,7 +34,13 @@ class NukeIntegration: NSObject, AXNetworkIntegrationProtocol {
                 return
             }
             
-            self.delegate?.networkIntegration?(self, didUpdateLoadingProgress: CGFloat(receivedSize) / CGFloat(totalSize), for: photo)
+            AXDispatchUtils.executeInBackground { [weak self] in
+                guard let `self` = self else {
+                    return
+                }
+                
+                self.delegate?.networkIntegration?(self, didUpdateLoadingProgress: CGFloat(receivedSize) / CGFloat(totalSize), for: photo)
+            }
         }
         
         let completion: ImageTask.Completion = { [weak self] (response, error) in
@@ -40,17 +52,35 @@ class NukeIntegration: NSObject, AXNetworkIntegrationProtocol {
             
             if let imageData = response?.image.animatedImageData {
                 photo.imageData = imageData
-                self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+                AXDispatchUtils.executeInBackground { [weak self] in
+                    guard let `self` = self else {
+                        return
+                    }
+                    
+                    self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+                }
             } else if let image = response?.image {
                 photo.image = image
-                self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+                AXDispatchUtils.executeInBackground { [weak self] in
+                    guard let `self` = self else {
+                        return
+                    }
+                    
+                    self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+                }
             } else {
                 let error = NSError(
                     domain: AXNetworkIntegrationErrorDomain,
                     code: AXNetworkIntegrationFailedToLoadErrorCode,
                     userInfo: nil
                 )
-                self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
+                AXDispatchUtils.executeInBackground { [weak self] in
+                    guard let `self` = self else {
+                        return
+                    }
+                    
+                    self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
+                }
             }
         }
         

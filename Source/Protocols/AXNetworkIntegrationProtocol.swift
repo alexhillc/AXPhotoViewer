@@ -35,9 +35,9 @@ let AXNetworkIntegrationFailedToLoadErrorCode = 6
     /// - Parameters:
     ///   - networkIntegration: The `NetworkIntegration` that was performing the load.
     ///   - photo: The related `Photo`.
+    /// - Note: This method is expected to be called on a background thread. Be mindful of this when retrieving items from a memory cache.
     @objc func networkIntegration(_ networkIntegration: AXNetworkIntegrationProtocol,
                                   loadDidFinishWith photo: AXPhotoProtocol)
-    
     
     /// Called when a `AXPhoto` fails to load.
     ///
@@ -45,6 +45,7 @@ let AXNetworkIntegrationFailedToLoadErrorCode = 6
     ///   - networkIntegration: The `NetworkIntegration` that was performing the load.
     ///   - error: The error that the load failed with.
     ///   - photo: The related `Photo`.
+    /// - Note: This method is expected to be called on a background thread.
     @objc func networkIntegration(_ networkIntegration: AXNetworkIntegrationProtocol,
                                   loadDidFailWith error: Error,
                                   for photo: AXPhotoProtocol)
@@ -55,6 +56,7 @@ let AXNetworkIntegrationFailedToLoadErrorCode = 6
     ///   - networkIntegration: The `NetworkIntegration` that is performing the load.
     ///   - progress: The progress of the `AXPhoto` load represented as a percentage. Exists on a scale from 0..1. 
     ///   - photo: The related `AXPhoto`.
+    /// - Note: This method is expected to be called on a background thread.
     @objc optional func networkIntegration(_ networkIntegration: AXNetworkIntegrationProtocol,
                                            didUpdateLoadingProgress progress: CGFloat,
                                            for photo: AXPhotoProtocol)

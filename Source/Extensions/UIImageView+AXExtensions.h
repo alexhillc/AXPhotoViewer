@@ -15,6 +15,6 @@
  @return A copy of the UIImageView
  @note Does not conform to NSCopying (may conflict with another definition)
  */
-- (__kindof UIImageView *)ax_copy;
+- (__kindof UIImageView *_Nonnull)ax_copy;
 
 @end

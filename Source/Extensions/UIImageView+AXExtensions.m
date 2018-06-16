@@ -20,7 +20,7 @@
     imageView.highlighted = self.isHighlighted;
     imageView.tintColor = self.tintColor;
     imageView.transform = self.transform;
-    imageView.bounds = self.bounds;
+    imageView.frame = self.frame;
     imageView.layer.cornerRadius = self.layer.cornerRadius;
     imageView.layer.masksToBounds = self.layer.masksToBounds;
     imageView.contentMode = self.contentMode;

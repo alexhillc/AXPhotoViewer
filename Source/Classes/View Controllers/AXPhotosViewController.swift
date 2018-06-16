@@ -12,7 +12,6 @@ import MobileCoreServices
 @objc open class AXPhotosViewController: UIViewController, UIPageViewControllerDelegate,
                                                            UIPageViewControllerDataSource,
                                                            UIGestureRecognizerDelegate,
-                                                           UIViewControllerTransitioningDelegate,
                                                            AXPhotoViewControllerDelegate,
                                                            AXNetworkIntegrationDelegate,
                                                            AXPhotosTransitionControllerDelegate {
@@ -119,16 +118,15 @@ import MobileCoreServices
             oldValue?.transitioningDelegate = nil
             
             if let containerViewController = self.containerViewController {
-                containerViewController.transitioningDelegate = self
+                containerViewController.transitioningDelegate = self.transitionController
                 self.transitioningDelegate = nil
             } else {
-                self.transitioningDelegate = self
+                self.transitioningDelegate = self.transitionController
             }
         }
     }
     
     fileprivate var isSizeTransitioning = false
-    fileprivate var isForcingNonInteractiveDismissal = false
     fileprivate var isFirstAppearance = true
     
     fileprivate var orderedViewControllers = [AXPhotoViewController]()
@@ -395,9 +393,9 @@ import MobileCoreServices
         #endif
         
         if let containerViewController = self.containerViewController {
-            containerViewController.transitioningDelegate = self
+            containerViewController.transitioningDelegate = self.transitionController
         } else {
-            self.transitioningDelegate = self
+            self.transitioningDelegate = self.transitionController
         }
         
         if self.pageViewController.view.superview == nil {
@@ -467,59 +465,30 @@ import MobileCoreServices
         self.containerViewController = parent
     }
 
-    // MARK: - UIViewControllerTransitioningDelegate, PhotosViewControllerTransitionAnimatorDelegate, PhotosViewControllerTransitionAnimatorDelegate
-    public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        guard let photo = self.dataSource.photo(at: self.currentPhotoIndex) else {
-            return nil
-        }
-        
-        self.transitionInfo.resolveEndingViewClosure?(photo, self.currentPhotoIndex)
-        guard let transitionController = self.transitionController, transitionController.supportsModalPresentationStyle(self.modalPresentationStyle) &&
-                                                                    (transitionController.supportsContextualDismissal ||
-                                                                    transitionController.supportsInteractiveDismissal) else {
-            return nil
-        }
-        
-        transitionController.mode = .dismissing
-        return transitionController
-    }
-    
-    public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        guard let transitionController = self.transitionController, transitionController.supportsModalPresentationStyle(self.modalPresentationStyle) &&
-                                                                    transitionController.supportsContextualPresentation else {
-            return nil
-        }
-        
-        transitionController.mode = .presenting
-        return transitionController
-    }
-    
-    public func interactionControllerForDismissal(using animator: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? {
-        guard let transitionController = self.transitionController, transitionController.supportsInteractiveDismissal &&
-                                                                    !self.isForcingNonInteractiveDismissal else {
-            return nil
-        }
-        
-        return transitionController
-    }
-    
-    func transitionController(_ transitionController: AXPhotosTransitionController,
-                              didFinishAnimatingWith view: UIImageView, 
-                              transitionControllerMode: AXPhotosTransitionControllerMode) {
-        
+    // MARK: - PhotosViewControllerTransitionAnimatorDelegate
+    func transitionController(_ transitionController: AXPhotosTransitionController, didCompletePresentationWith transitionView: UIImageView) {
         guard let photo = self.dataSource.photo(at: self.currentPhotoIndex) else {
             return
         }
         
-        if transitionControllerMode == .presenting {
-            self.notificationCenter.post(name: .photoImageUpdate,
-                                         object: photo,
-                                         userInfo: [
-                                            AXPhotosViewControllerNotification.ReferenceViewKey: view
-                                         ])
-        }
+        self.notificationCenter.post(
+            name: .photoImageUpdate,
+            object: photo,
+            userInfo: [
+                AXPhotosViewControllerNotification.ReferenceViewKey: transitionView
+            ]
+        )
     }
     
+    func transitionController(_ transitionController: AXPhotosTransitionController, didCompleteDismissalWith transitionView: UIImageView) {
+        // empty impl
+    }
+    
+    func transitionControllerDidCancelDismissal(_ transitionController: AXPhotosTransitionController) {
+        // empty impl
+    }
+    
+    // MARK: - Dismissal
     open override func dismiss(animated flag: Bool, completion: (() -> Void)? = nil) {
         if self.presentedViewController != nil {
             super.dismiss(animated: flag, completion: completion)
@@ -531,7 +500,7 @@ import MobileCoreServices
             let canceled = (self.view.window != nil)
             
             if canceled {
-                self.isForcingNonInteractiveDismissal = false
+                self.transitionController?.forceNonInteractiveDismissal = false
                 #if os(iOS)
                 self.panGestureRecognizer?.isEnabled = true
                 #endif
@@ -650,7 +619,7 @@ import MobileCoreServices
     #if os(iOS)
     @objc fileprivate func didPanWithGestureRecognizer(_ sender: UIPanGestureRecognizer) {
         if sender.state == .began {
-            self.isForcingNonInteractiveDismissal = false
+            self.transitionController?.forceNonInteractiveDismissal = false
             self.dismiss(animated: true, completion: nil)
         }
         
@@ -706,7 +675,7 @@ import MobileCoreServices
     }
     
     @objc public func closeAction(_ sender: UIBarButtonItem) {
-        self.isForcingNonInteractiveDismissal = true
+        self.transitionController?.forceNonInteractiveDismissal = true
         self.dismiss(animated: true)
     }
     #endif

@@ -9,7 +9,10 @@ target 'AXPhotoViewerExample' do
   # Loading spinner
   pod 'DRPLoadingSpinner'
 
+  # Image downloading / caching
+  pod 'PINRemoteImage', '~> 3.0.0-beta.9'
+
   # AXPhotoViewer
-  pod 'AXPhotoViewer', :path => '../../AXPhotoViewer.podspec'
+  pod 'AXPhotoViewer/PINRemoteImage', :path => '../../AXPhotoViewer.podspec'
 
 end

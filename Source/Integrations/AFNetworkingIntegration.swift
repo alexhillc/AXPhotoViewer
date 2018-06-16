@@ -17,7 +17,13 @@ class AFNetworkingIntegration: NSObject, AXNetworkIntegrationProtocol {
     
     public func loadPhoto(_ photo: AXPhotoProtocol) {
         if photo.imageData != nil || photo.image != nil {
-            self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+            AXDispatchUtils.executeInBackground { [weak self] in
+                guard let `self` = self else {
+                    return
+                }
+                
+                self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+            }
             return
         }
         
@@ -30,7 +36,13 @@ class AFNetworkingIntegration: NSObject, AXNetworkIntegrationProtocol {
                 return
             }
             
-            self.delegate?.networkIntegration?(self, didUpdateLoadingProgress: CGFloat(progress.fractionCompleted), for: photo)
+            AXDispatchUtils.executeInBackground { [weak self] in
+                guard let `self` = self else {
+                    return
+                }
+                
+                self.delegate?.networkIntegration?(self, didUpdateLoadingProgress: CGFloat(progress.fractionCompleted), for: photo)
+            }
         }
 
         let success: (_ dataTask: URLSessionDataTask, _ responseObject: Any?) -> Void = { [weak self] (dataTask, responseObject) in
@@ -42,18 +54,36 @@ class AFNetworkingIntegration: NSObject, AXNetworkIntegrationProtocol {
             
             if let responseGIFData = responseObject as? Data {
                 photo.imageData = responseGIFData
-                self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+                AXDispatchUtils.executeInBackground { [weak self] in
+                    guard let `self` = self else {
+                        return
+                    }
+                    
+                    self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+                }
             } else if let responseImage = responseObject as? UIImage {
                 photo.image = responseImage
-                self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+                AXDispatchUtils.executeInBackground { [weak self] in
+                    guard let `self` = self else {
+                        return
+                    }
+                    
+                    self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+                }
             } else {
                 let error = NSError(
                     domain: AXNetworkIntegrationErrorDomain,
                     code: AXNetworkIntegrationFailedToLoadErrorCode,
                     userInfo: nil
                 )
-                self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
-            }            
+                AXDispatchUtils.executeInBackground { [weak self] in
+                    guard let `self` = self else {
+                        return
+                    }
+                    
+                    self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
+                }
+            }
         }
         
         let failure: (_ dataTask: URLSessionDataTask?, _ error: Error) -> Void = { [weak self] (dataTask, error) in
@@ -68,7 +98,13 @@ class AFNetworkingIntegration: NSObject, AXNetworkIntegrationProtocol {
                 code: AXNetworkIntegrationFailedToLoadErrorCode,
                 userInfo: nil
             )
-            self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
+            AXDispatchUtils.executeInBackground { [weak self] in
+                guard let `self` = self else {
+                    return
+                }
+                
+                self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
+            }
         }
         
         guard let dataTask = AXHTTPSessionManager.shared.get(url.absoluteString, parameters: nil, progress: progress, success: success, failure: failure) else {

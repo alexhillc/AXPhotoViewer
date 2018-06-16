@@ -22,8 +22,9 @@ Pod::Spec.new do |s|
     cs.source_files  = 'Source/*.{swift,h,m}',
                        'Source/Classes/**/*.{swift,h,m}',
                        'Source/Protocols/*.{swift,h,m}',
-                       'Source/Extensions/*.{swift,h,m}'
-    cs.frameworks    = 'UIKit', 'MobileCoreServices'
+                       'Source/Extensions/*.{swift,h,m}',
+                       'Source/Utilities/*.{swift,h,m}'
+    cs.frameworks    = 'MobileCoreServices', 'UIKit', 'QuartzCore'
   end
 
   s.subspec 'Lite' do |ls|

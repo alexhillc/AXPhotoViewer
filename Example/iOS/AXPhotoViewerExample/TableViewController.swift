@@ -8,6 +8,7 @@
 
 import UIKit
 import AXPhotoViewer
+import PINRemoteImage
 import FLAnimatedImage
 
 // This class contains some hacked together sample project code that I couldn't be arsed to make less ugly. ¯\_(ツ)_/¯
@@ -16,9 +17,6 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
     let ReuseIdentifier = "AXReuseIdentifier"
     
     var previewingContext: UIViewControllerPreviewing?
-    
-    var urlSession = URLSession(configuration: .default)
-    var content = [Int: Any]()
     
     weak var photosViewController: AXPhotosViewController?
     weak var customView: UILabel?
@@ -30,10 +28,10 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
               attributedDescription: NSAttributedString(string: "Season 3"),
               attributedCredit: NSAttributedString(string: "Vignette"),
               url: URL(string: "https://goo.gl/T4oZdY")),
-        AXPhoto(attributedTitle: NSAttributedString(string: "The Flash and Savitar"),
-              attributedDescription: NSAttributedString(string: "Season 3"),
-              attributedCredit: NSAttributedString(string: "Screen Rant"),
-              url: URL(string: "https://goo.gl/pYeJ4H")),
+        AXPhoto(attributedTitle: NSAttributedString(string: "Tall Building"),
+              attributedDescription: NSAttributedString(string: "... And subsequently tall image"),
+              attributedCredit: NSAttributedString(string: "Wikipedia"),
+              image: UIImage(named: "burj-khalifa")),
         AXPhoto(attributedTitle: NSAttributedString(string: "The Flash: Rebirth"),
               attributedDescription: NSAttributedString(string: "Comic Book"),
               attributedCredit: NSAttributedString(string: "DC Comics"),
@@ -68,9 +66,10 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.tableView.separatorStyle = .none
-        self.tableView.contentInset = UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0)
+        self.tableView.contentInset = UIEdgeInsets(top: 20, left: 0, bottom: 20, right: 0)
         self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: ReuseIdentifier)
+        self.tableView.estimatedRowHeight = 350
+        self.tableView.rowHeight = 350
     }
     
     override func viewWillLayoutSubviews() {
@@ -101,7 +100,7 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
             imageView.autoresizingMask = [.flexibleLeftMargin, .flexibleRightMargin, .flexibleTopMargin, .flexibleBottomMargin]
             imageView.layer.cornerRadius = 20
             imageView.layer.masksToBounds = true
-            imageView.contentMode = .scaleAspectFit
+            imageView.contentMode = UIViewContentMode(rawValue: Int(arc4random_uniform(UInt32(13))))!;
             cell.contentView.addSubview(imageView)
         }
         
@@ -113,66 +112,8 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
             return
         }
         
-        imageView.image = nil
-        imageView.animatedImage = nil
-        
-        let emptyHeight: CGFloat = 200
-        let emptyWidth: CGFloat = 150
-        imageView.frame = CGRect(x: floor((cell.frame.size.width - emptyWidth)) / 2, y: 0, width: emptyWidth, height: emptyHeight)
-        
-        let maxSize = cell.frame.size.height
-
-        self.loadContent(at: indexPath) { (image, data) in
-            func onMainQueue(_ block: @escaping () -> Void) {
-                if Thread.isMainThread {
-                    block()
-                } else {
-                    DispatchQueue.main.async {
-                        block()
-                    }
-                }
-            }
-            
-            var imageViewSize: CGSize
-            if let data = data {
-                if let animatedImage = FLAnimatedImage(animatedGIFData: data) {
-                    imageViewSize = (animatedImage.size.width > animatedImage.size.height) ?
-                        CGSize(width: maxSize,height: (maxSize * animatedImage.size.height / animatedImage.size.width)) :
-                        CGSize(width: maxSize * animatedImage.size.width / animatedImage.size.height, height: maxSize)
-                    
-                    onMainQueue {
-                        imageView.animatedImage = animatedImage
-                        imageView.frame.size = imageViewSize
-                        imageView.center = cell.contentView.center
-                    }
-                    
-                } else if let image = UIImage(data: data) {
-                    imageViewSize = (image.size.width > image.size.height) ?
-                        CGSize(width: maxSize, height: (maxSize * image.size.height / image.size.width)) :
-                        CGSize(width: maxSize * image.size.width / image.size.height, height: maxSize)
-                    
-                    onMainQueue {
-                        imageView.image = image
-                        imageView.frame.size = imageViewSize
-                        imageView.center = cell.contentView.center
-                    }
-                }
-            } else if let image = image {
-                imageViewSize = (image.size.width > image.size.height) ?
-                    CGSize(width: maxSize, height: (maxSize * image.size.height / image.size.width)) :
-                    CGSize(width: maxSize * image.size.width / image.size.height, height: maxSize)
-                
-                onMainQueue {
-                    imageView.image = image
-                    imageView.frame.size = imageViewSize
-                    imageView.center = cell.contentView.center
-                }
-            }
-        }
-    }
-    
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 200
+        self.cancelLoad(at: indexPath, for: imageView)
+        self.loadContent(at: indexPath, into: imageView)
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -216,7 +157,7 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
         ]
         bottomView.backgroundColor = .clear
         bottomView.setBackgroundImage(UIImage(), forToolbarPosition: .any, barMetrics: .default)
-        photosViewController.overlayView.bottomStackContainer.insertSubview(bottomView, at: 0)
+        photosViewController.overlayView.bottomStackContainer.insertSubview(bottomView, at: 0) // insert custom
         
         self.customView = customView
         
@@ -240,43 +181,79 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
     }
     
     // MARK: - Loading
-    func loadContent(at indexPath: IndexPath, completion: ((_ image: UIImage?, _ data: Data?) -> Void)?) {
-        if let data = self.content[indexPath.row] as? Data {
-            completion?(nil, data)
-            return
-        } else if let image = self.content[indexPath.row] as? UIImage {
-            completion?(image, nil)
-            return
+    func loadContent(at indexPath: IndexPath, into imageView: FLAnimatedImageView) {
+        func onBackgroundThread(_ block: @escaping () -> Void) {
+            if Thread.isMainThread {
+                DispatchQueue.global().async {
+                    block()
+                }
+            } else {
+                block()
+            }
+        }
+        
+        func onMainThread(_ block: @escaping () -> Void) {
+            if Thread.isMainThread {
+                block()
+            } else {
+                DispatchQueue.main.async {
+                    block()
+                }
+            }
+        }
+        
+        func layoutImageView(with result: Any?) {
+            let maxSize: CGFloat = 280
+            var imageViewSize: CGSize
+            if let animatedImage = result as? FLAnimatedImage {
+                imageViewSize = (animatedImage.size.width > animatedImage.size.height) ?
+                    CGSize(width: maxSize,height: (maxSize * animatedImage.size.height / animatedImage.size.width)) :
+                    CGSize(width: maxSize * animatedImage.size.width / animatedImage.size.height, height: maxSize)
+                
+                onMainThread {
+                    imageView.frame.size = imageViewSize
+                    if let superview = imageView.superview {
+                        imageView.center = superview.center
+                    }
+                }
+            } else if let image = result as? UIImage {
+                imageViewSize = (image.size.width > image.size.height) ?
+                    CGSize(width: maxSize, height: (maxSize * image.size.height / image.size.width)) :
+                    CGSize(width: maxSize * image.size.width / image.size.height, height: maxSize)
+                
+                onMainThread {
+                    imageView.frame.size = imageViewSize
+                    if let superview = imageView.superview {
+                        imageView.center = superview.center
+                    }
+                }
+            }
         }
         
         if let imageData = self.photos[indexPath.row].imageData {
-            self.content[indexPath.row] = imageData
-            completion?(nil, imageData)
-        } else if let image = self.photos[indexPath.row].image {
-            self.content[indexPath.row] = image
-            completion?(image, nil)
-        } else if let url = self.photos[indexPath.row].url {
-            self.urlSession.dataTask(with: url) { [weak self] (data, response, error) in
-                guard let `data` = data else {
-                    return
+            onBackgroundThread {
+                let image = FLAnimatedImage(animatedGIFData: imageData)
+                onMainThread {
+                    imageView.animatedImage = image
+                    layoutImageView(with: image)
                 }
-                
-                self?.content[indexPath.row] = data
-                completion?(nil, data)
-            }.resume()
+            }
+        } else if let image = self.photos[indexPath.row].image {
+            onMainThread {
+                imageView.image = image
+                layoutImageView(with: image)
+            }
+        } else if let url = self.photos[indexPath.row].url {
+            imageView.pin_setImage(from: url, placeholderImage: nil) { (result) in
+                layoutImageView(with: result.alternativeRepresentation ?? result.image)
+            }
         }
     }
     
-    // MARK: - AXPhotosViewControllerDelegate
-    func photosViewController(_ photosViewController: AXPhotosViewController,
-                              didNavigateTo photo: AXPhotoProtocol,
-                              at index: Int) {
-        
-        let indexPath = IndexPath(row: index, section: 0)
-        
-        // ideally, _your_ URL cache will be large enough to the point where this isn't necessary 
-        // (or, you're using a predefined integration that has a shared cache with your codebase)
-        self.loadContent(at: indexPath, completion: nil)
+    func cancelLoad(at indexPath: IndexPath, for imageView: FLAnimatedImageView) {
+        imageView.pin_cancelImageDownload()
+        imageView.animatedImage = nil
+        imageView.image = nil
     }
     
     // MARK: - UIViewControllerPreviewingDelegate
