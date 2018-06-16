@@ -56,7 +56,7 @@ pod install 'AXPhotoViewer'
 ```
 If you prefer not to use Cocoapods, add the contents of the 'Source' directory to your project to get started.
 
-**Note:** If you don't use Cocoapods, you must add `MobileCoreServices.framework` and `ImageIO.framework` to your project.
+**Note:** If you don't use Cocoapods, you must add `MobileCoreServices.framework`, `QuartzCore.framework`, and `ImageIO.framework` to your project.
 
 ### Configuration
 There are many configurable properties that can be set before presenting your `AXPhotosViewController`.
