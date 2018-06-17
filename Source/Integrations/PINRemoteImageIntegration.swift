@@ -5,7 +5,8 @@
 //  Created by Alex Hill on 6/1/17.
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
-    
+
+#if canImport(PINRemoteImage)
 import PINRemoteImage
 
 class PINRemoteImageIntegration: NSObject, AXNetworkIntegrationProtocol, PINRemoteImageManagerAlternateRepresentationProvider {
@@ -130,3 +131,4 @@ class PINRemoteImageIntegration: NSObject, AXNetworkIntegrationProtocol, PINRemo
     }
     
 }
+#endif

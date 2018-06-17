@@ -28,34 +28,29 @@ Pod::Spec.new do |s|
   end
 
   s.subspec 'Lite' do |ls|
-    ls.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D USE_DEFAULT' }
     ls.dependency      'AXPhotoViewer/Core'
     ls.source_files  = 'Source/Integrations/SimpleNetworkIntegration.swift'
   end
 
   s.subspec 'SDWebImage' do |ss|
-    ss.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D USE_SDWEBIMAGE' }
     ss.dependency      'AXPhotoViewer/Core'
     ss.dependency      'SDWebImage', '>= 4.0.0'
     ss.source_files  = 'Source/Integrations/SDWebImageIntegration.swift'
   end
 
   s.subspec 'PINRemoteImage' do |ps|
-    ps.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D USE_PINREMOTEIMAGE' }
     ps.dependency      'AXPhotoViewer/Core'
     ps.dependency      'PINRemoteImage', '~> 3.0.0-beta.9'
     ps.source_files  = 'Source/Integrations/PINRemoteImageIntegration.swift'
   end
 
   s.subspec 'AFNetworking' do |as|
-    as.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D USE_AFNETWORKING' }
     as.dependency      'AXPhotoViewer/Core'
     as.dependency      'AFNetworking/NSURLSession', '>= 3.1.0'
     as.source_files  = 'Source/Integrations/AFNetworkingIntegration.swift'
   end
 
   s.subspec 'Kingfisher' do |ks|
-    ks.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D USE_KINGFISHER' }
     ks.dependency      'AXPhotoViewer/Core'
     ks.dependency      'Kingfisher', '>= 3.10.0'
     ks.source_files  = 'Source/Integrations/KingfisherIntegration.swift'
@@ -63,7 +58,6 @@ Pod::Spec.new do |s|
 
   s.subspec 'Nuke' do |nk|
     nk.ios.deployment_target = '9.0'
-    nk.xcconfig      = { 'OTHER_SWIFT_FLAGS' => '$(inherited) -D USE_NUKE' }
     nk.dependency      'AXPhotoViewer/Core'
     nk.dependency      'Nuke', '>= 7.0'
     nk.source_files  = 'Source/Integrations/NukeIntegration.swift'

@@ -6,6 +6,7 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+#if canImport(AFNetworking)
 import AFNetworking
 import ImageIO
 
@@ -163,3 +164,4 @@ class AXImageResponseSerializer: AFImageResponseSerializer {
     }
     
 }
+#endif

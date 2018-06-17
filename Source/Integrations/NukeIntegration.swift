@@ -5,6 +5,8 @@
 //  Created by Alessandro Nakamuta on 15/04/18.
 //  Copyright © 2018 Alessandro Nakamuta. All rights reserved.
 //
+
+#if canImport(Nuke)
 import Nuke
 
 class NukeIntegration: NSObject, AXNetworkIntegrationProtocol {
@@ -107,3 +109,4 @@ class NukeIntegration: NSObject, AXNetworkIntegrationProtocol {
     }
 
 }
+#endif
