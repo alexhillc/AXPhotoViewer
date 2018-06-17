@@ -5,8 +5,13 @@
 //  Created by Alex Hill on 6/5/18.
 //
 
-import FLAnimatedImage
 import UIKit
+
+#if os(iOS)
+import FLAnimatedImage
+#elseif os(tvOS)
+import FLAnimatedImage_tvOS
+#endif
 
 class AXPhotosDismissalAnimator: AXPhotosTransitionAnimator, UIViewControllerInteractiveTransitioning {
     

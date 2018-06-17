@@ -8,8 +8,8 @@
 
 import UIKit
 import AXPhotoViewer
-import PINRemoteImage
 import FLAnimatedImage
+import PINRemoteImage
 
 // This class contains some hacked together sample project code that I couldn't be arsed to make less ugly. ¯\_(ツ)_/¯
 class TableViewController: UITableViewController, AXPhotosViewControllerDelegate, UIViewControllerPreviewingDelegate {

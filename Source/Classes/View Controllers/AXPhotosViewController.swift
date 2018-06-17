@@ -6,9 +6,14 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
-import FLAnimatedImage
 import UIKit
 import MobileCoreServices
+
+#if os(iOS)
+import FLAnimatedImage
+#elseif os(tvOS)
+import FLAnimatedImage_tvOS
+#endif
 
 @objc open class AXPhotosViewController: UIViewController, UIPageViewControllerDelegate,
                                                            UIPageViewControllerDataSource,
