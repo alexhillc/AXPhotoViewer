@@ -12,8 +12,6 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '8.0'
   s.tvos.deployment_target = '9.0'
 
-  s.default_subspec = 'Lite'
-
   s.subspec 'Core' do |cs|
     cs.ios.dependency  'AXStateButton', '>= 1.1.3'
     cs.ios.dependency  'FLAnimatedImage', '>= 1.0.0'
@@ -23,13 +21,9 @@ Pod::Spec.new do |s|
                        'Source/Classes/**/*.{swift,h,m}',
                        'Source/Protocols/*.{swift,h,m}',
                        'Source/Extensions/*.{swift,h,m}',
-                       'Source/Utilities/*.{swift,h,m}'
+                       'Source/Utilities/*.{swift,h,m}',
+                       'Source/Integrations/SimpleNetworkIntegration.swift'
     cs.frameworks    = 'MobileCoreServices', 'ImageIO', 'UIKit', 'QuartzCore'
-  end
-
-  s.subspec 'Lite' do |ls|
-    ls.dependency      'AXPhotoViewer/Core'
-    ls.source_files  = 'Source/Integrations/SimpleNetworkIntegration.swift'
   end
 
   s.subspec 'SDWebImage' do |ss|
