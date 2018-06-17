@@ -75,7 +75,7 @@ import FLAnimatedImage_tvOS
         var adjustedSize = self.view.bounds.size
         if #available(iOS 11.0, tvOS 11.0, *) {
             adjustedSize.width -= (self.view.safeAreaInsets.left + self.view.safeAreaInsets.right)
-            adjustedSize.height -= (self.view.safeAreaInsets.left + self.view.safeAreaInsets.right)
+            adjustedSize.height -= (self.view.safeAreaInsets.top + self.view.safeAreaInsets.bottom)
         }
         
         let loadingViewSize = self.loadingView?.sizeThatFits(adjustedSize) ?? .zero
