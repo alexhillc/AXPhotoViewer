@@ -74,6 +74,10 @@ class AXZoomingImageView: UIScrollView, UIScrollViewDelegate {
         self.bouncesZoom = true
         self.decelerationRate = UIScrollViewDecelerationRateFast;
         self.delegate = self
+        
+        if #available(iOS 11.0, *) {
+            self.contentInsetAdjustmentBehavior = .never
+        }
     }
     
     required init?(coder aDecoder: NSCoder) {
