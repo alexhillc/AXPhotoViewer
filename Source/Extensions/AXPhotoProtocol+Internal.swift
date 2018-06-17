@@ -7,9 +7,9 @@
 //
 
 #if os(iOS)
-import FLAnimatedImage
+import FLAnimatedImage.FLAnimatedImage
 #elseif os(tvOS)
-import FLAnimatedImage_tvOS
+import FLAnimatedImage_tvOS.FLAnimatedImage
 #endif
 
 enum AXPhotoLoadingState {
