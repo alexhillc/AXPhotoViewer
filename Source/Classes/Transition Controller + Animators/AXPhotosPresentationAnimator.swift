@@ -18,8 +18,7 @@ class AXPhotosPresentationAnimator: AXPhotosTransitionAnimator {
                 return
         }
         
-        let fadeView = UIView()
-        fadeView.backgroundColor = .black
+        let fadeView = self.transitionInfo.fadingBackdropView()
         fadeView.alpha = 0
         fadeView.frame = transitionContext.finalFrame(for: to)
         transitionContext.containerView.addSubview(fadeView)

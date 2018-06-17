@@ -21,6 +21,9 @@
     /// If the reference view that is provided is not currently visible, contextual animation will not occur.
     @objc fileprivate(set) weak var endingView: UIImageView?
     
+    /// Internal closure to be called upon dismissal. This will resolve the `endingView` variable.
+    var resolveEndingViewClosure: ((_ photo: AXPhotoProtocol, _ index: Int) -> Void)?
+    
     /// The damping ratio for the presentation animation as it approaches its quiescent state.
     /// To smoothly decelerate the animation without oscillation, use a value of 1. Employ a damping ratio closer to zero to increase oscillation.
     /// Defaults to 1.
@@ -31,10 +34,16 @@
     /// Defaults to 1.
     @objc public var dismissalSpringDampingRatio: CGFloat = 1
     
+    /// The fading backdrop that is displayed while the photo viewer is presenting/dismissing.
+    /// This closure will be called during presentation and dismissal. Defaults to a black backdrop view.
+    @objc public var fadingBackdropView: () -> UIView = {
+        let view = UIView()
+        view.backgroundColor = .black
+        return view
+    }
+    
     /// The duration of the transition.
     @objc public var duration: TimeInterval = 0.3
-    
-    var resolveEndingViewClosure: ((_ photo: AXPhotoProtocol, _ index: Int) -> Void)?
     
     #if os(iOS)
     @objc public init(interactiveDismissalEnabled: Bool, startingView: UIImageView?, endingView: ((_ photo: AXPhotoProtocol, _ index: Int) -> UIImageView?)?) {

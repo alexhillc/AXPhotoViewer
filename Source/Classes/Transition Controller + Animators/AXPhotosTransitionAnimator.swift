@@ -9,9 +9,9 @@ import UIKit
 
 class AXPhotosTransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning {
     
-    weak var delegate: AXPhotosTransitionAnimatorDelegate?
-    
     let fadeInOutTransitionRatio: Double = 1/3
+    
+    weak var delegate: AXPhotosTransitionAnimatorDelegate?
 
     let transitionInfo: AXTransitionInfo
     var fadeView: UIView?

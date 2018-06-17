@@ -110,8 +110,7 @@ class AXPhotosDismissalAnimator: AXPhotosTransitionAnimator, UIViewControllerInt
         }
         
         if self.fadeView == nil {
-            let fadeView = UIView()
-            fadeView.backgroundColor = .black
+            let fadeView = self.transitionInfo.fadingBackdropView()
             fadeView.frame = transitionContext.finalFrame(for: from)
             transitionContext.containerView.insertSubview(fadeView, aboveSubview: to.view)
             self.fadeView = fadeView
@@ -344,8 +343,7 @@ class AXPhotosDismissalAnimator: AXPhotosTransitionAnimator, UIViewControllerInt
             transitionContext.containerView.addSubview(to.view)
         }
         
-        let fadeView = UIView()
-        fadeView.backgroundColor = .black
+        let fadeView = self.transitionInfo.fadingBackdropView()
         fadeView.frame = transitionContext.finalFrame(for: from)
         transitionContext.containerView.insertSubview(fadeView, aboveSubview: to.view)
         self.fadeView = fadeView

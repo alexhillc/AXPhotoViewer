@@ -875,7 +875,6 @@ import MobileCoreServices
             }
         }
         
-        
         #if os(iOS)
         self.overlayView.titleView?.tweenBetweenLowIndex?(lowIndex, highIndex: highIndex, percent: percent)
         #endif
