@@ -6,6 +6,8 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+import FLAnimatedImage
+
 enum AXPhotoLoadingState {
     case notLoaded, loading, loaded, loadingCancelled, loadingFailed
 }

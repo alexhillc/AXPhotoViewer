@@ -5,6 +5,7 @@
 //  Created by Alex Hill on 6/5/18.
 //
 
+import FLAnimatedImage
 import UIKit
 
 class AXPhotosDismissalAnimator: AXPhotosTransitionAnimator, UIViewControllerInteractiveTransitioning {
@@ -238,7 +239,7 @@ class AXPhotosDismissalAnimator: AXPhotosTransitionAnimator, UIViewControllerInt
         UIView.animate(
             withDuration: self.transitionDuration(using: transitionContext),
             delay: 0,
-            usingSpringWithDamping: self.transitionAnimSpringDampening,
+            usingSpringWithDamping: self.transitionInfo.dismissalSpringDampingRatio,
             initialSpringVelocity: scaleInitialSpringVelocity,
             options: scaleAnimationOptions,
             animations: scaleAnimations,
@@ -467,7 +468,7 @@ class AXPhotosDismissalAnimator: AXPhotosTransitionAnimator, UIViewControllerInt
         UIView.animate(
             withDuration: self.transitionDuration(using: transitionContext),
             delay: 0,
-            usingSpringWithDamping: self.transitionAnimSpringDampening,
+            usingSpringWithDamping: self.transitionInfo.dismissalSpringDampingRatio,
             initialSpringVelocity: 0,
             options: [.curveEaseInOut, .beginFromCurrentState, .allowAnimatedContent],
             animations: animations,
@@ -582,133 +583,133 @@ class AXPhotosDismissalAnimator: AXPhotosTransitionAnimator, UIViewControllerInt
     ///   - imageView: The image view to retrieve the final offscreen center value for.
     ///   - view: The view that is containing the imageView. Most likely the superview.
     /// - Returns: A tuple containing the final center of the imageView, as well as the value that was adjusted from the original `center` value.
-    fileprivate func extrapolateFinalCenter(for imageViewContainer: AXImageViewTransitionContainer,
-                                            in view: UIView) -> (center: CGPoint, changed: CGFloat) {
+    fileprivate func extrapolateFinalCenter(for view: UIView,
+                                            in containingView: UIView) -> (center: CGPoint, changed: CGFloat) {
         
         let endingOrientation = UIApplication.shared.statusBarOrientation
-        let startingOrientation = endingOrientation.by(transforming: imageViewContainer.transform)
+        let startingOrientation = endingOrientation.by(transforming: view.transform)
         
         let dismissFromBottom = (abs(self.dismissalVelocityY) > self.dismissalVelocityAnyDirectionThreshold)
             ? self.dismissalVelocityY >= 0
             : self.directionalDismissalPercent >= 0
-        let imageViewRect = imageViewContainer.convert(imageViewContainer.bounds, to: view)
-        var imageViewCenter = imageViewContainer.center
+        let viewRect = view.convert(view.bounds, to: containingView)
+        var viewCenter = view.center
         
         switch startingOrientation {
         case .landscapeLeft:
             switch endingOrientation {
             case .landscapeLeft:
                 if dismissFromBottom {
-                    imageViewCenter.y = view.frame.size.height + (imageViewRect.size.height / 2)
+                    viewCenter.y = containingView.frame.size.height + (viewRect.size.height / 2)
                 } else {
-                    imageViewCenter.y = -(imageViewRect.size.height / 2)
+                    viewCenter.y = -(viewRect.size.height / 2)
                 }
             case .landscapeRight:
                 if dismissFromBottom {
-                    imageViewCenter.y = -(imageViewRect.size.height / 2)
+                    viewCenter.y = -(viewRect.size.height / 2)
                 } else {
-                    imageViewCenter.y = view.frame.size.height + (imageViewRect.size.height / 2)
+                    viewCenter.y = containingView.frame.size.height + (viewRect.size.height / 2)
                 }
             case .portraitUpsideDown:
                 if dismissFromBottom {
-                    imageViewCenter.x = -(imageViewRect.size.width / 2)
+                    viewCenter.x = -(viewRect.size.width / 2)
                 } else {
-                    imageViewCenter.x = view.frame.size.width + (imageViewRect.size.width / 2)
+                    viewCenter.x = containingView.frame.size.width + (viewRect.size.width / 2)
                 }
             default:
                 if dismissFromBottom {
-                    imageViewCenter.x = view.frame.size.width + (imageViewRect.size.width / 2)
+                    viewCenter.x = containingView.frame.size.width + (viewRect.size.width / 2)
                 } else {
-                    imageViewCenter.x = -(imageViewRect.size.width / 2)
+                    viewCenter.x = -(viewRect.size.width / 2)
                 }
             }
         case .landscapeRight:
             switch endingOrientation {
             case .landscapeLeft:
                 if dismissFromBottom {
-                    imageViewCenter.y = -(imageViewRect.size.height / 2)
+                    viewCenter.y = -(viewRect.size.height / 2)
                 } else {
-                    imageViewCenter.y = view.frame.size.height + (imageViewRect.size.height / 2)
+                    viewCenter.y = containingView.frame.size.height + (viewRect.size.height / 2)
                 }
             case .landscapeRight:
                 if dismissFromBottom {
-                    imageViewCenter.y = view.frame.size.height + (imageViewRect.size.height / 2)
+                    viewCenter.y = containingView.frame.size.height + (viewRect.size.height / 2)
                 } else {
-                    imageViewCenter.y = -(imageViewRect.size.height / 2)
+                    viewCenter.y = -(viewRect.size.height / 2)
                 }
             case .portraitUpsideDown:
                 if dismissFromBottom {
-                    imageViewCenter.x = view.frame.size.width + (imageViewRect.size.width / 2)
+                    viewCenter.x = containingView.frame.size.width + (viewRect.size.width / 2)
                 } else {
-                    imageViewCenter.x = -(imageViewRect.size.width / 2)
+                    viewCenter.x = -(viewRect.size.width / 2)
                 }
             default:
                 if dismissFromBottom {
-                    imageViewCenter.x = -(imageViewRect.size.width / 2)
+                    viewCenter.x = -(viewRect.size.width / 2)
                 } else {
-                    imageViewCenter.x = view.frame.size.width + (imageViewRect.size.width / 2)
+                    viewCenter.x = containingView.frame.size.width + (viewRect.size.width / 2)
                 }
             }
         case .portraitUpsideDown:
             switch endingOrientation {
             case .landscapeLeft:
                 if dismissFromBottom {
-                    imageViewCenter.x = view.frame.size.width + (imageViewRect.size.width / 2)
+                    viewCenter.x = containingView.frame.size.width + (viewRect.size.width / 2)
                 } else {
-                    imageViewCenter.x = -(imageViewRect.size.width / 2)
+                    viewCenter.x = -(viewRect.size.width / 2)
                 }
             case .landscapeRight:
                 if dismissFromBottom {
-                    imageViewCenter.x = -(imageViewRect.size.width / 2)
+                    viewCenter.x = -(viewRect.size.width / 2)
                 } else {
-                    imageViewCenter.x = view.frame.size.width + (imageViewRect.size.width / 2)
+                    viewCenter.x = containingView.frame.size.width + (viewRect.size.width / 2)
                 }
             case .portraitUpsideDown:
                 if dismissFromBottom {
-                    imageViewCenter.y = view.frame.size.height + (imageViewRect.size.height / 2)
+                    viewCenter.y = containingView.frame.size.height + (viewRect.size.height / 2)
                 } else {
-                    imageViewCenter.y = -(imageViewRect.size.height / 2)
+                    viewCenter.y = -(viewRect.size.height / 2)
                 }
             default:
                 if dismissFromBottom {
-                    imageViewCenter.y = -(imageViewRect.size.height / 2)
+                    viewCenter.y = -(viewRect.size.height / 2)
                 } else {
-                    imageViewCenter.y = view.frame.size.height + (imageViewRect.size.height / 2)
+                    viewCenter.y = containingView.frame.size.height + (viewRect.size.height / 2)
                 }
             }
         default:
             switch endingOrientation {
             case .landscapeLeft:
                 if dismissFromBottom {
-                    imageViewCenter.x = -(imageViewRect.size.width / 2)
+                    viewCenter.x = -(viewRect.size.width / 2)
                 } else {
-                    imageViewCenter.x = view.frame.size.width + (imageViewRect.size.width / 2)
+                    viewCenter.x = containingView.frame.size.width + (viewRect.size.width / 2)
                 }
             case .landscapeRight:
                 if dismissFromBottom {
-                    imageViewCenter.x = view.frame.size.width + (imageViewRect.size.width / 2)
+                    viewCenter.x = containingView.frame.size.width + (viewRect.size.width / 2)
                 } else {
-                    imageViewCenter.x = -(imageViewRect.size.width / 2)
+                    viewCenter.x = -(viewRect.size.width / 2)
                 }
             case .portraitUpsideDown:
                 if dismissFromBottom {
-                    imageViewCenter.y = -(imageViewRect.size.height / 2)
+                    viewCenter.y = -(viewRect.size.height / 2)
                 } else {
-                    imageViewCenter.y = view.frame.size.height + (imageViewRect.size.height / 2)
+                    viewCenter.y = containingView.frame.size.height + (viewRect.size.height / 2)
                 }
             default:
                 if dismissFromBottom {
-                    imageViewCenter.y = view.frame.size.height + (imageViewRect.size.height / 2)
+                    viewCenter.y = containingView.frame.size.height + (viewRect.size.height / 2)
                 } else {
-                    imageViewCenter.y = -(imageViewRect.size.height / 2)
+                    viewCenter.y = -(viewRect.size.height / 2)
                 }
             }
         }
         
-        if abs(imageViewContainer.center.x - imageViewCenter.x) >= .ulpOfOne {
-            return (imageViewCenter, imageViewCenter.x)
+        if abs(view.center.x - viewCenter.x) >= .ulpOfOne {
+            return (viewCenter, viewCenter.x)
         } else {
-            return (imageViewCenter, imageViewCenter.y)
+            return (viewCenter, viewCenter.y)
         }
     }
     #endif

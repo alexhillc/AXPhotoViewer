@@ -12,7 +12,6 @@ class AXPhotosTransitionAnimator: NSObject, UIViewControllerAnimatedTransitionin
     weak var delegate: AXPhotosTransitionAnimatorDelegate?
     
     let fadeInOutTransitionRatio: Double = 1/3
-    let transitionAnimSpringDampening: CGFloat = 1
 
     let transitionInfo: AXTransitionInfo
     var fadeView: UIView?

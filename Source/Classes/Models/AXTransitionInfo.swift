@@ -21,6 +21,16 @@
     /// If the reference view that is provided is not currently visible, contextual animation will not occur.
     @objc fileprivate(set) weak var endingView: UIImageView?
     
+    /// The damping ratio for the presentation animation as it approaches its quiescent state.
+    /// To smoothly decelerate the animation without oscillation, use a value of 1. Employ a damping ratio closer to zero to increase oscillation.
+    /// Defaults to 1.
+    @objc public var presentationSpringDampingRatio: CGFloat = 1
+    
+    /// The damping ratio for the dismissal animation as it approaches its quiescent state.
+    /// To smoothly decelerate the animation without oscillation, use a value of 1. Employ a damping ratio closer to zero to increase oscillation.
+    /// Defaults to 1.
+    @objc public var dismissalSpringDampingRatio: CGFloat = 1
+    
     /// The duration of the transition.
     @objc public var duration: TimeInterval = 0.3
     
