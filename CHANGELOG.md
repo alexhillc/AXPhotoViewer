@@ -1,3 +1,12 @@
+# 1.5.0
+- Requires Swift 4.1
+- [**NEW**] Support for new network integration - Nuke. Required iOS/tvOS 9.0 or higher.
+- [**NEW**] Support for UIContentMode on reference image views during transitions. The transition animator will adopt the content mode of the startingView and endingView.
+- [**NEW**] Support for spring damping ratio in AXTransitionInfo. Control the springy-ness of your transitions by adjusting this value!
+- [**NEW**] Supply a custom fade backdrop view if desired. This is defined on the AXTransitionInfo object and will be used during presentation/dismissal transitions. (#36 - thanks @ashitikov!)
+- [**FIXED**] Safe area insets being automatically applied to the scrollView during image zoom.
+- [**FIXED**] Network integrations will now always return on a background thread. This was a problem for synchronous cache fetches (memory) that were made on the main thread.
+
 # 1.4.3
 - [**NEW**] Delegate method: `photosViewController(_:overlayView:visibilityWillChange:)` in order to coordinate overlayView visiblity changes with other animations
 
