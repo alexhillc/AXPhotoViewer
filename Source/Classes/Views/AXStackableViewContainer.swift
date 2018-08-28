@@ -24,10 +24,7 @@ import UIKit
     init(views: [UIView], anchoredAt point: AXStackableViewContainerAnchorPoint) {
         self.anchorPoint = point
         super.init(frame: .zero)
-        
-        for view in views {
-            self.addSubview(view)
-        }
+        views.forEach({ self.addSubview($0) })
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -58,26 +55,23 @@ import UIKit
                 yOffset = self.contentInset.top
             }
             
-            // special cases
-            #if os(iOS)
-            if subview is UIToolbar || subview is UINavigationBar {
+            // special cases, UIToolbar + UINavigationBar are not to be trifled with in iOS 11
+            var forceLayout: Bool
+            if isToolbarOrNavigationBar(subview) {
                 frame = CGRect(x: xOffset, y: yOffset, width: constrainedInsetSize.width, height: size.height)
+                forceLayout = false
             } else {
                 frame = CGRect(origin: CGPoint(x: xOffset, y: yOffset), size: size)
+                forceLayout = true
             }
-            #else
-            if subview is UINavigationBar {
-                frame = CGRect(x: xOffset, y: yOffset, width: constrainedInsetSize.width, height: size.height)
-            } else {
-                frame = CGRect(origin: CGPoint(x: xOffset, y: yOffset), size: size)
-            }
-            #endif
             
             yOffset += frame.size.height
             
             if applySizingLayout {
                 subview.frame = frame
-                subview.setNeedsLayout()
+                if forceLayout {
+                    subview.setNeedsLayout()
+                }
                 subview.layoutIfNeeded()
             }
         }
@@ -98,6 +92,15 @@ import UIKit
     override public func willRemoveSubview(_ subview: UIView) {
         super.willRemoveSubview(subview)
         self.delegate?.stackableViewContainer?(self, willRemoveSubview: subview)
+    }
+    
+    // MARK: - Helpers
+    private func isToolbarOrNavigationBar(_ view: UIView) -> Bool {
+        #if os(iOS)
+        return view is UIToolbar || view is UINavigationBar
+        #else
+        return view is UINavigationBar
+        #endif
     }
     
 }
