@@ -396,7 +396,6 @@ import UIKit
                 defaultAttributes.removeValue(forKey: key)
                 removedKeys.insert(key)
             }
-            stop.pointee = true
         }
         
         defaultAttributedString.addAttributes(defaultAttributes, range: NSMakeRange(0, defaultAttributedString.length))
