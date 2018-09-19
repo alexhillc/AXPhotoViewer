@@ -342,7 +342,7 @@ import FLAnimatedImage_tvOS
         
         self.pageViewController = UIPageViewController(transitionStyle: .scroll,
                                                        navigationOrientation: self.pagingConfig.navigationOrientation,
-                                                       options: [UIPageViewControllerOptionInterPageSpacingKey: self.pagingConfig.interPhotoSpacing])
+                                                       options: [.interPageSpacing: self.pagingConfig.interPhotoSpacing])
         self.pageViewController.delegate = self
         self.pageViewController.dataSource = (self.dataSource.numberOfPhotos > 1) ? self : nil
         self.pageViewController.scrollView.addContentOffsetObserver(self)
@@ -405,9 +405,9 @@ import FLAnimatedImage_tvOS
         if self.pageViewController.view.superview == nil {
             self.pageViewController.view.addGestureRecognizer(self.singleTapGestureRecognizer)
             
-            self.addChildViewController(self.pageViewController)
+            self.addChild(self.pageViewController)
             self.view.addSubview(self.pageViewController.view)
-            self.pageViewController.didMove(toParentViewController: self)
+            self.pageViewController.didMove(toParent: self)
         }
         
         if self.overlayView.superview == nil {
@@ -458,8 +458,8 @@ import FLAnimatedImage_tvOS
         }
     }
     
-    open override func didMove(toParentViewController parent: UIViewController?) {
-        super.didMove(toParentViewController: parent)
+    open override func didMove(toParent parent: UIViewController?) {
+        super.didMove(toParent: parent)
         
         if parent is UINavigationController {
             assertionFailure("Do not embed `PhotosViewController` in a navigation stack.")
@@ -1071,7 +1071,7 @@ import FLAnimatedImage_tvOS
     ///   - photo: The related `AXPhoto`.
     /// - Note: This is only called for the default action.
     @objc(actionCompletedWithActivityType:forPhoto:)
-    open func actionCompleted(activityType: UIActivityType, for photo: AXPhotoProtocol) {
+    open func actionCompleted(activityType: UIActivity.ActivityType, for photo: AXPhotoProtocol) {
         self.delegate?.photosViewController?(self, actionCompletedWith: activityType, for: photo)
     }
     
@@ -1305,7 +1305,7 @@ fileprivate extension UIScrollView {
     /// - Note: This is only called for the default action.
     @objc(photosViewController:actionCompletedWithActivityType:forPhoto:)
     optional func photosViewController(_ photosViewController: AXPhotosViewController, 
-                                       actionCompletedWith activityType: UIActivityType, 
+                                       actionCompletedWith activityType: UIActivity.ActivityType, 
                                        for photo: AXPhotoProtocol)
     
     /// Called just before the `AXPhotosViewController` begins its dismissal

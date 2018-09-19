@@ -72,7 +72,7 @@ class AXZoomingImageView: UIScrollView, UIScrollViewDelegate {
         self.showsHorizontalScrollIndicator = false
         self.isScrollEnabled = false
         self.bouncesZoom = true
-        self.decelerationRate = UIScrollViewDecelerationRateFast;
+        self.decelerationRate = .fast
         self.delegate = self
         
         if #available(iOS 11.0, tvOS 11.0, *) {

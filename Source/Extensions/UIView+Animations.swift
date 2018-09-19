@@ -22,7 +22,7 @@ extension UIView {
             view.layer.masksToBounds = true
             
             let animation = CABasicAnimation(keyPath: #keyPath(CALayer.cornerRadius))
-            animation.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionLinear)
+            animation.timingFunction = CAMediaTimingFunction(name: .linear)
             animation.fromValue = view.layer.cornerRadius
             animation.toValue = value
             animation.duration = duration

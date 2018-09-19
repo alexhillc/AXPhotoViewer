@@ -33,7 +33,7 @@ import UIKit
     
     fileprivate var isFirstLayout: Bool = true
     
-    @objc open var defaultTitleAttributes: [NSAttributedStringKey: Any] {
+    @objc open var defaultTitleAttributes: [NSAttributedString.Key: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, tvOS 10.0, *) {
@@ -57,7 +57,7 @@ import UIKit
         }
     }
     
-    @objc open var defaultDescriptionAttributes: [NSAttributedStringKey: Any] {
+    @objc open var defaultDescriptionAttributes: [NSAttributedString.Key: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, tvOS 10.0, *) {
@@ -81,7 +81,7 @@ import UIKit
         }
     }
     
-    @objc open var defaultCreditAttributes: [NSAttributedStringKey: Any] {
+    @objc open var defaultCreditAttributes: [NSAttributedString.Key: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, tvOS 10.0, *) {
@@ -137,7 +137,7 @@ import UIKit
         self.creditLabel.numberOfLines = 0
         self.addSubview(self.creditLabel)
         
-        NotificationCenter.default.addObserver(forName: .UIContentSizeCategoryDidChange, object: nil, queue: .main) { [weak self] (note) in
+        NotificationCenter.default.addObserver(forName: UIContentSizeCategory.didChangeNotification, object: nil, queue: .main) { [weak self] (note) in
             self?.setNeedsLayout()
         }
     }
@@ -382,14 +382,14 @@ import UIKit
     }
     
     // MARK: - Helpers
-    private func makeAttributedStringWithDefaults(_ defaults: [NSAttributedStringKey: Any],
+    private func makeAttributedStringWithDefaults(_ defaults: [NSAttributedString.Key: Any],
                                                   for attributedString: NSAttributedString) -> (attributedString: NSAttributedString,
-                                                                                                removedDefaultKeys: Set<NSAttributedStringKey>) {
+        removedDefaultKeys: Set<NSAttributedString.Key>) {
         guard let defaultAttributedString = attributedString.mutableCopy() as? NSMutableAttributedString else {
             return (attributedString, [])
         }
         
-        var removedKeys = Set<NSAttributedStringKey>()
+            var removedKeys = Set<NSAttributedString.Key>()
         var defaultAttributes = defaults
         defaultAttributedString.enumerateAttributes(in: NSMakeRange(0, defaultAttributedString.length), options: []) { (attributes, range, stop) in
             for key in attributes.keys where defaultAttributes[key] != nil {
@@ -403,12 +403,12 @@ import UIKit
     }
     
     private func makeFontAdjustedAttributedString(for attributedString: NSAttributedString?,
-                                                  fontTextStyle: UIFontTextStyle) -> NSAttributedString? {
+                                                  fontTextStyle: UIFont.TextStyle) -> NSAttributedString? {
         guard let fontAdjustedAttributedString = attributedString?.mutableCopy() as? NSMutableAttributedString else {
             return attributedString
         }
         
-        fontAdjustedAttributedString.enumerateAttribute(NSAttributedStringKey.font,
+        fontAdjustedAttributedString.enumerateAttribute(NSAttributedString.Key.font,
                                                         in: NSMakeRange(0, fontAdjustedAttributedString.length),
                                                         options: [], using: { [weak self] (value, range, stop) in
             guard let oldFont = value as? UIFont else {

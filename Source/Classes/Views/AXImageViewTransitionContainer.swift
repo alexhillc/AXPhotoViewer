@@ -9,7 +9,7 @@ import UIKit
 
 final class AXImageViewTransitionContainer: UIView {
     
-    override var contentMode: UIViewContentMode {
+    override var contentMode: UIView.ContentMode {
         didSet {
             self.setNeedsLayout()
         }

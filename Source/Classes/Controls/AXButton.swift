@@ -13,7 +13,7 @@ import AXStateButton
     
     public init() {
         super.init(frame: .zero)
-        self.controlStateAnimationTimingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionLinear)
+        self.controlStateAnimationTimingFunction = CAMediaTimingFunction(name: .linear)
         self.controlStateAnimationDuration = 0.1
         self.setBorderWidth(1.0, for: .normal)
         self.setBorderColor(.white, for: .normal)
