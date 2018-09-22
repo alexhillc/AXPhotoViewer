@@ -68,7 +68,7 @@ class AXPhotosTransitionController: NSObject, UIViewControllerTransitioningDeleg
         var photosViewController: AXPhotosViewController
         if let dismissed = dismissed as? AXPhotosViewController {
             photosViewController = dismissed
-        } else if let childViewController = dismissed.childViewControllers.filter({ $0 is AXPhotosViewController }).first as? AXPhotosViewController {
+        } else if let childViewController = dismissed.children.filter({ $0 is AXPhotosViewController }).first as? AXPhotosViewController {
             photosViewController = childViewController
         } else {
             assertionFailure("Could not find AXPhotosViewController in container's children.")
@@ -103,7 +103,7 @@ class AXPhotosTransitionController: NSObject, UIViewControllerTransitioningDeleg
         var photosViewController: AXPhotosViewController
         if let presented = presented as? AXPhotosViewController {
             photosViewController = presented
-        } else if let childViewController = presented.childViewControllers.filter({ $0 is AXPhotosViewController }).first as? AXPhotosViewController {
+        } else if let childViewController = presented.children.filter({ $0 is AXPhotosViewController }).first as? AXPhotosViewController {
             photosViewController = childViewController
         } else {
             assertionFailure("Could not find AXPhotosViewController in container's children.")

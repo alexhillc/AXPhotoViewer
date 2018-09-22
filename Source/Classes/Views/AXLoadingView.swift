@@ -17,7 +17,7 @@
     }
     
     /// The attributes that will get applied to the `retryText` when displaying an error.
-    @objc open var retryAttributes: [NSAttributedStringKey: Any] {
+    @objc open var retryAttributes: [NSAttributedString.Key: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, tvOS 10.0, *) {
@@ -35,8 +35,8 @@
             }
             
             return [
-                NSAttributedStringKey.font: font,
-                NSAttributedStringKey.foregroundColor: UIColor.white
+                NSAttributedString.Key.font: font,
+                NSAttributedString.Key.foregroundColor: UIColor.white
             ]
         }
     }
@@ -44,7 +44,7 @@
     @objc public fileprivate(set) var retryHandler: (() -> Void)?
     #endif
     
-    @objc open fileprivate(set) lazy var indicatorView: UIView = UIActivityIndicatorView(activityIndicatorStyle: .white)
+    @objc open fileprivate(set) lazy var indicatorView: UIView = UIActivityIndicatorView(style: .white)
     
     @objc open fileprivate(set) var errorImageView: UIImageView?
     
@@ -65,7 +65,7 @@
     }
     
     /// The attributes that will get applied to the `errorText` when displaying an error.
-    @objc open var errorAttributes: [NSAttributedStringKey: Any] {
+    @objc open var errorAttributes: [NSAttributedString.Key: Any] {
         get {
             var fontDescriptor: UIFontDescriptor
             if #available(iOS 10.0, tvOS 10.0, *) {
@@ -83,8 +83,8 @@
             }
             
             return [
-                NSAttributedStringKey.font: font,
-                NSAttributedStringKey.foregroundColor: UIColor.white
+                NSAttributedString.Key.font: font,
+                NSAttributedString.Key.foregroundColor: UIColor.white
             ]
         }
     }
@@ -92,7 +92,7 @@
     @objc public init() {
         super.init(frame: .zero)
         
-        NotificationCenter.default.addObserver(forName: .UIContentSizeCategoryDidChange, object: nil, queue: .main) { [weak self] (note) in
+        NotificationCenter.default.addObserver(forName: UIContentSizeCategory.didChangeNotification, object: nil, queue: .main) { [weak self] (note) in
             self?.setNeedsLayout()
         }
     }
@@ -115,7 +115,7 @@
     }
     
     @discardableResult fileprivate func computeSize(for constrainedSize: CGSize, applySizingLayout: Bool) -> CGSize {
-        func makeAttributedStringWithAttributes(_ attributes: [NSAttributedStringKey: Any], for attributedString: NSAttributedString?) -> NSAttributedString? {
+        func makeAttributedStringWithAttributes(_ attributes: [NSAttributedString.Key: Any], for attributedString: NSAttributedString?) -> NSAttributedString? {
             guard let newAttributedString = attributedString?.mutableCopy() as? NSMutableAttributedString else {
                 return attributedString
             }

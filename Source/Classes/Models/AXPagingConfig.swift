@@ -11,7 +11,7 @@ fileprivate let DefaultHorizontalSpacing: CGFloat = 20
 @objc open class AXPagingConfig: NSObject {
     
     /// Navigation configuration to be applied to the internal pager of the `PhotosViewController`.
-    @objc fileprivate(set) var navigationOrientation: UIPageViewControllerNavigationOrientation
+    @objc fileprivate(set) var navigationOrientation: UIPageViewController.NavigationOrientation
     
     /// Space between photos, measured in points. Applied to the internal pager of the `PhotosViewController` at initialization.
     @objc fileprivate(set) var interPhotoSpacing: CGFloat
@@ -19,7 +19,7 @@ fileprivate let DefaultHorizontalSpacing: CGFloat = 20
     /// The loading view class which will be instantiated instead of the default `AXLoadingView`.
     @objc fileprivate(set) var loadingViewClass: AXLoadingViewProtocol.Type = AXLoadingView.self
     
-    @objc public init(navigationOrientation: UIPageViewControllerNavigationOrientation,
+    @objc public init(navigationOrientation: UIPageViewController.NavigationOrientation,
                       interPhotoSpacing: CGFloat,
                       loadingViewClass: AXLoadingViewProtocol.Type? = nil) {
         
@@ -42,7 +42,7 @@ fileprivate let DefaultHorizontalSpacing: CGFloat = 20
         self.init(navigationOrientation: .horizontal, interPhotoSpacing: DefaultHorizontalSpacing, loadingViewClass: nil)
     }
     
-    @objc public convenience init(navigationOrientation: UIPageViewControllerNavigationOrientation) {
+    @objc public convenience init(navigationOrientation: UIPageViewController.NavigationOrientation) {
         self.init(navigationOrientation: navigationOrientation, interPhotoSpacing: DefaultHorizontalSpacing, loadingViewClass: nil)
     }
     
