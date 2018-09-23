@@ -1,3 +1,6 @@
+# 1.6.1
+- [**FIXED**] When captionView layout occurred more than once while animation was occurring, new captions would be applied mid animation
+
 # 1.6.0
 - Requires Swift 4.2
 - [**FIXED**] Navbar would behave erratically during dismissal if changing the bar button items to anything other than the default
