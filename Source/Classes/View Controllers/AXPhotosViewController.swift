@@ -1046,6 +1046,7 @@ import FLAnimatedImage_tvOS
                                                     imageSize: imageSize) ?? .leastNormalMagnitude
     }
     
+    #if os(iOS)
     /// Called when the action button is tapped for a photo. If you override this and fail to call super, the corresponding
     /// delegate method **will not be called!**
     ///
@@ -1064,7 +1065,6 @@ import FLAnimatedImage_tvOS
         return false
     }
     
-    #if os(iOS)
     /// Called when an action button action is completed. If you override this and fail to call super, the corresponding
     /// delegate method **will not be called!**
     ///
@@ -1290,6 +1290,7 @@ fileprivate extension UIScrollView {
                                        minimumZoomScale: CGFloat,
                                        imageSize: CGSize) -> CGFloat
     
+    #if os(iOS)
     /// Called when the action button is tapped for a photo. If no implementation is provided, will fall back to default action.
     ///
     /// - Parameters:
@@ -1299,7 +1300,6 @@ fileprivate extension UIScrollView {
     optional func photosViewController(_ photosViewController: AXPhotosViewController, 
                                        handleActionButtonTappedFor photo: AXPhotoProtocol)
     
-    #if os(iOS)
     /// Called when an action button action is completed.
     ///
     /// - Parameters:
