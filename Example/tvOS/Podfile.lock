@@ -1,9 +1,9 @@
 PODS:
-  - AXPhotoViewer/Core (1.4.3):
+  - AXPhotoViewer/Core (1.5.0):
     - AXStateButton (>= 1.1.3)
     - FLAnimatedImage (>= 1.0.0)
     - FLAnimatedImage-tvOS (>= 1.0.16)
-  - AXPhotoViewer/PINRemoteImage (1.4.3):
+  - AXPhotoViewer/PINRemoteImage (1.5.0):
     - AXPhotoViewer/Core
     - PINRemoteImage (~> 3.0.0-beta.9)
   - FLAnimatedImage-tvOS (1.0.16)
@@ -29,12 +29,20 @@ DEPENDENCIES:
   - AXPhotoViewer/PINRemoteImage (from `../../AXPhotoViewer.podspec`)
   - Reveal-SDK
 
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - FLAnimatedImage-tvOS
+    - PINCache
+    - PINOperation
+    - PINRemoteImage
+    - Reveal-SDK
+
 EXTERNAL SOURCES:
   AXPhotoViewer:
-    :path: ../../AXPhotoViewer.podspec
+    :path: "../../AXPhotoViewer.podspec"
 
 SPEC CHECKSUMS:
-  AXPhotoViewer: caec620a1ec3cd7b510f9ed63862f9e670defdb0
+  AXPhotoViewer: b21480ab848dea4d13b14a232b2d2fe378937577
   FLAnimatedImage-tvOS: 9848762c9480db5a4334e11782e747fc8fc07baf
   PINCache: d195fdba255283f7e9900a55e3cced377f431f9b
   PINOperation: a6219e6fc9db9c269eb7a7b871ac193bcf400aac
@@ -43,4 +51,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 687fcbcaff7d8aba8c9a3dace926da7f0e72ff43
 
-COCOAPODS: 1.4.0
+COCOAPODS: 1.5.3

@@ -61,7 +61,7 @@ import FLAnimatedImage_tvOS
     @objc open weak var delegate: AXPhotosViewControllerDelegate?
     
     /// The underlying `OverlayView` that is used for displaying photo captions, titles, and actions.
-    @objc open let overlayView = AXOverlayView()
+    @objc public let overlayView = AXOverlayView()
     
     /// The photos to display in the PhotosViewController.
     @objc open var dataSource = AXPhotosDataSource() {
@@ -1064,6 +1064,7 @@ import FLAnimatedImage_tvOS
         return false
     }
     
+    #if os(iOS)
     /// Called when an action button action is completed. If you override this and fail to call super, the corresponding
     /// delegate method **will not be called!**
     ///
@@ -1074,6 +1075,7 @@ import FLAnimatedImage_tvOS
     open func actionCompleted(activityType: UIActivity.ActivityType, for photo: AXPhotoProtocol) {
         self.delegate?.photosViewController?(self, actionCompletedWith: activityType, for: photo)
     }
+    #endif
     
     // MARK: - AXNetworkIntegrationDelegate
     public func networkIntegration(_ networkIntegration: AXNetworkIntegrationProtocol, loadDidFinishWith photo: AXPhotoProtocol) {
@@ -1297,6 +1299,7 @@ fileprivate extension UIScrollView {
     optional func photosViewController(_ photosViewController: AXPhotosViewController, 
                                        handleActionButtonTappedFor photo: AXPhotoProtocol)
     
+    #if os(iOS)
     /// Called when an action button action is completed.
     ///
     /// - Parameters:
@@ -1307,6 +1310,7 @@ fileprivate extension UIScrollView {
     optional func photosViewController(_ photosViewController: AXPhotosViewController, 
                                        actionCompletedWith activityType: UIActivity.ActivityType, 
                                        for photo: AXPhotoProtocol)
+    #endif
     
     /// Called just before the `AXPhotosViewController` begins its dismissal
     ///

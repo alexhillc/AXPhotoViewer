@@ -22,12 +22,43 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
     weak var customView: UILabel?
     
     let photos = [
-        AXPhoto(attributedTitle: NSAttributedString(string: "Niagara Falls"),
-                image: UIImage(named: "niagara-falls")),
-        AXPhoto(attributedTitle: NSAttributedString(string: "The Flash Poster"),
-              attributedDescription: NSAttributedString(string: "Season 3"),
-              attributedCredit: NSAttributedString(string: "Vignette"),
-              url: URL(string: "https://goo.gl/T4oZdY")),
+        AXPhoto(attributedTitle: NSAttributedString(
+                string: "Niagara Falls"),
+                image: UIImage(named: "niagara-falls"
+            )
+        ),
+        AXPhoto(
+            attributedTitle: NSAttributedString(
+                string: "The Flash Poster",
+                attributes:[
+                    .font: UIFont.italicSystemFont(ofSize: 24),
+                    .paragraphStyle: {
+                        let style = NSMutableParagraphStyle()
+                        style.alignment = .right
+                        return style
+                    }()
+                ]
+            ),
+            attributedDescription: NSAttributedString(
+                string: "Season 3",
+                attributes:[
+                    .paragraphStyle: {
+                        let style = NSMutableParagraphStyle()
+                        style.alignment = .right
+                        return style
+                    }()
+                ]),
+            attributedCredit: NSAttributedString(
+                string: "Vignette",
+                attributes:[
+                    .paragraphStyle: {
+                        let style = NSMutableParagraphStyle()
+                        style.alignment = .right
+                        return style
+                    }()
+                ]
+            ),
+            url: URL(string: "https://goo.gl/T4oZudY")),
         AXPhoto(attributedTitle: NSAttributedString(string: "Tall Building"),
               attributedDescription: NSAttributedString(string: "... And subsequently tall image"),
               attributedCredit: NSAttributedString(string: "Wikipedia"),
@@ -45,6 +76,10 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
               attributedCredit: NSAttributedString(string: "Giphy"),
               url: URL(string: "https://media.giphy.com/media/lXiRDbPcRYfUgxOak/giphy.gif"))
     ]
+    
+    override var prefersHomeIndicatorAutoHidden: Bool {
+        return true
+    }
     
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return [.portrait, .landscapeLeft]
@@ -100,7 +135,7 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
             imageView.autoresizingMask = [.flexibleLeftMargin, .flexibleRightMargin, .flexibleTopMargin, .flexibleBottomMargin]
             imageView.layer.cornerRadius = 20
             imageView.layer.masksToBounds = true
-            imageView.contentMode = UIViewContentMode(rawValue: Int(arc4random_uniform(UInt32(13))))!;
+            imageView.contentMode = UIView.ContentMode(rawValue: Int(arc4random_uniform(UInt32(13))))!;
             cell.contentView.addSubview(imageView)
         }
         
