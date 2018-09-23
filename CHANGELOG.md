@@ -1,3 +1,9 @@
+# 1.6.0
+- Requires Swift 4.2
+- [**FIXED**] Navbar would behave erratically during dismissal if changing the bar button items to anything other than the default
+- [**FIXED**] Custom font size would be overwritten by AXCaptionView
+- [**FIXED**] NSParagraphStyle alignment would have no effect on caption labels
+
 # 1.5.0
 - Requires Swift 4.1
 - [**NEW**] Support for new network integration - Nuke. Required iOS/tvOS 9.0 or higher.
