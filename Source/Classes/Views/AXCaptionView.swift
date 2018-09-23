@@ -389,7 +389,7 @@ import UIKit
             return (attributedString, [])
         }
         
-            var removedKeys = Set<NSAttributedString.Key>()
+        var removedKeys = Set<NSAttributedString.Key>()
         var defaultAttributes = defaults
         defaultAttributedString.enumerateAttributes(in: NSMakeRange(0, defaultAttributedString.length), options: []) { (attributes, range, stop) in
             for key in attributes.keys where defaultAttributes[key] != nil {
