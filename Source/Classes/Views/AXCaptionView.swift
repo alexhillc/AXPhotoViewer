@@ -240,68 +240,68 @@ import UIKit
         }
         
         if self.animateCaptionInfoChanges && self.needsCaptionLayoutAnim {
-            // ensure that this block runs in its own animation context (container may animate)
-            DispatchQueue.main.async { [weak self] in
-                guard let `self` = self else {
-                    return
-                }
-                
-                let animateOut: () -> Void = {
-                    self.titleLabel.alpha = 0
-                    self.descriptionLabel.alpha = 0
-                    self.creditLabel.alpha = 0
-                }
-                
-                let animateOutCompletion: (_ finished: Bool) -> Void = { (finished) in
-                    if !finished {
-                        return
-                    }
-                    
-                    applySizingAttributes()
-                    self.isCaptionAnimatingOut = false
-                }
-                
-                let animateIn: () -> Void = {
-                    self.titleLabel.alpha = 1
-                    self.descriptionLabel.alpha = 1
-                    self.creditLabel.alpha = 1
-                }
-                
-                let animateInCompletion: (_ finished: Bool) -> Void = { (finished) in
-                    if !finished {
-                        return
-                    }
-                    
-                    self.isCaptionAnimatingIn = false
-                }
-                
-                if self.isCaptionAnimatingOut {
-                    return
-                }
-                
+            if !self.isCaptionAnimatingOut {
                 self.isCaptionAnimatingOut = true
-                UIView.animate(withDuration: AXConstants.frameAnimDuration / 2,
-                               delay: 0,
-                               options: [.beginFromCurrentState, .curveEaseOut],
-                               animations: animateOut) { (finished) in
-                    
-                    if self.isCaptionAnimatingIn {
+                
+                // ensure that this block runs in its own animation context (container may animate)
+                DispatchQueue.main.async { [weak self] in
+                    guard let `self` = self else {
                         return
                     }
                     
-                    animateOutCompletion(finished)
+                    let animateOut: () -> Void = {
+                        self.titleLabel.alpha = 0
+                        self.descriptionLabel.alpha = 0
+                        self.creditLabel.alpha = 0
+                    }
+                    
+                    let animateOutCompletion: (_ finished: Bool) -> Void = { (finished) in
+                        if !finished {
+                            return
+                        }
+                        
+                        applySizingAttributes()
+                        self.isCaptionAnimatingOut = false
+                    }
+                    
+                    let animateIn: () -> Void = {
+                        self.titleLabel.alpha = 1
+                        self.descriptionLabel.alpha = 1
+                        self.creditLabel.alpha = 1
+                    }
+                    
+                    let animateInCompletion: (_ finished: Bool) -> Void = { (finished) in
+                        if !finished {
+                            return
+                        }
+                        
+                        self.isCaptionAnimatingIn = false
+                    }
+                    
                     UIView.animate(withDuration: AXConstants.frameAnimDuration / 2,
                                    delay: 0,
-                                   options: [.beginFromCurrentState, .curveEaseIn],
-                                   animations: animateIn,
-                                   completion: animateInCompletion)
+                                   options: [.beginFromCurrentState, .curveEaseOut],
+                                   animations: animateOut) { (finished) in
+                                    if self.isCaptionAnimatingIn {
+                                        return
+                                    }
+                                    
+                                    animateOutCompletion(finished)
+                                    self.isCaptionAnimatingIn = true
+                                    UIView.animate(withDuration: AXConstants.frameAnimDuration / 2,
+                                                   delay: 0,
+                                                   options: [.beginFromCurrentState, .curveEaseIn],
+                                                   animations: animateIn,
+                                                   completion: animateInCompletion)
+                    }
                 }
+                
+                self.needsCaptionLayoutAnim = false
             }
-            
-            self.needsCaptionLayoutAnim = false
-            
         } else {
-            applySizingAttributes()
+            if !self.isCaptionAnimatingIn && !self.isCaptionAnimatingOut {
+                applySizingAttributes()
+            }
         }
         
         self.isFirstLayout = false
