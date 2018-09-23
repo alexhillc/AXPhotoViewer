@@ -1,6 +1,6 @@
 language: swift
 osx_image: xcode10
 
-before_install: pod repo update
-install: travis_wait 40 pod lib lint --allow-warnings
+install: pod repo update
+script: travis_wait pod lib lint --allow-warnings
 
