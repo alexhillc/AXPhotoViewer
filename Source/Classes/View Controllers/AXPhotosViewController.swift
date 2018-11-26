@@ -570,7 +570,7 @@ import FLAnimatedImage_tvOS
         
         #if os(iOS)
         if self.dataSource.numberOfPhotos > 1 {
-            self.overlayView.internalTitle = String.localizedStringWithFormat("%d of %d", photoIndex + 1, self.dataSource.numberOfPhotos)
+            self.overlayView.internalTitle = String.localizedStringWithFormat(NSLocalizedString("%d of %d", comment: ""), photoIndex + 1, self.dataSource.numberOfPhotos)
         } else {
             self.overlayView.internalTitle = nil
         }
