@@ -129,10 +129,9 @@
 			};
 			buildConfigurationList = FA8359D11EC01BD500B256C2 /* Build configuration list for PBXProject "AXPhotoViewerExample" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				English,
 				en,
 				Base,
 			);
@@ -165,7 +164,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-AXPhotoViewerExample/Pods-AXPhotoViewerExample-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-AXPhotoViewerExample/Pods-AXPhotoViewerExample-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/AXPhotoViewer/AXPhotoViewer.framework",
 				"${BUILT_PRODUCTS_DIR}/AXStateButton/AXStateButton.framework",
 				"${BUILT_PRODUCTS_DIR}/DRPLoadingSpinner/DRPLoadingSpinner.framework",
@@ -188,7 +187,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-AXPhotoViewerExample/Pods-AXPhotoViewerExample-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AXPhotoViewerExample/Pods-AXPhotoViewerExample-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FAF414F9A9C922FCB012523A /* [CP] Check Pods Manifest.lock */ = {

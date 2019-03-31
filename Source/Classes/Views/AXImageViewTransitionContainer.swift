@@ -90,6 +90,8 @@ final class AXImageViewTransitionContainer: UIView {
         case .bottomRight:
             self.imageView.bounds = imageSize.rect()
             self.imageView.center = self.bounds.size.bottomRight(forSize: imageSize)
+        @unknown default:
+            break
         }
     }
     
