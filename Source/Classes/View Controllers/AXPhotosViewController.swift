@@ -782,7 +782,7 @@ import FLAnimatedImage_tvOS
             return
         }
         
-        if let index = self.orderedViewControllers.index(of: photoViewController) {
+        if let index = self.orderedViewControllers.firstIndex(of: photoViewController) {
             self.orderedViewControllers.remove(at: index)
         }
         

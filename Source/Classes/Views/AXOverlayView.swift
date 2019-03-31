@@ -121,7 +121,7 @@ import UIKit
                 return
             }
             
-            let index = self.bottomStackContainer.subviews.index(of: oldCaptionView)
+            let index = self.bottomStackContainer.subviews.firstIndex(of: oldCaptionView)
             oldCaptionView.removeFromSuperview()
             self.bottomStackContainer.insertSubview(captionView, at: index ?? 0)
             self.setNeedsLayout()
