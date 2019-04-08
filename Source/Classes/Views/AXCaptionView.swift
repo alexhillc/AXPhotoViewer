@@ -296,7 +296,12 @@ import UIKit
             self.needsCaptionLayoutAnim = false
             
         } else {
-            applySizingAttributes()
+            DispatchQueue.main.async { [weak self] in
+                guard let `self` = self else { return }
+                if !self.isCaptionAnimatingOut && !self.isCaptionAnimatingIn {
+                    applySizingAttributes()
+                }
+            }
         }
         
         self.isFirstLayout = false
