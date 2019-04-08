@@ -76,7 +76,7 @@ class KingfisherIntegration: NSObject, AXNetworkIntegrationProtocol {
     }
     
     func cancelAllLoads() {
-        self.retrieveImageTasks.forEach({ $0.cancel() })
+        self.retrieveImageTasks.forEach({ $1.cancel() })
         self.retrieveImageTasks.removeAll()
     }
     
