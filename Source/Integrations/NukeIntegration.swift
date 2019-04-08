@@ -18,56 +18,36 @@ class NukeIntegration: NSObject, AXNetworkIntegrationProtocol {
     public func loadPhoto(_ photo: AXPhotoProtocol) {
         if photo.imageData != nil || photo.image != nil {
             AXDispatchUtils.executeInBackground { [weak self] in
-                guard let `self` = self else {
-                    return
-                }
-                
+                guard let `self` = self else { return }
                 self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
             }
             return
         }
 
-        guard let url = photo.url else {
-            return
-        }
+        guard let url = photo.url else { return }
         
         let progress: ImageTask.ProgressHandler = { [weak self] (_, receivedSize, totalSize) in
-            guard let `self` = self else {
-                return
-            }
-            
             AXDispatchUtils.executeInBackground { [weak self] in
-                guard let `self` = self else {
-                    return
-                }
-                
+                guard let `self` = self else { return }
                 self.delegate?.networkIntegration?(self, didUpdateLoadingProgress: CGFloat(receivedSize) / CGFloat(totalSize), for: photo)
             }
         }
         
         let completion: ImageTask.Completion = { [weak self] (response, error) in
-            guard let `self` = self else {
-                return
-            }
+            guard let `self` = self else { return }
             
             self.retrieveImageTasks.removeObject(forKey: photo)
             
             if let imageData = response?.image.animatedImageData {
                 photo.imageData = imageData
                 AXDispatchUtils.executeInBackground { [weak self] in
-                    guard let `self` = self else {
-                        return
-                    }
-                    
+                    guard let `self` = self else { return }
                     self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
                 }
             } else if let image = response?.image {
                 photo.image = image
                 AXDispatchUtils.executeInBackground { [weak self] in
-                    guard let `self` = self else {
-                        return
-                    }
-                    
+                    guard let `self` = self else { return }
                     self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
                 }
             } else {
@@ -77,10 +57,7 @@ class NukeIntegration: NSObject, AXNetworkIntegrationProtocol {
                     userInfo: nil
                 )
                 AXDispatchUtils.executeInBackground { [weak self] in
-                    guard let `self` = self else {
-                        return
-                    }
-                    
+                    guard let `self` = self else { return }
                     self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
                 }
             }
@@ -91,10 +68,7 @@ class NukeIntegration: NSObject, AXNetworkIntegrationProtocol {
     }
 
     func cancelLoad(for photo: AXPhotoProtocol) {
-        guard let downloadTask = self.retrieveImageTasks.object(forKey: photo) else {
-            return
-        }
-
+        guard let downloadTask = self.retrieveImageTasks.object(forKey: photo) else { return }
         downloadTask.cancel()
     }
 
