@@ -799,11 +799,11 @@ import FLAnimatedImage_tvOS
         }
         
         let layoutDirection: UIUserInterfaceLayoutDirection
-        if #available(iOS 10.0, *) {
+        if #available(iOS 10.0, tvOS 10.0, *) {
             layoutDirection = (self.pageViewController.view.traitCollection.layoutDirection == .leftToRight)
                 ? .leftToRight
                 : .rightToLeft
-        } else if #available(iOS 9.0, *) {
+        } else if #available(iOS 9.0, tvOS 9.0, *) {
             layoutDirection = UIView.userInterfaceLayoutDirection(for: self.pageViewController.view.semanticContentAttribute)
         } else {
             layoutDirection = .leftToRight
