@@ -798,7 +798,32 @@ import FLAnimatedImage_tvOS
             horizontalSwipeDirection = .left
         }
         
-        let swipePercent = (horizontalSwipeDirection == .left) ? (1 - abs(percent)) : abs(percent)
+        let layoutDirection: UIUserInterfaceLayoutDirection
+        if #available(iOS 10.0, *) {
+            layoutDirection = (self.pageViewController.view.traitCollection.layoutDirection == .leftToRight)
+                ? .leftToRight
+                : .rightToLeft
+        } else if #available(iOS 9.0, *) {
+            layoutDirection = UIView.userInterfaceLayoutDirection(for: self.pageViewController.view.semanticContentAttribute)
+        } else {
+            layoutDirection = .leftToRight
+        }
+        
+        let swipePercent: CGFloat
+        if horizontalSwipeDirection == .left {
+            if layoutDirection == .leftToRight {
+                swipePercent = 1 - abs(percent)
+            } else {
+                swipePercent = abs(percent)
+            }
+        } else {
+            if layoutDirection == .leftToRight {
+                swipePercent = abs(percent)
+            } else {
+                swipePercent = 1 - abs(percent)
+            }
+        }
+        
         var lowIndex: Int = NSNotFound
         var highIndex: Int = NSNotFound
         
