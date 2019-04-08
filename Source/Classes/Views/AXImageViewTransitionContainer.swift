@@ -46,9 +46,7 @@ final class AXImageViewTransitionContainer: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        guard let imageSize = self.imageView.image?.size else {
-            return
-        }
+        guard let imageSize = self.imageView.image?.size else { return }
         
         switch self.contentMode {
         case .scaleToFill:

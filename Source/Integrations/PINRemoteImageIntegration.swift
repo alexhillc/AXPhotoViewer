@@ -28,56 +28,36 @@ class PINRemoteImageIntegration: NSObject, AXNetworkIntegrationProtocol, PINRemo
     func loadPhoto(_ photo: AXPhotoProtocol) {
         if photo.imageData != nil || photo.image != nil {
             AXDispatchUtils.executeInBackground { [weak self] in
-                guard let `self` = self else {
-                    return
-                }
-                
+                guard let `self` = self else { return }
                 self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
             }
             return
         }
         
-        guard let url = photo.url else {
-            return
-        }
+        guard let url = photo.url else { return }
         
         let progress: PINRemoteImageManagerProgressDownload = { [weak self] (completedBytes, totalBytes) in
-            guard let `self` = self else {
-                return
-            }
-            
             AXDispatchUtils.executeInBackground { [weak self] in
-                guard let `self` = self else {
-                    return
-                }
-                
+                guard let `self` = self else { return }
                 self.delegate?.networkIntegration?(self, didUpdateLoadingProgress: CGFloat(completedBytes) / CGFloat(totalBytes), for: photo)
             }
         }
         
         let completion: PINRemoteImageManagerImageCompletion = { [weak self] (result) in
-            guard let `self` = self else {
-                return
-            }
+            guard let `self` = self else { return }
             
             self.downloadUUIDs.removeObject(forKey: photo)
             
             if let data = result.alternativeRepresentation as? Data {
                 photo.imageData = data
                 AXDispatchUtils.executeInBackground { [weak self] in
-                    guard let `self` = self else {
-                        return
-                    }
-                    
+                    guard let `self` = self else { return }
                     self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
                 }
             } else if let image = result.image {
                 photo.image = image
                 AXDispatchUtils.executeInBackground { [weak self] in
-                    guard let `self` = self else {
-                        return
-                    }
-                    
+                    guard let `self` = self else { return }
                     self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
                 }
             } else {
@@ -87,27 +67,18 @@ class PINRemoteImageIntegration: NSObject, AXNetworkIntegrationProtocol, PINRemo
                     userInfo: nil
                 )
                 AXDispatchUtils.executeInBackground { [weak self] in
-                    guard let `self` = self else {
-                        return
-                    }
-                    
+                    guard let `self` = self else { return }
                     self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
                 }
             }
         }
         
-        guard let uuid = self.imageManager.downloadImage(with: url, options: [], progressDownload: progress, completion: completion) else {
-            return
-        }
-        
+        guard let uuid = self.imageManager.downloadImage(with: url, options: [], progressDownload: progress, completion: completion) else { return }
         self.downloadUUIDs.setObject(uuid as NSUUID, forKey: photo)
     }
     
     func cancelLoad(for photo: AXPhotoProtocol) {
-        guard let uuid = self.downloadUUIDs.object(forKey: photo) else {
-            return
-        }
-        
+        guard let uuid = self.downloadUUIDs.object(forKey: photo) else { return }
         self.imageManager.cancelTask(with: uuid as UUID, storeResumeData: true)
     }
     
@@ -123,10 +94,7 @@ class PINRemoteImageIntegration: NSObject, AXNetworkIntegrationProtocol, PINRemo
     
     // MARK: - PINRemoteImageManagerAlternateRepresentationProvider
     func alternateRepresentation(with data: Data!, options: PINRemoteImageManagerDownloadOptions = []) -> Any! {
-        guard let `data` = data else {
-            return nil
-        }
-        
+        guard let `data` = data else { return nil }
         return data.containsGIF() ? data : nil
     }
     

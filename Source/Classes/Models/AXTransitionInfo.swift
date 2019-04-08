@@ -86,9 +86,7 @@
         
         if let endingView = endingView {
             self.resolveEndingViewClosure = { [weak self] (photo, index) in
-                guard let `self` = self else {
-                    return
-                }
+                guard let `self` = self else { return }
                 
                 if let endingView = endingView(photo, index) {
                     guard endingView.bounds != .zero else {

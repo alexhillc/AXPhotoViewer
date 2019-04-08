@@ -75,9 +75,7 @@ class AXPhotosTransitionController: NSObject, UIViewControllerTransitioningDeleg
             return nil
         }
         
-        guard let photo = photosViewController.dataSource.photo(at: photosViewController.currentPhotoIndex) else {
-            return nil
-        }
+        guard let photo = photosViewController.dataSource.photo(at: photosViewController.currentPhotoIndex) else { return nil }
         
         // resolve transitionInfo's endingView
         self.transitionInfo.resolveEndingViewClosure?(photo, photosViewController.currentPhotoIndex)

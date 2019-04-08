@@ -303,10 +303,7 @@ import UIKit
         
         let size = self.bottomStackContainer.sizeThatFits(self.frame.size)
         let animations = { [weak self] in
-            guard let `self` = self else {
-                return
-            }
-            
+            guard let `self` = self else { return }
             self.bottomStackContainer.frame = CGRect(origin: CGPoint(x: 0, y: self.frame.size.height - size.height), size: size)
             self.bottomStackContainer.setNeedsLayout()
             self.bottomStackContainer.layoutIfNeeded()
@@ -408,10 +405,7 @@ import UIKit
         }
         
         if let attributedText = attributedText {
-            guard let titleBarButtonItemLabel = self.titleBarButtonItem.customView as? UILabel else {
-                return
-            }
-            
+            guard let titleBarButtonItemLabel = self.titleBarButtonItem.customView as? UILabel else { return }
             if titleBarButtonItemLabel.attributedText != attributedText {
                 titleBarButtonItemLabel.attributedText = attributedText
                 titleBarButtonItemLabel.sizeToFit()

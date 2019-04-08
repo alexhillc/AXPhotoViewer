@@ -103,10 +103,7 @@ import FLAnimatedImage_tvOS
             resetImageView()
             let error = photo.ax_error ?? NSError()
             self.loadingView?.showError(error, retryHandler: { [weak self] in
-                guard let `self` = self else {
-                    return
-                }
-                
+                guard let `self` = self else { return }
                 self.delegate?.photoViewController(self, retryDownloadFor: photo)
                 self.loadingView?.removeError()
                 self.loadingView?.startLoading(initialProgress: photo.ax_progress)
@@ -173,10 +170,7 @@ import FLAnimatedImage_tvOS
             self.zoomingImageView.imageView.ax_syncFrames(with: referenceView)
         } else if let error = userInfo[AXPhotosViewControllerNotification.ErrorKey] as? Error {
             self.loadingView?.showError(error, retryHandler: { [weak self] in
-                guard let `self` = self, let photo = self.photo else {
-                    return
-                }
-                
+                guard let `self` = self, let photo = self.photo else { return }
                 self.delegate?.photoViewController(self, retryDownloadFor: photo)
                 self.loadingView?.removeError()
                 self.loadingView?.startLoading(initialProgress: photo.ax_progress)

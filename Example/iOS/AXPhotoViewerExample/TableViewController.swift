@@ -124,9 +124,7 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: ReuseIdentifier) else {
-            return UITableViewCell()
-        }
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: ReuseIdentifier) else { return UITableViewCell() }
         
         // sample project worst practices top kek
         if cell.contentView.viewWithTag(666) == nil {
@@ -143,9 +141,7 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
     }
     
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        guard let imageView = cell.contentView.viewWithTag(666) as? FLAnimatedImageView else {
-            return
-        }
+        guard let imageView = cell.contentView.viewWithTag(666) as? FLAnimatedImageView else { return }
         
         self.cancelLoad(at: indexPath, for: imageView)
         self.loadContent(at: indexPath, into: imageView)
@@ -156,14 +152,10 @@ class TableViewController: UITableViewController, AXPhotosViewControllerDelegate
         let imageView = cell?.contentView.viewWithTag(666) as? FLAnimatedImageView
         
         let transitionInfo = AXTransitionInfo(interactiveDismissalEnabled: true, startingView: imageView) { [weak self] (photo, index) -> UIImageView? in
-            guard let `self` = self else {
-                return nil
-            }
+            guard let `self` = self else { return nil }
             
             let indexPath = IndexPath(row: index, section: 0)
-            guard let cell = self.tableView.cellForRow(at: indexPath) else {
-                return nil
-            }
+            guard let cell = self.tableView.cellForRow(at: indexPath) else { return nil }
             
             // adjusting the reference view attached to our transition info to allow for contextual animation
             return cell.contentView.viewWithTag(666) as? FLAnimatedImageView

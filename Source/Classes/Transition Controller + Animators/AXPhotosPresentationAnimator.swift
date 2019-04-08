@@ -68,9 +68,7 @@ class AXPhotosPresentationAnimator: AXPhotosTransitionAnimator {
         }
         
         let scaleCompletion = { [weak self] (_ finished: Bool) in
-            guard let `self` = self else {
-                return
-            }
+            guard let `self` = self else { return }
             
             self.delegate?.transitionAnimator(self, didCompletePresentationWith: startingViewContainer.imageView)
             

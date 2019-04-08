@@ -116,13 +116,9 @@
     
     @discardableResult fileprivate func computeSize(for constrainedSize: CGSize, applySizingLayout: Bool) -> CGSize {
         func makeAttributedStringWithAttributes(_ attributes: [NSAttributedString.Key: Any], for attributedString: NSAttributedString?) -> NSAttributedString? {
-            guard let newAttributedString = attributedString?.mutableCopy() as? NSMutableAttributedString else {
-                return attributedString
-            }
-            
+            guard let newAttributedString = attributedString?.mutableCopy() as? NSMutableAttributedString else { return attributedString }
             newAttributedString.setAttributes(nil, range: NSMakeRange(0, newAttributedString.length))
             newAttributedString.addAttributes(attributes, range: NSMakeRange(0, newAttributedString.length))
-            
             return newAttributedString.copy() as? NSAttributedString
         }
         
