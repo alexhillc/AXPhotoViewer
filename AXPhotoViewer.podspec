@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name            = "AXPhotoViewer"
-  s.version         = "1.7.0"
+  s.version         = "1.7.1"
   s.license         = { :type  => 'MIT', :file => 'LICENSE.md' }
   s.summary         = "An iOS/tvOS photo gallery viewer, useful for viewing a large number of photos."
   s.homepage        = "https://github.com/alexhillc/AXPhotoViewer"
@@ -29,31 +29,40 @@ Pod::Spec.new do |s|
   end
 
   s.subspec 'SDWebImage' do |ss|
+    ss.ios.deployment_target = '8.0'
+    ss.tvos.deployment_target = '9.0'
     ss.dependency      'AXPhotoViewer/Core'
     ss.dependency      'SDWebImage', '>= 4.0.0'
     ss.source_files  = 'Source/Integrations/SDWebImageIntegration.swift'
   end
 
   s.subspec 'PINRemoteImage' do |ps|
+    ps.ios.deployment_target = '8.0'
+    ps.tvos.deployment_target = '9.0'
     ps.dependency      'AXPhotoViewer/Core'
     ps.dependency      'PINRemoteImage', '~> 3.0.0-beta.9'
     ps.source_files  = 'Source/Integrations/PINRemoteImageIntegration.swift'
   end
 
   s.subspec 'AFNetworking' do |as|
+    as.ios.deployment_target = '8.0'
+    as.tvos.deployment_target = '9.0'
     as.dependency      'AXPhotoViewer/Core'
     as.dependency      'AFNetworking/NSURLSession', '>= 3.1.0'
     as.source_files  = 'Source/Integrations/AFNetworkingIntegration.swift'
   end
 
   s.subspec 'Kingfisher' do |ks|
+    ks.ios.deployment_target = '10.0'
+    ks.tvos.deployment_target = '10.0'
     ks.dependency      'AXPhotoViewer/Core'
     ks.dependency      'Kingfisher', '>= 3.10.0'
     ks.source_files  = 'Source/Integrations/KingfisherIntegration.swift'
   end
 
   s.subspec 'Nuke' do |nk|
-    nk.ios.deployment_target = '9.0'
+    nk.ios.deployment_target = '10.0'
+    nk.tvos.deployment_target = '10.0'
     nk.dependency      'AXPhotoViewer/Core'
     nk.dependency      'Nuke', '>= 7.0'
     nk.source_files  = 'Source/Integrations/NukeIntegration.swift'

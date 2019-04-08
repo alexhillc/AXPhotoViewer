@@ -1,3 +1,7 @@
+# 1.7.1
+- [**NEW**] Better RTL support on device locales that support RTL (further support will require a refactor using AutoLayout)
+- [**FIXED**] KingfisherIntegration was out of date #55
+
 # 1.7.0
 - Requires Swift 5.0
 
