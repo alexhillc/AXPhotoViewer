@@ -13,7 +13,7 @@ class KingfisherIntegration: NSObject, AXNetworkIntegrationProtocol {
 
     weak public var delegate: AXNetworkIntegrationDelegate?
 
-    fileprivate var retrieveImageTasks = NSMapTable<AXPhotoProtocol, RetrieveImageTask>(keyOptions: .strongMemory, valueOptions: .strongMemory)
+	fileprivate var retrieveImageTasks: [Int: DownloadTask] = [:]
 
     public func loadPhoto(_ photo: AXPhotoProtocol) {
         if photo.imageData != nil || photo.image != nil {
@@ -45,53 +45,56 @@ class KingfisherIntegration: NSObject, AXNetworkIntegrationProtocol {
             }
         }
 
-        let completion: CompletionHandler = { [weak self] (image, error, cacheType, imageURL) in
+        let completion: ((Result<RetrieveImageResult, KingfisherError>) -> Void) = { [weak self] (result) in
             guard let `self` = self else {
                 return
             }
 
-            self.retrieveImageTasks.removeObject(forKey: photo)
+			self.retrieveImageTasks[photo.hash] = nil
 
-            if let imageData = image?.kf.gifRepresentation() {
-                photo.imageData = imageData
-                AXDispatchUtils.executeInBackground { [weak self] in
-                    guard let `self` = self else {
-                        return
-                    }
-                    
-                    self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
-                }
-            } else if let image = image {
-                photo.image = image
-                AXDispatchUtils.executeInBackground { [weak self] in
-                    guard let `self` = self else {
-                        return
-                    }
-                    
-                    self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
-                }
-            } else {
-                let error = NSError(
-                    domain: AXNetworkIntegrationErrorDomain,
-                    code: AXNetworkIntegrationFailedToLoadErrorCode,
-                    userInfo: nil
-                )
-                AXDispatchUtils.executeInBackground { [weak self] in
-                    guard let `self` = self else {
-                        return
-                    }
-                    
-                    self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
-                }
-            }
+			switch result {
+			case .success(let retrieveImageResult):
+				if let imageData = retrieveImageResult.image.kf.gifRepresentation() {
+					photo.imageData = imageData
+					AXDispatchUtils.executeInBackground { [weak self] in
+						guard let `self` = self else {
+							return
+						}
+
+						self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+					}
+				} else {
+					photo.image = retrieveImageResult.image
+					AXDispatchUtils.executeInBackground { [weak self] in
+						guard let `self` = self else {
+							return
+						}
+
+						self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
+					}
+				}
+			case .failure(let error):
+				let error = NSError(
+					domain: AXNetworkIntegrationErrorDomain,
+					code: AXNetworkIntegrationFailedToLoadErrorCode,
+					userInfo: ["description": error.errorDescription ?? ""]
+				)
+				AXDispatchUtils.executeInBackground { [weak self] in
+					guard let `self` = self else {
+						return
+					}
+
+					self.delegate?.networkIntegration(self, loadDidFailWith: error, for: photo)
+				}
+			}
         }
 
-        let task = KingfisherManager.shared.retrieveImage(with: url, options: nil, progressBlock: progress, completionHandler: completion)
-        self.retrieveImageTasks.setObject(task, forKey: photo)
+		let task = KingfisherManager.shared.retrieveImage(with: url, options: nil, progressBlock: progress, completionHandler: completion)
+		self.retrieveImageTasks[photo.hash] = task
     }
 
     func cancelLoad(for photo: AXPhotoProtocol) {
-        guard let downloadTask = self.retrieveImageTasks.object(forKey: photo) else {
+        guard let downloadTask = self.retrieveImageTasks[photo.hash] else {
             return
         }
 
@@ -99,13 +102,11 @@ class KingfisherIntegration: NSObject, AXNetworkIntegrationProtocol {
     }
 
     func cancelAllLoads() {
-        let enumerator = self.retrieveImageTasks.objectEnumerator()
+		self.retrieveImageTasks.forEach { (_, task) in
+			task.cancel()
+		}
 
-        while let downloadTask = enumerator?.nextObject() as? RetrieveImageTask {
-            downloadTask.cancel()
-        }
-
-        self.retrieveImageTasks.removeAllObjects()
+        self.retrieveImageTasks.removeAll()
     }
     
 }
