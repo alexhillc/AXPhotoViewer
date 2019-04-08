@@ -1,5 +1,5 @@
 # 1.7.0
-- Requires Swift 5.2
+- Requires Swift 5.0
 
 # 1.6.1
 - [**FIXED**] When captionView layout occurred more than once while animation was occurring, new captions would be applied mid animation
