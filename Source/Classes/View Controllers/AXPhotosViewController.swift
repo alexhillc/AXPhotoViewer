@@ -529,6 +529,7 @@ import FLAnimatedImage_tvOS
                                                    animated: animated,
                                                    completion: nil)
         self.loadPhotos(at: photoIndex)
+        self.currentPhotoIndex = photoIndex
     }
     
     // MARK: - Page VC Configuration
