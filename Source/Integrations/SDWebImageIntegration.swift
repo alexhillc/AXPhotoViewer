@@ -63,7 +63,7 @@ class SDWebImageIntegration: NSObject, AXNetworkIntegrationProtocol {
             }
         }
         
-        guard let operation = SDWebImageManager.shared.loadImage(with: url, options: [], progress: progress, completed: completion) else { return }
+        guard let operation = SDWebImageManager.shared().loadImage(with: url, options: [], progress: progress, completed: completion) else { return }
         self.downloadOperations.setObject(operation, forKey: photo)
     }
     
