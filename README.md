@@ -12,7 +12,7 @@ While AXPhotoViewer has many configurable properties on each of its modules, it 
 
 ```swift
 let dataSource = AXPhotosDataSource(photos: self.photos)
-let photosViewController = PhotosViewController(dataSource: dataSource)
+let photosViewController = AXPhotosViewController(dataSource: dataSource)
 self.present(photosViewController, animated: true)
 ```
 
