@@ -487,8 +487,10 @@ import FLAnimatedImage_tvOS
     
     // MARK: - Dismissal
     open override func dismiss(animated flag: Bool, completion: (() -> Void)? = nil) {
-        if self.presentedViewController != nil {
-            super.dismiss(animated: flag, completion: completion)
+        if let presentedViewController = self.presentedViewController {
+            presentedViewController.dismiss(animated: flag, completion: {
+                completion?()
+            })
             return
         }
         
