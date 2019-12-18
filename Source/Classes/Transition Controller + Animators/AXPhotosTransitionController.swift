@@ -30,8 +30,8 @@ class AXPhotosTransitionController: NSObject, UIViewControllerTransitioningDeleg
     /// Custom animator for dismissal.
     fileprivate var dismissalAnimator: AXPhotosDismissalAnimator?
     
-    /// If this flag is `true`, the transition controller will ignore any user gestures and instead trigger an immediate dismissal.
-    var forceNonInteractiveDismissal = false
+    /// If this flag is `true`, the transition controller will use gestures to dismiss viewController interactively, otherwise dismissal will be immediate.
+    var forceInteractiveDismissal = false
 
     /// The transition configuration passed in at initialization. The controller uses this object to apply customization to the transition.
     let transitionInfo: AXTransitionInfo
@@ -123,7 +123,7 @@ class AXPhotosTransitionController: NSObject, UIViewControllerTransitioningDeleg
     }
     
     public func interactionControllerForDismissal(using animator: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? {
-        if !self.supportsInteractiveDismissal || self.forceNonInteractiveDismissal {
+        if !self.supportsInteractiveDismissal || !self.forceInteractiveDismissal {
             return nil
         }
         
