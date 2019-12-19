@@ -29,3 +29,7 @@ Pods/
 
 ## OS X
 .DS_Store
+
+## Carthage
+Carthage/Checkouts
+Carthage/Build
