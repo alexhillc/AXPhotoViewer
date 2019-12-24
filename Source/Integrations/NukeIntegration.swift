@@ -33,24 +33,26 @@ class NukeIntegration: NSObject, AXNetworkIntegrationProtocol {
             }
         }
         
-        let completion: ImageTask.Completion = { [weak self] (response, error) in
+        let completion: ImageTask.Completion = { [weak self] (result) in
             guard let `self` = self else { return }
             
             self.retrieveImageTasks.removeObject(forKey: photo)
-            
-            if let imageData = response?.image.animatedImageData {
+            switch result {
+            case let .success(response):
+            if let imageData = response.image.animatedImageData {
                 photo.imageData = imageData
                 AXDispatchUtils.executeInBackground { [weak self] in
                     guard let `self` = self else { return }
                     self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
                 }
-            } else if let image = response?.image {
-                photo.image = image
+            } else {
+                photo.image = response.image
                 AXDispatchUtils.executeInBackground { [weak self] in
                     guard let `self` = self else { return }
                     self.delegate?.networkIntegration(self, loadDidFinishWith: photo)
                 }
-            } else {
+            }
+            case .failure:
                 let error = NSError(
                     domain: AXNetworkIntegrationErrorDomain,
                     code: AXNetworkIntegrationFailedToLoadErrorCode,
