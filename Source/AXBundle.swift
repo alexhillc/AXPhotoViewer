@@ -11,4 +11,11 @@ struct AXBundle {
         return Bundle(for: AXPhotosViewController.self)
     }
 
+    static var resourcesBundle: Bundle? {
+        
+        let bundle = AXBundle.frameworkBundle
+        guard let path = bundle.path(forResource: "AXPhotoViewerResources", ofType: "bundle") else { return nil }
+        
+        return Bundle(path: path)
+    }
 }

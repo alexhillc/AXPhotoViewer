@@ -51,7 +51,7 @@
     /// The image to show in the `errorImageView` when displaying an error.
     @objc open var errorImage: UIImage? {
         get {
-            return UIImage(named: "axphotoviewer-error", in: AXBundle.frameworkBundle, compatibleWith: nil)
+            return UIImage(named: "axphotoviewer-error", in: AXBundle.resourcesBundle, compatibleWith: nil)
         }
     }
     
