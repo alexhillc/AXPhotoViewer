@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
     cs.ios.dependency  'AXStateButton', '>= 1.1.3'
     cs.ios.dependency  'FLAnimatedImage', '>= 1.0.0'
     cs.tvos.dependency 'FLAnimatedImage-tvOS', '>= 1.0.16'
-    s.resource_bundle = { 'AXPhotoViewerResources' => ['Assets/*.{xcassets}'] }
+    cs.resource_bundle = { 'AXPhotoViewerResources' => ['Assets/*.{xcassets}'] }
     cs.source_files  = 'Source/*.{swift,h,m}',
                        'Source/Classes/**/*.{swift,h,m}',
                        'Source/Protocols/*.{swift,h,m}',
