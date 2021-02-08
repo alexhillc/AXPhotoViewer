@@ -7,9 +7,9 @@
 //
 
 #if TARGET_OS_IOS
-@import FLAnimatedImage.FLAnimatedImageView;
+@import FLAnimatedImage;
 #elif TARGET_OS_TV
-@import FLAnimatedImage_tvOS.FLAnimatedImageView;
+@import FLAnimatedImage_tvOS;
 #endif
 
 @interface FLAnimatedImageView (AXExtensions)
