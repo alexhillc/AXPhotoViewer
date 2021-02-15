@@ -25,7 +25,9 @@ let package = Package(
             name: "AXPhotoViewer",
             dependencies: [
                 "UIImageView+AXExtension",
-                "FLAnimatedImageView+AXExtensions"
+                "FLAnimatedImageView+AXExtensions",
+                .product(name: "AXStateButton",
+                                package: "AXStateButton")
             ],
             path: "Source",
             exclude: [
