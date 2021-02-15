@@ -6,6 +6,10 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 open class SimpleNetworkIntegration: NSObject, AXNetworkIntegrationProtocol, SimpleNetworkIntegrationURLSessionWrapperDelegate {
     
     fileprivate var urlSessionWrapper = SimpleNetworkIntegrationURLSessionWrapper()

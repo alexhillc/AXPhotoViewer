@@ -6,7 +6,9 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+#if canImport(UIKit)
 import UIKit
+#endif
 
 @objc open class AXCaptionView: UIView, AXCaptionViewProtocol {
         

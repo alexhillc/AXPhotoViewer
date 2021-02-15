@@ -8,8 +8,12 @@
 
 #if os(iOS)
 import UIKit
-import MobileCoreServices
+import CoreServices
+#if os(iOS)
 import FLAnimatedImage
+#elseif os(tvOS)
+import FLAnimatedImage_tvOS
+#endif
 
 @objc open class AXPreviewingPhotosViewController: UIViewController, AXNetworkIntegrationDelegate {
     

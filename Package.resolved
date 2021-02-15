@@ -6,17 +6,17 @@
         "repositoryURL": "https://github.com/xiao99xiao/AXStateButton.git",
         "state": {
           "branch": "master",
-          "revision": "3a250b248098b405a0af1404d788d4143a237292",
+          "revision": "23a096b9327da1f298e429310a49d6f850222bf0",
           "version": null
         }
       },
       {
         "package": "FLAnimatedImage",
-        "repositoryURL": "https://github.com/Flipboard/FLAnimatedImage.git",
+        "repositoryURL": "https://github.com/HappySwifter/FLAnimatedImage.git",
         "state": {
           "branch": null,
-          "revision": "5c16c813da8e2959bf7bd4c42ac1a2023639e1d3",
-          "version": "1.0.15"
+          "revision": "8a2068e8fe95d1a7f511ab724b74217dbee4f578",
+          "version": "1.0.16"
         }
       }
     ]

@@ -5,7 +5,12 @@
 //  Created by Alex Hill on 6/5/18.
 //
 
+#if canImport(UIKit)
 import UIKit
+#endif
+#if canImport(AXExtensions)
+import AXExtensions
+#endif
 
 class AXPhotosPresentationAnimator: AXPhotosTransitionAnimator {
     

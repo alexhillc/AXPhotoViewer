@@ -6,6 +6,10 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 @objc protocol AXPageableViewControllerProtocol: class {
     
     var pageIndex: Int { get set }

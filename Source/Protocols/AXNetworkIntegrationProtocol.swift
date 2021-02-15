@@ -6,6 +6,9 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+#if canImport(UIKit)
+import UIKit
+#endif
 let AXNetworkIntegrationErrorDomain = "AXNetworkIntegrationErrorDomain"
 let AXNetworkIntegrationFailedToLoadErrorCode = 6
 

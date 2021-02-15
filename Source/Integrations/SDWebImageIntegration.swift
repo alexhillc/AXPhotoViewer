@@ -6,6 +6,9 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+#if canImport(UIKit)
+import UIKit
+#endif
 #if canImport(SDWebImage)
 import SDWebImage
 

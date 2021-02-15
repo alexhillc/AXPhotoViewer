@@ -12,12 +12,12 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "AXPhotoViewer",
-            targets: ["AXPhotoViewer", "UIImageView+AXExtension", "FLAnimatedImageView+AXExtensions"]),
+            targets: ["AXPhotoViewer"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/xiao99xiao/AXStateButton.git", .branch("master")),
-        .package(url: "https://github.com/Flipboard/FLAnimatedImage.git", from: "1.0.0")
+        .package(url: "https://github.com/HappySwifter/FLAnimatedImage.git", from: "1.0.16")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -25,9 +25,9 @@ let package = Package(
         .target(
             name: "AXPhotoViewer",
             dependencies: [
-                .target(name: "UIImageView+AXExtension"),
                 .product(name: "AXStateButton", package: "AXStateButton"),
-                .product(name: "FLAnimatedImage", package: "FLAnimatedImage")
+                .product(name: "FLAnimatedImage", package: "FLAnimatedImage"),
+                .target(name: "AXExtensions"),
             ],
             path: "Source",
             exclude: [
@@ -37,22 +37,18 @@ let package = Package(
                 "Extensions/UIImageView+AXExtensions.m"
             ]
         ),
-        .target(name: "UIImageView+AXExtension",
-                path: "Source",
-                sources: [
-                    "Extensions/UIImageView+AXExtensions.h",
-                    "Extensions/UIImageView+AXExtensions.m"
-                ]
-        ),
-        .target(name: "FLAnimatedImageView+AXExtensions",
+        .target(name: "AXExtensions",
                 dependencies: [
                     .product(name: "FLAnimatedImage", package: "FLAnimatedImage")
                 ],
-                path: "Source",
+                path: "Source/Extensions",
                 sources: [
-                    "Extensions/FLAnimatedImageView+AXExtensions.h",
-                    "Extensions/FLAnimatedImageView+AXExtensions.m"
-                ]
-        )
+                    "UIImageView+AXExtensions.h",
+                    "UIImageView+AXExtensions.m",
+                    "FLAnimatedImageView+AXExtensions.h",
+                    "FLAnimatedImageView+AXExtensions.m"
+                ],
+                publicHeadersPath: "."
+        ),
     ]
 )
