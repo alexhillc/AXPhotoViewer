@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "AXStateButton",
+        "repositoryURL": "https://github.com/xiao99xiao/AXStateButton.git",
+        "state": {
+          "branch": "master",
+          "revision": "3a250b248098b405a0af1404d788d4143a237292",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
