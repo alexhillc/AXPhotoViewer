@@ -12,11 +12,12 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "AXPhotoViewer",
-            targets: ["AXPhotoViewer"]),
+            targets: ["AXPhotoViewer", "UIImageView+AXExtension", "FLAnimatedImageView+AXExtensions"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/xiao99xiao/AXStateButton.git", .branch("master")),
+        .package(url: "https://github.com/Flipboard/FLAnimatedImage.git", from: "1.0.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -24,10 +25,9 @@ let package = Package(
         .target(
             name: "AXPhotoViewer",
             dependencies: [
-                "UIImageView+AXExtension",
-                "FLAnimatedImageView+AXExtensions",
-                .product(name: "AXStateButton",
-                                package: "AXStateButton")
+                .target(name: "UIImageView+AXExtension"),
+                .product(name: "AXStateButton", package: "AXStateButton"),
+                .product(name: "FLAnimatedImage", package: "FLAnimatedImage")
             ],
             path: "Source",
             exclude: [
@@ -45,6 +45,9 @@ let package = Package(
                 ]
         ),
         .target(name: "FLAnimatedImageView+AXExtensions",
+                dependencies: [
+                    .product(name: "FLAnimatedImage", package: "FLAnimatedImage")
+                ],
                 path: "Source",
                 sources: [
                     "Extensions/FLAnimatedImageView+AXExtensions.h",

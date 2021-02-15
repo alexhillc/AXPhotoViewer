@@ -9,6 +9,15 @@
           "revision": "3a250b248098b405a0af1404d788d4143a237292",
           "version": null
         }
+      },
+      {
+        "package": "FLAnimatedImage",
+        "repositoryURL": "https://github.com/Flipboard/FLAnimatedImage.git",
+        "state": {
+          "branch": null,
+          "revision": "5c16c813da8e2959bf7bd4c42ac1a2023639e1d3",
+          "version": "1.0.15"
+        }
       }
     ]
   },
