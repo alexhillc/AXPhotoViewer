@@ -25,7 +25,7 @@ Pod::Spec.new do |s|
                        'Source/Extensions/*.{swift,h,m}',
                        'Source/Utilities/*.{swift,h,m}',
                        'Source/Integrations/SimpleNetworkIntegration.swift'
-    cs.frameworks    = 'MobileCoreServices', 'ImageIO', 'UIKit', 'QuartzCore'
+    cs.frameworks    = 'ImageIO', 'UIKit', 'QuartzCore'
   end
 
   s.subspec 'SDWebImage' do |ss|

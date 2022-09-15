@@ -5,9 +5,11 @@
 //  Created by Alex Hill on 6/11/17.
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
-
+#if canImport(UIKit)
+import UIKit
+#endif
 import ImageIO
-import MobileCoreServices
+import CoreServices
 
 extension Data {
 

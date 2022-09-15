@@ -6,6 +6,9 @@
 //  Copyright © 2018 Alessandro Nakamuta. All rights reserved.
 //
 
+#if canImport(UIKit)
+import UIKit
+#endif
 #if canImport(Nuke)
 import Nuke
 

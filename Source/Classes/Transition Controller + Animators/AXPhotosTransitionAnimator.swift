@@ -5,7 +5,9 @@
 //  Created by Alex Hill on 6/6/18.
 //
 
+#if canImport(UIKit)
 import UIKit
+#endif
 
 class AXPhotosTransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning {
     

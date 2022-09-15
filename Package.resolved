@@ -1,0 +1,25 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "AXStateButton",
+        "repositoryURL": "https://github.com/xiao99xiao/AXStateButton.git",
+        "state": {
+          "branch": "master",
+          "revision": "23a096b9327da1f298e429310a49d6f850222bf0",
+          "version": null
+        }
+      },
+      {
+        "package": "FLAnimatedImage",
+        "repositoryURL": "https://github.com/HappySwifter/FLAnimatedImage.git",
+        "state": {
+          "branch": null,
+          "revision": "8a2068e8fe95d1a7f511ab724b74217dbee4f578",
+          "version": "1.0.16"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

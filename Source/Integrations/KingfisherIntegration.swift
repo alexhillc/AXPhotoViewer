@@ -6,6 +6,9 @@
 //  Copyright © 2017 Matt Lamont. All rights reserved.
 //
 
+#if canImport(UIKit)
+import UIKit
+#endif
 #if canImport(Kingfisher)
 import Kingfisher
 

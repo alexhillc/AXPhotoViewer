@@ -6,8 +6,12 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+#if canImport(UIKit)
 import UIKit
-
+#endif
+#if canImport(AXExtensions)
+import AXExtensions
+#endif
 #if os(iOS)
 import FLAnimatedImage
 #elseif os(tvOS)

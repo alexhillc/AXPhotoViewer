@@ -15,14 +15,14 @@ import UIKit
     /// For internal use only.
     var contentInset: UIEdgeInsets = .zero
     
-    @objc fileprivate(set) var anchorPoint: AXStackableViewContainerAnchorPoint
+    @objc fileprivate(set) var axAnchorPoint: AXStackableViewContainerAnchorPoint
     @objc enum AXStackableViewContainerAnchorPoint: Int {
         case top, bottom
     }
 
     @objc(initWithViews:anchoredAtPoint:)
     init(views: [UIView], anchoredAt point: AXStackableViewContainerAnchorPoint) {
-        self.anchorPoint = point
+        self.axAnchorPoint = point
         super.init(frame: .zero)
         views.forEach({ self.addSubview($0) })
     }
@@ -46,7 +46,7 @@ import UIKit
         var constrainedInsetSize = constrainedSize
         constrainedInsetSize.width -= (self.contentInset.left + self.contentInset.right)
         
-        let subviews = (self.anchorPoint == .top) ? self.subviews : self.subviews.reversed()
+        let subviews = (self.axAnchorPoint == .top) ? self.subviews : self.subviews.reversed()
         for subview in subviews {
             let size = subview.sizeThatFits(constrainedInsetSize)
             var frame: CGRect

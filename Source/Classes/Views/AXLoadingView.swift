@@ -6,6 +6,8 @@
 //  Copyright © 2017 Alex Hill. All rights reserved.
 //
 
+import UIKit
+
 @objc open class AXLoadingView: UIView, AXLoadingViewProtocol {
     
     #if os(iOS)
